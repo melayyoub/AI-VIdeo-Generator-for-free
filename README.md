@@ -85,6 +85,9 @@ curl http://127.0.0.1:8188/queue
 ```
 ```
 # WIN/PowerShell
+# Confirm the venv python & package are the ones used
+.\.venv\Scripts\python.exe -c "import sys, importlib; print(sys.executable); print(importlib.util.find_spec('huggingface_hub') is not None)"
+
 # From the folder containing install.ps1 + wan2_cli.py:
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\install.ps1 -Cuda cu121 -Models 5b -WithManager -Start

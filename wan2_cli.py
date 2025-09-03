@@ -278,22 +278,38 @@ def install_hf_cli(venv: Path, dry: bool = False) -> None:
     pip(venv, ["huggingface_hub[cli]"], dry=dry)
 
 
+# 2) Login becomes a no-op if token is set; optional whoami check
 def hf_login(venv: Path, token: Optional[str], dry: bool = False) -> None:
     if token:
-        env = os.environ.copy()
-        env["HF_TOKEN"] = token
-        run([py_exec(venv_bin=venv / ("Scripts" if is_windows() else "bin")),
-             "-m", "huggingface_hub", "whoami"], env=env, dry=dry, check=False)
-        return
-    run(["huggingface-cli", "login"], dry=dry)
+        # Optional: verify silently; ok to skip entirely
+        pybin = py_exec(venv_bin=venv / ("Scripts" if is_windows() else "bin"))
+        run([pybin, "-c",
+             "from huggingface_hub import whoami; "
+             "import os, sys; "
+             "t=os.getenv('HF_TOKEN'); "
+             "print('whoami:', whoami(token=t) if t else 'no token')"],
+            dry=dry, check=False)
+    else:
+        log("No HF_TOKEN provided; if the repo is gated, set HF_TOKEN env.")
 
 
-def hf_download(venv: Path, repo_id: str, files: List[str], dest: Path, dry: bool = False) -> None:
-    if not dest.exists() and not dry:
-        dest.mkdir(parents=True, exist_ok=True)
-    for f in files:
-        run(["huggingface-cli", "download", repo_id, f, "--local-dir", str(dest)], dry=dry)
-
+# 3) Download using the Python API (not the CLI)
+def hf_download(venv: Path, repo_id: str, files: list[str], dest: Path, dry: bool = False) -> None:
+    pybin = py_exec(venv_bin=venv / ("Scripts" if is_windows() else "bin"))
+    code = f"""
+import os, pathlib
+from huggingface_hub import hf_hub_download
+dest = r'''{dest}'''
+pathlib.Path(dest).mkdir(parents=True, exist_ok=True)
+repo = r'''{repo_id}'''
+files = {files!r}
+tok = os.getenv('HF_TOKEN')
+for f in files:
+    path = hf_hub_download(repo_id=repo, filename=f, local_dir=dest,
+                           local_dir_use_symlinks=False, token=tok)
+    print(path)
+"""
+    run([pybin, "-c", code], dry=dry)
 
 def download_models(venv: Path, base: Path, which: str, dry: bool = False) -> None:
     models_root = base / "models"
