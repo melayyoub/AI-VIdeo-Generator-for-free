@@ -56,13 +56,23 @@ comfy-loader/ # Optional React loader app
 
 ## 🚀 Quick Start (macOS/Linux)
 
-```bash
-# Make scripts executable (first time only):
+```
+# bash
+# From the folder containing install.sh + wan2_cli.py:
 chmod +x install.sh
 
-# Run with defaults (CUDA 12.1, 5B models, install Manager, start ComfyUI on 8188)
-source ./install.sh
+# Default (same folder), create fresh venv, start after install
+./install.sh
 
+# CPU-only, all models, do not auto-start
+CUDA=cpu MODELS=all START=false ./install.sh
+
+# If directory isn’t empty and you want to force same-folder clone:
+FORCE_HERE=true ./install.sh
+
+# Reuse existing .venv
+REUSE_VENV=true ./install.sh
+```
 # Or override quickly:
 CUDA=cpu MODELS=all START=true PORT=8188 WITH_MANAGER=true source ./install.sh
 
@@ -72,6 +82,22 @@ ComfyUI API:
 
 curl http://127.0.0.1:8188/system_stats
 curl http://127.0.0.1:8188/queue
+```
+```
+# WIN/PowerShell
+# From the folder containing install.ps1 + wan2_cli.py:
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\install.ps1 -Cuda cu121 -Models 5b -WithManager -Start
+
+# If the folder already has files and you want to force same-folder clone:
+.\install.ps1 -Cuda cu121 -Models 5b -WithManager -Start -ForceHere
+
+# Reuse existing .venv:
+.\install.ps1 -Cuda cpu -Models all -Start -ReuseVenv
+
+```
+
+**
 
 
 React loader (if created):
@@ -88,5 +114,4 @@ cd ComfyStack/comfy-loader && npm run dev and open the printed URL.
 | `BASE_PATH`      | `-BasePath`    | Install root (default `~/ComfyStack`) |
 | *(Windows only)* | `-PyVersion`   | Python launcher version, e.g. `3.11`  |
 
-
-
+**

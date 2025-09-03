@@ -1,12 +1,9 @@
-
----
-
-## 🧰 `install.sh` (macOS/Linux)
-
-```bash
 #!/usr/bin/env bash
 # Sam Ayoub — Wan 2.2 + ComfyUI installer (macOS/Linux)
 set -euo pipefail
+
+# Determine script dir (same-location layout by default)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Defaults (override via env or flags) ───────────────────────────────────────
 CUDA="${CUDA:-cu121}"            # cu121 | cu118 | cpu
@@ -15,8 +12,10 @@ WITH_MANAGER="${WITH_MANAGER:-true}"
 START="${START:-true}"
 PORT="${PORT:-8188}"
 LISTEN_ALL="${LISTEN_ALL:-false}"
-BASE_PATH="${BASE_PATH:-$HOME/ComfyStack}"
+BASE_PATH="${BASE_PATH:-$SCRIPT_DIR}"
 HF_TOKEN="${HF_TOKEN:-}"
+FORCE_HERE="${FORCE_HERE:-false}"
+REUSE_VENV="${REUSE_VENV:-false}"
 
 # parse simple --key=value overrides if desired
 for arg in "$@"; do
@@ -28,43 +27,57 @@ for arg in "$@"; do
     --port=*) PORT="${arg#*=}";;
     --listen-all=*) LISTEN_ALL="${arg#*=}";;
     --path=*) BASE_PATH="${arg#*=}";;
+    --force-here=*) FORCE_HERE="${arg#*=}";;
+    --reuse-venv=*) REUSE_VENV="${arg#*=}";;
     *) echo "Unknown arg: $arg"; exit 2;;
   esac
 done
 
-# ── Run CLI ───────────────────────────────────────────────────────────────────
-echo "[install.sh] Base: $BASE_PATH  CUDA: $CUDA  MODELS: $MODELS  Manager: $WITH_MANAGER  Start: $START  Port: $PORT  ListenAll: $LISTEN_ALL"
+echo "[install.sh] Base: $BASE_PATH  CUDA: $CUDA  MODELS: $MODELS  Manager: $WITH_MANAGER  Start: $START  Port: $PORT  ListenAll: $LISTEN_ALL  ForceHere: $FORCE_HERE  ReuseVenv: $REUSE_VENV"
 
+# Choose python executable
+if command -v python3 >/dev/null 2>&1; then
+  PY=python3
+elif command -v python >/dev/null 2>&1; then
+  PY=python
+else
+  echo "ERROR: Python 3.10–3.12 not found in PATH."; exit 1
+fi
+
+# Token (optional)
 if [[ -n "$HF_TOKEN" ]]; then
   export HF_TOKEN
 fi
 
 WITH_MGR_FLAG=()
-if [[ "$WITH_MANAGER" == "true" ]]; then WITH_MGR_FLAG+=(--with-manager); fi
+[[ "$WITH_MANAGER" == "true" ]] && WITH_MGR_FLAG+=(--with-manager)
 
 START_FLAG=()
-if [[ "$START" == "true" ]]; then START_FLAG+=(--start); fi
+[[ "$START" == "true" ]] && START_FLAG+=(--start)
 
 LISTEN_FLAG=()
-if [[ "$LISTEN_ALL" == "true" ]]; then LISTEN_FLAG+=(--listen-all); fi
+[[ "$LISTEN_ALL" == "true" ]] && LISTEN_FLAG+=(--listen-all)
 
-# Ensure python exists
-if ! command -v python >/dev/null 2>&1; then
-  echo "ERROR: 'python' not found in PATH. Please install Python 3.10–3.12."; exit 1
-fi
+FORCE_FLAG=()
+[[ "$FORCE_HERE" == "true" ]] && FORCE_FLAG+=(--force-here)
+
+REUSE_FLAG=()
+[[ "$REUSE_VENV" == "true" ]] && REUSE_FLAG+=(--reuse-venv)
 
 # Install
-python wan2_cli.py install \
+"$PY" "$SCRIPT_DIR/wan2_cli.py" install \
   --cuda "$CUDA" \
   --path "$BASE_PATH" \
-  "${WITH_MGR_FLAG[@]}" \
   --models "$MODELS" \
-  "${START_FLAG[@]}" \
   --port "$PORT" \
-  "${LISTEN_FLAG[@]}"
+  "${WITH_MGR_FLAG[@]}" \
+  "${START_FLAG[@]}" \
+  "${LISTEN_FLAG[@]}" \
+  "${FORCE_FLAG[@]}" \
+  "${REUSE_FLAG[@]}"
 
 echo
 echo "[install.sh] Done."
-echo "ComfyUI root: $BASE_PATH/ComfyUI"
-echo "React loader: $BASE_PATH/comfy-loader (if you run: python wan2_cli.py react --path \"$BASE_PATH\")"
-echo "To start later: python wan2_cli.py start --path \"$BASE_PATH\" --port $PORT ${LISTEN_ALL:+--listen-all}"
+echo "Root: $BASE_PATH"
+echo "Venv: $BASE_PATH/.venv"
+echo "To start later: $PY \"$SCRIPT_DIR/wan2_cli.py\" start --path \"$BASE_PATH\" --port $PORT ${LISTEN_ALL:+--listen-all}"

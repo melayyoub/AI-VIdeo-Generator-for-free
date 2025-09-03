@@ -1,48 +1,60 @@
-#!/usr/bin/env pwsh
-# Sam Ayoub — Wan 2.2 + ComfyUI installer (Windows PowerShell)
+﻿# Sam Ayoub — Wan 2.2 + ComfyUI installer (Windows PowerShell)
+[CmdletBinding()]
 param(
-  [string]$Cuda = "cu121",         # cu121 | cu118 | cpu
-  [string]$Models = "5b",          # 5b | 14b | i2v | all
-  [bool]$WithManager = $true,
-  [bool]$Start = $true,
-  [int]$Port = 8188,
-  [bool]$ListenAll = $false,
-  [string]$BasePath = "$HOME\ComfyStack",
-  [string]$PyVersion = "3.11",     # py launcher version
-  [string]$HfToken = $env:HF_TOKEN
+  [ValidateSet('cu121','cu118','cpu')] [string] $Cuda    = 'cu121',
+  [ValidateSet('5b','14b','i2v','all')] [string] $Models = '5b',
+  [switch] $WithManager,
+  [switch] $Start,
+  [int]    $Port        = 8188,
+  [switch] $ListenAll,
+  # Default to the folder where THIS script resides (same-location layout)
+  [string] $BasePath    = $PSScriptRoot,
+  [string] $PyVersion   = '3.11',
+  [string] $HfToken     = $env:HF_TOKEN,
+  [switch] $ForceHere,
+  [switch] $ReuseVenv
 )
 
-Write-Host "[install.ps1] Base: $BasePath  CUDA: $Cuda  MODELS: $Models  Manager: $WithManager  Start: $Start  Port: $Port  ListenAll: $ListenAll"
+Write-Host ("[install.ps1] Base: {0}  CUDA: {1}  MODELS: {2}  Manager: {3}  Start: {4}  Port: {5}  ListenAll: {6}  ForceHere: {7}  ReuseVenv: {8}" `
+  -f $BasePath,$Cuda,$Models,$WithManager.IsPresent,$Start.IsPresent,$Port,$ListenAll.IsPresent,$ForceHere.IsPresent,$ReuseVenv.IsPresent)
 
 # Verify Python launcher
 if (-not (Get-Command py -ErrorAction SilentlyContinue)) {
-  Write-Error "Python launcher 'py' not found. Install Python 3.10–3.12 from python.org."; exit 1
+  Write-Error "Python launcher 'py' not found. Install Python 3.10–3.12 from python.org."
+  exit 1
 }
 
-# Compose flags
-$mgr = @()
-if ($WithManager) { $mgr += "--with-manager" }
-
-$startFlag = @()
-if ($Start) { $startFlag += "--start" }
-
-$listen = @()
-if ($ListenAll) { $listen += "--listen-all" }
-
-# Token (optional)
+# Optional token
 if ($HfToken) { $env:HF_TOKEN = $HfToken }
 
-# Run install
-py -$PyVersion .\wan2_cli.py install `
-  --cuda $Cuda `
-  --path $BasePath `
-  @mgr `
-  --models $Models `
-  @startFlag `
-  --port $Port `
-  @listen
+# Build install args as an array (robust against spaces/quotes)
+$installArgs = @(
+  'install',
+  '--cuda',       $Cuda,
+  '--path',       $BasePath,
+  '--models',     $Models,
+  '--port',       "$Port"
+)
 
-Write-Host ""
-Write-Host "[install.ps1] Done."
-Write-Host ("ComfyUI root: {0}\ComfyUI" -f $BasePath)
-Write-Host ("To start later: py -{0} .\wan2_cli.py start --path `"{1}`" --port {2} {3}" -f $PyVersion, $BasePath, $Port, ($(if($ListenAll){"--listen-all"})))
+if ($WithManager) { $installArgs += '--with-manager' }
+if ($Start)       { $installArgs += '--start' }
+if ($ListenAll)   { $installArgs += '--listen-all' }
+if ($ForceHere)   { $installArgs += '--force-here' }
+if ($ReuseVenv)   { $installArgs += '--reuse-venv' }
+
+# Run: py -<ver> <script-dir>\wan2_cli.py <args...>
+$cliPath = Join-Path $PSScriptRoot 'wan2_cli.py'
+& py "-$PyVersion" $cliPath @installArgs
+$exit = $LASTEXITCODE
+if ($exit -ne 0) { Write-Error "wan2_cli.py install failed ($exit)"; exit $exit }
+
+Write-Host ''
+Write-Host '[install.ps1] Done.'
+Write-Host ("Root: {0}" -f $BasePath)
+Write-Host ("Venv: {0}" -f (Join-Path $BasePath '.venv'))
+
+# Print a safe "start later" hint
+$startArgs = @('start','--path',$BasePath,'--port',"$Port")
+if ($ListenAll) { $startArgs += '--listen-all' }
+$startCmd = @('py', "-$PyVersion", $cliPath) + $startArgs
+Write-Host ($startCmd -join ' ')
