@@ -90,13 +90,42 @@ curl http://127.0.0.1:8188/queue
 
 # From the folder containing install.ps1 + wan2_cli.py:
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+ # From E:\python-projects\custom-wan (where wan2_cli.py lives)
 .\install.ps1 -Cuda cu121 -Models 5b -WithManager -Start
+# This will create/refresh: E:\python-projects\custom-wan\ComfyUI and ComfyUI\.venv
 
-# If the folder already has files and you want to force same-folder clone:
-.\install.ps1 -Cuda cu121 -Models 5b -WithManager -Start -ForceHere
+# Either activate:
+.\ComfyUI\.venv\Scripts\Activate.ps1
+python .\ComfyUI\main.py --port 8188 --listen
 
-# Reuse existing .venv:
-.\install.ps1 -Cuda cpu -Models all -Start -ReuseVenv
+# Or run directly:
+.\ComfyUI\.venv\Scripts\python.exe .\ComfyUI\main.py --port 8188 --listen
+
+
+## or 
+
+# Activate the venv
+.\.venv\Scripts\Activate.ps1
+
+# Start ComfyUI (default port 8188, adjust if you want)
+python wan2_cli.py start --path . --port 8188 --listen-all
+
+
+
+```
+
+Start later (no reinstall)
+
+```powershell
+# from your base path
+.\ComfyUI\.venv\Scripts\python.exe .\ComfyUI\main.py --port 8188 --listen
+# or via CLI:
+py -3.11 .\wan2_cli.py start --path . --port 8188 --listen-all
+```
+```mac
+./ComfyUI/.venv/bin/python ./ComfyUI/main.py --port 8188 --listen
+# or via CLI:
+python3 wan2_cli.py start --path . --port 8188 --listen-all
 
 ```
 
