@@ -1,0 +1,8 @@
+# Allow running the script in this session (if needed):
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+# Run with defaults:
+.\install.ps1
+
+# Override quickly:
+.\install.ps1 -Cuda "cu118" -Models "all" -Start $true -Port 8188 -WithManager $true
