@@ -26,7 +26,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install torch==2.5.1+cu121 torchvision==...+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
+        pip install torch==2.5.1+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
+        pip install torchvision==0.20.1+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
+        pip install torchaudio==2.5.1+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
