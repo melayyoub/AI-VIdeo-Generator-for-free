@@ -1,0 +1,27 @@
+{
+  "name": "custom-wan",
+  "version": "1.0.0",
+  "description": "**Author:** Sam Ayoub  \r **Copyright:** © 2025 Sam Ayoub  \r **License:** MIT",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+      "example": "examples"
+  },
+  "scripts": {
+    "wnew" : ".\\install.ps1 -Cuda cu121 -Models 5b -WithManager -Start",
+    "wstart": ".\\.venv\\Scripts\\Activate.ps1 && python wan2_cli.py start --path . --port 8188 --listen-all ",
+    "lstart": ".\\.venv\\Scripts\\activate && python wan2_cli.py start --path . --port 8188 --listen-all "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/melayyoub/AI-VIdeo-Generator-for-free.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/melayyoub/AI-VIdeo-Generator-for-free/issues"
+  },
+  "homepage": "https://github.com/melayyoub/AI-VIdeo-Generator-for-free#readme"
+}
