@@ -25,6 +25,7 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
+        sudo apt install ffmpeg -y
         python -m pip install --upgrade pip
         pip install torch==2.5.1+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
         pip install torchvision==0.20.1+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
