@@ -41,6 +41,6 @@ jobs:
     - name: Clone ComfyUI
       run: |
         git clone https://github.com/Comfy-Org/ComfyUI-Manager.git ComfyUI
-    - name: Start our platform
-      run: |
-        python3 wan2_cli.py start --path . --port 8188 --listen-all
+ #   - name: Start our platform
+ #     run: |
+ #       python3 wan2_cli.py start --path . --port 8188 --listen-all
