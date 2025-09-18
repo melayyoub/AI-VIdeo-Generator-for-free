@@ -58,6 +58,8 @@ comfy-loader/ # Optional React loader app
 
 ```
 # bash
+pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+
 # From the folder containing install.sh + wan2_cli.py:
 chmod +x install.sh
 

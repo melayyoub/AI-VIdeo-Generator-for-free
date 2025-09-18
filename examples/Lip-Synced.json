@@ -1,0 +1,634 @@
+{
+  "last_node_id": 68,
+  "last_link_id": 120,
+  "nodes": [
+    {
+      "id": 54,
+      "type": "ImageOnlyCheckpointLoader",
+      "pos": {
+        "0": 25525,
+        "1": -1154
+      },
+      "size": {
+        "0": 369.6000061035156,
+        "1": 98
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            108
+          ],
+          "slot_index": 0,
+          "label": "模型",
+          "localized_name": "模型"
+        },
+        {
+          "name": "CLIP_VISION",
+          "type": "CLIP_VISION",
+          "links": [
+            103
+          ],
+          "slot_index": 1,
+          "label": "CLIP视觉",
+          "localized_name": "CLIP视觉"
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            104
+          ],
+          "slot_index": 2,
+          "label": "VAE",
+          "localized_name": "VAE"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageOnlyCheckpointLoader"
+      },
+      "widgets_values": [
+        "svd_xt_1_1_svd_xt_1_1"
+      ],
+      "_widget_cache_map": {
+        "svd_xt_1_1_svd_xt_1_1": {
+          "name": "svd_xt_1_1_svd_xt_1_1",
+          "baseType": 19,
+          "value": "b336d16a38ef4d3ba4cc3376ffa81995"
+        }
+      }
+    },
+    {
+      "id": 57,
+      "type": "VHS_VideoCombine",
+      "pos": {
+        "0": 26241,
+        "1": -838
+      },
+      "size": [
+        315,
+        306
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 100,
+          "shape": 7,
+          "label": "图像",
+          "localized_name": "images"
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 101,
+          "shape": 7,
+          "label": "音频",
+          "localized_name": "audio"
+        },
+        {
+          "name": "meta_batch",
+          "type": "VHS_BatchManager",
+          "shape": 7,
+          "label": "批次管理",
+          "localized_name": "meta_batch"
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "shape": 7,
+          "label": "vae",
+          "localized_name": "vae"
+        },
+        {
+          "name": "frame_rate",
+          "type": "FLOAT",
+          "link": 102,
+          "widget": {
+            "name": "frame_rate"
+          },
+          "label": "帧率"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Filenames",
+          "type": "VHS_FILENAMES",
+          "label": "文件名",
+          "localized_name": "Filenames"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VHS_VideoCombine"
+      },
+      "widgets_values": {
+        "frame_rate": 1,
+        "loop_count": 0,
+        "filename_prefix": "Sonic/aijuxi",
+        "format": "video/h264-mp4",
+        "pix_fmt": "yuv420p",
+        "crf": 19,
+        "save_metadata": false,
+        "pingpong": false,
+        "save_output": true,
+        "videopreview": {
+          "paused": false,
+          "hidden": false,
+          "params": {
+            "filename": "aijuxi_00003-audio_pklpr_1739703615_ghmgy_1739703617.mp4",
+            "workflow": "aijuxi_00012.png",
+            "fullpath": "E:\\comfyui\\ComfyUI_LatentSync\\ComfyUI_LatentSync\\ComfyUI\\output\\Sonic\\aijuxi_00012-audio.mp4",
+            "format": "video/h264-mp4",
+            "subfolder": "Sonic",
+            "type": "output",
+            "frame_rate": 25
+          }
+        }
+      },
+      "_widget_cache_map": {},
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 60,
+      "type": "Note",
+      "pos": {
+        "0": 25513.900390625,
+        "1": -1487.01708984375
+      },
+      "size": {
+        "0": 721.3619995117188,
+        "1": 124.11187744140625
+      },
+      "flags": {
+        "pinned": true
+      },
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "Sonic 本地部署+整合包 网盘下载：https://pan.quark.cn/s/43c0dcea10d7（手机端转存官方赠送1T网盘空间）\n\n如有疑问，可联系作者技术指导：\n由于程序插件环境搭建、效果调试等非常耗时间耗精力，因此如需远程技术指导，需微信付费技术指导。加微信：abinsz，备注：Ai指导\n\nB站：艾橘溪。https://space.bilibili.com/486814801"
+      ],
+      "_widget_cache_map": {},
+      "color": "#432",
+      "bgcolor": "#653",
+      "shape": 4
+    },
+    {
+      "id": 52,
+      "type": "SONICSampler",
+      "pos": {
+        "0": 26237,
+        "1": -1188
+      },
+      "size": {
+        "0": 315,
+        "1": 174
+      },
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL_SONIC",
+          "link": 109,
+          "label": "model",
+          "localized_name": "model"
+        },
+        {
+          "name": "data_dict",
+          "type": "SONIC_PREDATA",
+          "link": 107,
+          "label": "data_dict",
+          "localized_name": "data_dict"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            100
+          ],
+          "slot_index": 0,
+          "label": "image",
+          "localized_name": "image"
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "links": [
+            102
+          ],
+          "slot_index": 1,
+          "label": "fps",
+          "localized_name": "fps"
+        }
+      ],
+      "title": "SONICSampler aijuxi",
+      "properties": {
+        "Node name for S&R": "SONICSampler"
+      },
+      "widgets_values": [
+        837794266,
+        "randomize",
+        25,
+        1,
+        25
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 67,
+      "type": "Note",
+      "pos": {
+        "0": 26573,
+        "1": -373
+      },
+      "size": {
+        "0": 267.7874450683594,
+        "1": 113.53233337402344
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "右击选择：Save preview 保存视频\n\n鼠标放在视频上，能听到音乐。\n\nB站艾橘溪!"
+      ],
+      "_widget_cache_map": {},
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 56,
+      "type": "LoadImage",
+      "pos": {
+        "0": 25542,
+        "1": -832
+      },
+      "size": {
+        "0": 317.5682678222656,
+        "1": 542.5746459960938
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            106
+          ],
+          "label": "图像",
+          "localized_name": "图像"
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "label": "遮罩",
+          "localized_name": "遮罩"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "45b437eef65d3b4c3daf2140979f4c80eb022e4309da2e180e5efa84c07629d0.png",
+        "image"
+      ],
+      "_widget_cache_map": {
+        "45b437eef65d3b4c3daf2140979f4c80eb022e4309da2e180e5efa84c07629d0.png": {
+          "value": "img/32e8879effb0428da72b6b7bd11be50f/45b437eef65d3b4c3daf2140979f4c80eb022e4309da2e180e5efa84c07629d0.png",
+          "name": "45b437eef65d3b4c3daf2140979f4c80eb022e4309da2e180e5efa84c07629d0.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/32e8879effb0428da72b6b7bd11be50f/45b437eef65d3b4c3daf2140979f4c80eb022e4309da2e180e5efa84c07629d0.png",
+          "width": 1080,
+          "height": 1920
+        }
+      },
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 55,
+      "type": "LoadAudio",
+      "pos": {
+        "0": 25885,
+        "1": -827
+      },
+      "size": {
+        "0": 315,
+        "1": 124
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            101,
+            105
+          ],
+          "label": "音频",
+          "localized_name": "音频"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        "10s-aijuxi.wav",
+        null,
+        ""
+      ],
+      "_widget_cache_map": {},
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 58,
+      "type": "SONIC_PreData",
+      "pos": {
+        "0": 25907,
+        "1": -1081
+      },
+      "size": {
+        "0": 315,
+        "1": 186
+      },
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip_vision",
+          "type": "CLIP_VISION",
+          "link": 103,
+          "label": "clip_vision",
+          "localized_name": "clip_vision"
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 104,
+          "label": "vae",
+          "localized_name": "vae"
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 105,
+          "label": "audio",
+          "localized_name": "audio"
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 106,
+          "label": "image",
+          "localized_name": "image"
+        },
+        {
+          "name": "weight_dtype",
+          "type": "DTYPE",
+          "link": 120,
+          "label": "weight_dtype"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "data_dict",
+          "type": "SONIC_PREDATA",
+          "links": [
+            107
+          ],
+          "slot_index": 0,
+          "label": "data_dict",
+          "localized_name": "data_dict"
+        },
+        {
+          "name": "bbox",
+          "type": "BBOX",
+          "label": "bbox"
+        }
+      ],
+      "title": "SONIC_PreData aijuxi",
+      "properties": {
+        "Node name for S&R": "SONIC_PreData"
+      },
+      "widgets_values": [
+        576,
+        1024000,
+        1
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 59,
+      "type": "SONICTLoader",
+      "pos": {
+        "0": 25917,
+        "1": -1258
+      },
+      "size": {
+        "0": 303.8641662597656,
+        "1": 150
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 108,
+          "label": "model",
+          "localized_name": "model"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL_SONIC",
+          "links": [
+            109
+          ],
+          "slot_index": 0,
+          "label": "model",
+          "localized_name": "model"
+        },
+        {
+          "name": "dtype",
+          "type": "DTYPE",
+          "links": [
+            120
+          ],
+          "label": "dtype",
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SONICTLoader"
+      },
+      "widgets_values": [
+        "unet.pth",
+        1,
+        true,
+        "fp16"
+      ],
+      "_widget_cache_map": {}
+    }
+  ],
+  "links": [
+    [
+      100,
+      52,
+      0,
+      57,
+      0,
+      "IMAGE"
+    ],
+    [
+      101,
+      55,
+      0,
+      57,
+      1,
+      "AUDIO"
+    ],
+    [
+      102,
+      52,
+      1,
+      57,
+      4,
+      "FLOAT"
+    ],
+    [
+      103,
+      54,
+      1,
+      58,
+      0,
+      "CLIP_VISION"
+    ],
+    [
+      104,
+      54,
+      2,
+      58,
+      1,
+      "VAE"
+    ],
+    [
+      105,
+      55,
+      0,
+      58,
+      2,
+      "AUDIO"
+    ],
+    [
+      106,
+      56,
+      0,
+      58,
+      3,
+      "IMAGE"
+    ],
+    [
+      107,
+      58,
+      0,
+      52,
+      1,
+      "SONIC_PREDATA"
+    ],
+    [
+      108,
+      54,
+      0,
+      59,
+      0,
+      "MODEL"
+    ],
+    [
+      109,
+      59,
+      0,
+      52,
+      0,
+      "MODEL_SONIC"
+    ],
+    [
+      120,
+      59,
+      1,
+      58,
+      4,
+      "DTYPE"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "卡通人物图片说话唱歌=生成10秒大概8分钟（4090显卡）=B站艾橘溪",
+      "bounding": [
+        25510,
+        -1344,
+        1074,
+        454
+      ],
+      "color": "#b58b2a",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.9646149645000015,
+      "offset": [
+        -25074.52468075658,
+        1335.1881269153803
+      ]
+    },
+    "0246.VERSION": [
+      0,
+      0,
+      4
+    ],
+    "VHS_latentpreviewrate": 0,
+    "VHS_latentpreview": false
+  },
+  "version": 0.4,
+  "seed_widgets": {
+    "52": 0
+  },
+  "widget_idx_map": {
+    "52": {
+      "seed": 0
+    }
+  }
+}
