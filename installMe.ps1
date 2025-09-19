@@ -66,4 +66,5 @@ $best.Values | Sort-Object | Set-Content all-requirements.txt
 
 # 5. Install
 pip install --upgrade pip setuptools wheel build
+pip install git+https://github.com/facebookresearch/sam2
 pip install -r all-requirements.txt
