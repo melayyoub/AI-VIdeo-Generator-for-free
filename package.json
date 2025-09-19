@@ -8,7 +8,7 @@
       "example": "examples"
   },
   "scripts": {
-    "wnew" : ".\\install.ps1 -Cuda cu121 -Models 5b -WithManager -Start",
+    "wnew" : ".\\installMe.ps1 && .\\install.ps1 -Cuda cu128 -Models 5b -WithManager -Start",
     "wstart": ".\\.venv\\Scripts\\Activate.ps1 && python wan2_cli.py start --path . --port 8188 --listen-all ",
     "lstart": ".\\.venv\\Scripts\\activate && python wan2_cli.py start --path . --port 8188 --listen-all "
   },
