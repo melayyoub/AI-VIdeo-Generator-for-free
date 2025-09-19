@@ -1,0 +1,308 @@
+{
+  "id": "a9309824-9723-4396-aada-2a8e3e2441bc",
+  "revision": 0,
+  "last_node_id": 13,
+  "last_link_id": 12,
+  "nodes": [
+    {
+      "id": 5,
+      "type": "TimbreAudioLoader",
+      "pos": [
+        1183.8397216796875,
+        698.1665649414062
+      ],
+      "size": [
+        315,
+        82
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": []
+        }
+      ],
+      "properties": {
+        "aux_id": "chenpipi0807/ComfyUI-Index-TTS",
+        "ver": "f90b1475a49eb33210a9629d0f70b0f2cc744394",
+        "Node name for S&R": "TimbreAudioLoader"
+      },
+      "widgets_values": [
+        "抖音-读小说.wav",
+        false
+      ]
+    },
+    {
+      "id": 12,
+      "type": "AudioCleanupNode",
+      "pos": [
+        2032.9141845703125,
+        698.65576171875
+      ],
+      "size": [
+        405.5999755859375,
+        154
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "enhanced_audio",
+          "type": "AUDIO",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "chenpipi0807/ComfyUI-Index-TTS",
+        "ver": "f90b1475a49eb33210a9629d0f70b0f2cc744394",
+        "Node name for S&R": "AudioCleanupNode"
+      },
+      "widgets_values": [
+        0.5000000000000001,
+        0.7000000000000002,
+        100,
+        8000,
+        "true"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "LoadAudio",
+      "pos": [
+        1183.3416748046875,
+        487.19915771484375
+      ],
+      "size": [
+        315,
+        136
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.29",
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        "蔡徐坤.wav",
+        null,
+        ""
+      ]
+    },
+    {
+      "id": 11,
+      "type": "PreviewAudio",
+      "pos": [
+        2507.322998046875,
+        690.0526733398438
+      ],
+      "size": [
+        315,
+        88
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "音频",
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 10
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.29",
+        "Node name for S&R": "PreviewAudio",
+        "ttNbgOverride": {
+          "color": "#332922",
+          "bgcolor": "#593930",
+          "groupcolor": "#b06634"
+        }
+      },
+      "widgets_values": [],
+      "color": "#332922",
+      "bgcolor": "#593930"
+    },
+    {
+      "id": 10,
+      "type": "SaveAudio",
+      "pos": [
+        2025.3607177734375,
+        470.2819519042969
+      ],
+      "size": [
+        315,
+        112
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 9
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.29",
+        "Node name for S&R": "SaveAudio"
+      },
+      "widgets_values": [
+        "audio/ComfyUI"
+      ]
+    },
+    {
+      "id": 1,
+      "type": "IndexTTSNode",
+      "pos": [
+        1544.317138671875,
+        367.2437744140625
+      ],
+      "size": [
+        397.17266845703125,
+        627.8400268554688
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "reference_audio",
+          "type": "AUDIO",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            9,
+            11
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "chenpipi0807/ComfyUI-Index-TTS",
+        "ver": "f90b1475a49eb33210a9629d0f70b0f2cc744394",
+        "Node name for S&R": "IndexTTSNode"
+      },
+      "widgets_values": [
+        "第一章：觉醒吧，家庭系统！\n\n高中生艾伦在校园被怪物袭击时，意外激活“家庭养成系统”，被迫接下任务：\n\n新手任务：让父母参加家长会并假装恩爱夫妻（奖励：火焰魔法LV1）。\n\n发现父亲私藏的勇者之剑，母亲烤蛋糕时无意识画出魔王符文，妹妹用电脑黑进SNTA数据库……\n\n第二章：这个家没我得散！\n\nSNTA特工上门调查次元裂缝异动，为掩盖身份，全家被迫扮演“正常家庭”：\n\n爸爸用圣光术修水管结果引发漏水，\n\n妈妈用黑暗料理“安抚”特工，\n\n妹妹篡改特工记忆却误植入猫咪视频。\n\n系统升级任务：“阻止爸妈离婚（他们根本没结过婚！）”\n\n第三章：魔王觉醒与勇者再就业\n\n异世界仇敌“亡灵法师”穿越而来，绑架妈妈试图唤醒其魔王之力。\n\n爸爸为救妻被迫重拾勇者身份，却因手抖砍错队友；\n\n艾伦靠“帮妹妹写编程作业”攒够羁绊值，解锁合体技“家庭盾”（防御力=全家吐槽能量总和）。\n\n第四章：我们的家庭大魔王！\n\n为对抗亡灵法师，全家决定主动召唤妈妈体内的魔王人格，但系统提示：\n\n警告：魔王形态下妈妈会无差别攻击，包括吐槽她厨艺的人！\n\n最终战：爸爸用圣光术点燃厨房（唯一擅长的技能），妹妹黑掉亡灵法师的骨龙WiFi，艾伦用“家庭盾”扛住亲妈暴击，靠一句“你烤的曲奇最难吃了！”唤醒其人性。\n\n",
+        "auto",
+        1,
+        1155511506,
+        "randomize",
+        1,
+        0.8,
+        30,
+        10,
+        0,
+        3,
+        1500,
+        "auto"
+      ]
+    }
+  ],
+  "links": [
+    [
+      9,
+      1,
+      0,
+      10,
+      0,
+      "AUDIO"
+    ],
+    [
+      10,
+      12,
+      0,
+      11,
+      0,
+      "AUDIO"
+    ],
+    [
+      11,
+      1,
+      0,
+      12,
+      0,
+      "AUDIO"
+    ],
+    [
+      12,
+      3,
+      0,
+      1,
+      0,
+      "AUDIO"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "可选项：音频降噪用的",
+      "bounding": [
+        2022.9140625,
+        616.4526977539062,
+        809.409912109375,
+        246.20309448242188
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.0610764609500074,
+      "offset": [
+        -1286.133398334489,
+        -260.9058259317786
+      ]
+    },
+    "frontendVersion": "1.16.8",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
