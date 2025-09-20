@@ -8,9 +8,9 @@
       "example": "examples"
   },
   "scripts": {
-    "wnew" : ".\\installMe.ps1 && .\\install.ps1 -Cuda cu128 -Models 5b -WithManager -Start",
-    "wstart": ".\\.venv\\Scripts\\Activate.ps1 && python wan2_cli.py start --path . --port 8188 --listen-all ",
-    "lstart": ".\\.venv\\Scripts\\activate && python wan2_cli.py start --path . --port 8188 --listen-all "
+    "wnew" : ".\\installMe.ps1 && .\\install.ps1 -Cuda cu128 -Models 5b -WithManager -Start  --med-vram",
+    "wstart": ".\\.venv\\Scripts\\Activate.ps1 && python wan2_cli.py start --path . --port 8188 --listen-all  --med-vram",
+    "lstart": ".\\.venv\\Scripts\\activate && python wan2_cli.py start --path . --port 8188 --listen-all  --med-vram"
   },
   "repository": {
     "type": "git",

@@ -149,3 +149,17 @@ cd ComfyStack/comfy-loader && npm run dev and open the printed URL.
 | *(Windows only)* | `-PyVersion`   | Python launcher version, e.g. `3.11`  |
 
 **
+
+## RTX high end GPU better to use  wan2_cli_RTX.py
+
+```
+
+.\ComfyUI\.venv\Scripts\python.exe wan2_cli_RTX.py start --path . --port 8188
+
+
+or 
+
+.\ComfyUI\.venv\Scripts\activate
+python wan2_cli_RTX.py start --path . --port 8188
+
+```
