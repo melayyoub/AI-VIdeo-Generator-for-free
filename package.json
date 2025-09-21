@@ -9,8 +9,8 @@
   },
   "scripts": {
     "wnew" : ".\\installMe.ps1 && .\\install.ps1 -Cuda cu128 -Models 5b -WithManager -Start",
-    "wstart": ".\\ComfyUI\\.venv\\Scripts\\Activate.ps1 && python wan2_cli.py start --path . --port 8188 --listen-all",
-    "lstart": ".\\ComfyUI\\.venv\\Scripts\\activate && python wan2_cli.py start --path . --port 8188 --listen-all"
+    "wstart": ".\\ComfyUI\\.venv\\Scripts\\Activate.ps1 && python wan2_cli.py start --path . --port 8188",
+    "lstart": ".\\ComfyUI\\.venv\\Scripts\\activate && python wan2_cli.py start --path . --port 8188"
   },
   "repository": {
     "type": "git",
