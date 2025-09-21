@@ -314,53 +314,24 @@ def make_react(base: Path, app_name: str, comfy_url: str, dry: bool = False) -> 
 
 
 # --------------------------------- run ComfyUI --------------------------------
+import os
+from pathlib import Path
 
-# --------------------------------- run ComfyUI --------------------------------
-import torch
+def start_comfy(venv: Path, base: Path, port: int, listen_all: bool, dry: bool = False) -> None:
+    # Ensure environment variables for PyTorch
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+    os.environ["TORCH_CUDA_ARCH_LIST"] = "8.9"  # RTX 4090 compute capability
 
-def start_comfy(
-    venv: Path,
-    base: Path,
-    port: int,
-    listen_all: bool = False,
-    safe_margin: float = 0.85,  # fraction of free VRAM to use
-    dry: bool = False
-) -> None:
-    """
-    Start ComfyUI safely on GPU with FP32, automatically adjusting VRAM usage.
-
-    safe_margin: fraction of free VRAM to allocate (0 < safe_margin <= 1)
-    """
     comfy = comfy_root(base)
     pybin = py_exec(venv_bin=(venv / ("Scripts" if is_windows() else "bin")))
 
-    # Detect free GPU memory
-    try:
-        torch.cuda.init()
-        props = torch.cuda.get_device_properties(0)
-        total = props.total_memory / (1024 ** 3)  # GiB
-        reserved = torch.cuda.memory_reserved(0) / (1024 ** 3)
-        allocated = torch.cuda.memory_allocated(0) / (1024 ** 3)
-        free = total - reserved - allocated
-        # Cap fraction to safe_margin
-        fraction = min(safe_margin, free / total)
-    except Exception:
-        fraction = 0.25  # fallback fraction
+    args = [pybin, "main.py", "--port", str(port)]
+    if listen_all:
+        args += ["--listen"]
 
-    python_cmd = (
-        f"import sys, torch, runpy; "
-        f"torch.cuda.set_per_process_memory_fraction({fraction}, 0); "
-        f"sys.argv = ['main.py', '--port', '{port}', '--gpu-only', '--force-fp32']"
-        + ("; sys.argv.append('--listen')" if listen_all else "")
-        + "; runpy.run_path('main.py', run_name='__main__')"
-    )
-
-    args = [pybin, "-c", python_cmd]
-
-    log(f"Starting ComfyUI on port {port}, GPU only, FP32 mode, VRAM fraction {fraction*100:.0f}%...")
+    log(f"Starting ComfyUI on port {port} with GPU only...")
     run(args, cwd=comfy, dry=dry, check=False)
     log("ComfyUI process exited.")
-
 
 # ------------------------------------- CLI ------------------------------------
 
