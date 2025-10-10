@@ -1,0 +1,498 @@
+{
+  "last_node_id": 40,
+  "last_link_id": 80,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Note",
+      "pos": [
+        40,
+        10
+      ],
+      "properties": {
+        "text": "\ud83d\udc49 Idea \u2192 Story \u2192 Images \u2192 Slideshow Video\nHow to use:\n1) Enter a short idea in node [2: Idea].\n2) LLM node [3] expands it into multiple story scenes.\n3) Scenes are split \u2192 formatted into prompts \u2192 SDXL images.\n4) VHS_MakeVideo [20] outputs MP4 slideshow with transitions.\nRequirements:\n- SDXL base model (sd_xl_base_1.0_0.9vae.safetensors)\n- rgthree util nodes (String Split, Map, etc.)\n- ComfyUI-LLM nodes (OpenAI / Kobold / etc.)\n- ComfyUI-VideoHelperSuite\n"
+      }
+    },
+    {
+      "id": 2,
+      "type": "Text (rgthree)",
+      "pos": [
+        40,
+        160
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "widgets_values": [
+        "A fox discovers a glowing cave"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "LLM (ChatGPT)",
+      "pos": [
+        280,
+        160
+      ],
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "widgets_values": [
+        "Expand the following idea into 4 vivid story scenes. Each scene should be one line starting with 'Scene X:'. Make it descriptive and cinematic."
+      ]
+    },
+    {
+      "id": 4,
+      "type": "String Split (rgthree)",
+      "pos": [
+        520,
+        160
+      ],
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "list",
+          "type": "LIST",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "widgets_values": [
+        "\\n"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "List Length (rgthree)",
+      "pos": [
+        760,
+        160
+      ],
+      "inputs": [
+        {
+          "name": "list",
+          "type": "LIST",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "length",
+          "type": "INT",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 6,
+      "type": "Map (rgthree)",
+      "pos": [
+        760,
+        280
+      ],
+      "inputs": [
+        {
+          "name": "list",
+          "type": "LIST",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "list",
+          "type": "LIST",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "widgets_values": [
+        "cinematic, highly detailed, professional concept art, 8k, volumetric lighting, {item}"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        1000,
+        80
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            7
+          ]
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            8
+          ]
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "widgets_values": [
+        "sd_xl_base_1.0_0.9vae.safetensors"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "Text List To Conditioning (rgthree)",
+      "pos": [
+        1240,
+        260
+      ],
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 8
+        },
+        {
+          "name": "list",
+          "type": "LIST",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            9
+          ]
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 9,
+      "type": "Text (rgthree)",
+      "pos": [
+        1240,
+        380
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "widgets_values": [
+        "ugly, deformed, blurry, watermark, text, logo, nsfw"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "CLIPTextEncode",
+      "pos": [
+        1460,
+        360
+      ],
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 8
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "Batch Count To Latent (rgthree)",
+      "pos": [
+        1460,
+        140
+      ],
+      "inputs": [
+        {
+          "name": "batch_count",
+          "type": "INT",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "widgets_values": [
+        1024,
+        576
+      ]
+    },
+    {
+      "id": 12,
+      "type": "KSampler (Advanced)",
+      "pos": [
+        1700,
+        200
+      ],
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 7
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 9
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 11
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "widgets_values": [
+        987654321,
+        "euler",
+        28,
+        6.5,
+        "normal",
+        1.0
+      ]
+    },
+    {
+      "id": 13,
+      "type": "VAEDecode",
+      "pos": [
+        1940,
+        200
+      ],
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 13
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            15
+          ]
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "VHS_MakeVideo",
+      "pos": [
+        2180,
+        200
+      ],
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 15
+        }
+      ],
+      "widgets_values": [
+        4,
+        24,
+        "H264",
+        "medium",
+        "story_from_idea",
+        true,
+        12
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      3,
+      0,
+      "STRING"
+    ],
+    [
+      2,
+      3,
+      0,
+      4,
+      0,
+      "STRING"
+    ],
+    [
+      3,
+      4,
+      0,
+      5,
+      0,
+      "LIST"
+    ],
+    [
+      5,
+      5,
+      0,
+      11,
+      0,
+      "INT"
+    ],
+    [
+      6,
+      6,
+      0,
+      8,
+      1,
+      "LIST"
+    ],
+    [
+      7,
+      7,
+      0,
+      12,
+      0,
+      "MODEL"
+    ],
+    [
+      8,
+      7,
+      1,
+      8,
+      0,
+      "CLIP"
+    ],
+    [
+      9,
+      9,
+      0,
+      10,
+      1,
+      "STRING"
+    ],
+    [
+      10,
+      8,
+      0,
+      12,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      11,
+      10,
+      0,
+      12,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      12,
+      11,
+      0,
+      12,
+      3,
+      "LATENT"
+    ],
+    [
+      13,
+      12,
+      0,
+      13,
+      0,
+      "LATENT"
+    ],
+    [
+      14,
+      7,
+      2,
+      13,
+      1,
+      "VAE"
+    ],
+    [
+      15,
+      13,
+      0,
+      20,
+      0,
+      "IMAGE"
+    ]
+  ]
+}

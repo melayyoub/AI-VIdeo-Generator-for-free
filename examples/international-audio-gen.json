@@ -1,0 +1,76 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "ace-step-3.5.safetensors"
+    },
+    "_meta": { "title": "Load ACE Step 3.5" }
+  },
+  "2": {
+    "class_type": "TextEncode",
+    "inputs": {
+      "text": "احبك موت يا حياتي",
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "_meta": { "title": "Arabic Lyrics Encode" }
+  },
+  "3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 123456,
+      "steps": 35,
+      "cfg": 7,
+      "sampler_name": "k_euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 0.85,
+      "model": [
+        "1",
+        0
+      ],
+      "positive": [
+        "2",
+        0
+      ]
+    },
+    "_meta": { "title": "Sampler" }
+  },
+  "4": {
+    "class_type": "AudioVAEEncode",
+    "inputs": {
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    },
+    "_meta": { "title": "Audio Encode" }
+  },
+  "5": {
+    "class_type": "AudioDecode",
+    "inputs": {
+      "samples": [
+        "4",
+        0
+      ],
+      "quality": "360k"
+    },
+    "_meta": { "title": "Audio Decode (Arabic)" }
+  },
+  "6": {
+    "class_type": "SaveAudio",
+    "inputs": {
+      "audio": [
+        "5",
+        0
+      ],
+      "filename_prefix": "arabic_song"
+    },
+    "_meta": { "title": "Save Audio" }
+  }
+}

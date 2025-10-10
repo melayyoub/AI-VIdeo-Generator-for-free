@@ -1,0 +1,38 @@
+{
+  "1": {
+    "inputs": {
+      "audio": "input/song.mp3",
+      "audioUI": ""
+    },
+    "class_type": "LoadAudio",
+    "_meta": { "title": "Load Input Song" }
+  },
+  "2": {
+    "inputs": {
+      "model_name": "htdemucs_ft",
+      "audio": ["1", 0]
+    },
+    "class_type": "AudioDemucsSeparate",
+    "_meta": { "title": "Separate Vocals & Music" }
+  },
+  "3": {
+    "inputs": {
+      "filename_prefix": "separated/vocals/song_vocals_",
+      "quality": "128k",
+      "audioUI": "",
+      "audio": ["2", 0]
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": { "title": "Save Vocals" }
+  },
+  "4": {
+    "inputs": {
+      "filename_prefix": "separated/instrumental/song_music_",
+      "quality": "128k",
+      "audioUI": "",
+      "audio": ["2", 1]
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": { "title": "Save Instrumental" }
+  }
+}

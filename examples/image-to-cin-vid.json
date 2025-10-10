@@ -1,0 +1,1107 @@
+{
+  "id": "8397bebf-75a3-4c18-aa27-c19e4306120e",
+  "revision": 0,
+  "last_node_id": 53,
+  "last_link_id": 56,
+  "nodes": [
+    {
+      "id": 28,
+      "type": "WanVideoDecode",
+      "pos": {
+        "0": 1490,
+        "1": 220
+      },
+      "size": {
+        "0": 315,
+        "1": 174
+      },
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "vae",
+          "name": "vae",
+          "type": "WANVAE",
+          "link": 43
+        },
+        {
+          "label": "samples",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 33
+        }
+      ],
+      "outputs": [
+        {
+          "label": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            36
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoDecode"
+      },
+      "widgets_values": [
+        true,
+        272,
+        272,
+        144,
+        128
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 22,
+      "type": "WanVideoModelLoader",
+      "pos": {
+        "0": 590,
+        "1": 50
+      },
+      "size": {
+        "0": 477.4410095214844,
+        "1": 234
+      },
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "compile_args",
+          "name": "compile_args",
+          "shape": 7,
+          "type": "WANCOMPILEARGS"
+        },
+        {
+          "label": "block_swap_args",
+          "name": "block_swap_args",
+          "shape": 7,
+          "type": "BLOCKSWAPARGS",
+          "link": 47
+        },
+        {
+          "label": "lora",
+          "name": "lora",
+          "shape": 7,
+          "type": "WANVIDLORA",
+          "link": 48
+        },
+        {
+          "label": "vram_management_args",
+          "name": "vram_management_args",
+          "shape": 7,
+          "type": "VRAM_MANAGEMENTARGS",
+          "link": null
+        },
+        {
+          "label": "vace_model",
+          "name": "vace_model",
+          "shape": 7,
+          "type": "VACEPATH",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "WANVIDEOMODEL",
+          "slot_index": 0,
+          "links": [
+            29
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoModelLoader"
+      },
+      "widgets_values": [
+        "Wan2_1-I2V-14B-480P_fp8_e4m3fn.safetensors",
+        "bf16",
+        "fp8_e4m3fn",
+        "offload_device",
+        "sdpa"
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 11,
+      "type": "LoadWanVideoT5TextEncoder",
+      "pos": {
+        "0": 140,
+        "1": 400
+      },
+      "size": {
+        "0": 377.1661376953125,
+        "1": 130
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "wan_t5_model",
+          "name": "wan_t5_model",
+          "type": "WANTEXTENCODER",
+          "slot_index": 0,
+          "links": [
+            15
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadWanVideoT5TextEncoder"
+      },
+      "widgets_values": [
+        "umt5-xxl-enc-bf16.safetensors",
+        "bf16",
+        "offload_device",
+        "disabled"
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 38,
+      "type": "WanVideoVAELoader",
+      "pos": {
+        "0": 140,
+        "1": 1270
+      },
+      "size": {
+        "0": 315,
+        "1": 82
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "vae",
+          "name": "vae",
+          "type": "WANVAE",
+          "slot_index": 0,
+          "links": [
+            43,
+            54
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoVAELoader"
+      },
+      "widgets_values": [
+        "Wan2_1_VAE_bf16.safetensors",
+        "bf16"
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 39,
+      "type": "WanVideoBlockSwap",
+      "pos": {
+        "0": 160,
+        "1": -20
+      },
+      "size": {
+        "0": 359.9404296875,
+        "1": 154
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "block_swap_args",
+          "name": "block_swap_args",
+          "type": "BLOCKSWAPARGS",
+          "slot_index": 0,
+          "links": [
+            47
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoBlockSwap"
+      },
+      "widgets_values": [
+        20,
+        false,
+        false,
+        true,
+        0
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 30,
+      "type": "VHS_VideoCombine",
+      "pos": {
+        "0": 1972,
+        "1": 60
+      },
+      "size": {
+        "0": 1143.781005859375,
+        "1": 1835.357177734375
+      },
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "图像",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 36
+        },
+        {
+          "label": "音频",
+          "name": "audio",
+          "shape": 7,
+          "type": "AUDIO"
+        },
+        {
+          "label": "批次管理",
+          "name": "meta_batch",
+          "shape": 7,
+          "type": "VHS_BatchManager"
+        },
+        {
+          "label": "vae",
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE"
+        }
+      ],
+      "outputs": [
+        {
+          "label": "文件名",
+          "name": "Filenames",
+          "type": "VHS_FILENAMES"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VHS_VideoCombine"
+      },
+      "widgets_values": {
+        "frame_rate": 16,
+        "loop_count": 0,
+        "filename_prefix": "WanVideo2_1_T2V",
+        "format": "video/h264-mp4",
+        "pix_fmt": "yuv420p",
+        "crf": 19,
+        "save_metadata": true,
+        "trim_to_audio": false,
+        "pingpong": false,
+        "save_output": true,
+        "videopreview": {
+          "paused": false,
+          "hidden": false,
+          "params": {
+            "filename": "output.mp4",
+            "workflow": "WanVideo2_1_00044.png",
+            "fullpath": "N:\\AI\\ComfyUI\\output\\WanVideo2_1_00044.mp4",
+            "format": "video/mp4",
+            "subfolder": "",
+            "type": "output",
+            "frame_rate": 16,
+            "url": "https://liblibai-tmp-image.liblib.cloud/sd-images/b5b2629e518142b7fe4b0826b0b103aceeaaaae71d07fc7201f59cf42291a64a.mp4?Token=b7ba0717bb00468ebecf579b791e00fd",
+            "coverUrl": "https://liblibai-tmp-image.liblib.cloud/sd-images/8b6b541f55787bae7a14bc9b7dd9529f5f4c85f6191da782b5fcaa485d94e2ea.jpg?Token=b7ba0717bb00468ebecf579b791e00fd"
+          }
+        }
+      },
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 46,
+      "type": "WanVideoImageClipEncode",
+      "pos": {
+        "0": 720,
+        "1": 760
+      },
+      "size": {
+        "0": 319.20001220703125,
+        "1": 266
+      },
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "clip_vision",
+          "name": "clip_vision",
+          "type": "CLIP_VISION",
+          "link": 56
+        },
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 50
+        },
+        {
+          "label": "vae",
+          "name": "vae",
+          "type": "WANVAE",
+          "link": 54
+        }
+      ],
+      "outputs": [
+        {
+          "label": "image_embeds",
+          "name": "image_embeds",
+          "type": "WANVIDIMAGE_EMBEDS",
+          "links": [
+            49
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoImageClipEncode"
+      },
+      "widgets_values": [
+        480,
+        832,
+        81,
+        true,
+        0.03,
+        1,
+        1,
+        true
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 48,
+      "type": "LoadWanVideoClipTextEncoder",
+      "pos": {
+        "0": -90,
+        "1": 670
+      },
+      "size": {
+        "0": 510.6601257324219,
+        "1": 106
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "wan_clip_vision",
+          "name": "wan_clip_vision",
+          "type": "CLIP_VISION",
+          "slot_index": 0,
+          "links": [
+            56
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadWanVideoClipTextEncoder"
+      },
+      "widgets_values": [
+        "open-clip-xlm-roberta-large-vit-huge-14_visual_fp16.safetensors",
+        "fp16",
+        "offload_device"
+      ],
+      "color": "#2a363b",
+      "bgcolor": "#3f5159",
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 45,
+      "type": "WanVideoLoraSelect",
+      "pos": {
+        "0": 163,
+        "1": 159
+      },
+      "size": {
+        "0": 359.0711364746094,
+        "1": 132.76791381835938
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "prev_lora",
+          "name": "prev_lora",
+          "shape": 7,
+          "type": "WANVIDLORA",
+          "link": null
+        },
+        {
+          "label": "blocks",
+          "name": "blocks",
+          "shape": 7,
+          "type": "SELECTEDBLOCKS",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "lora",
+          "name": "lora",
+          "type": "WANVIDLORA",
+          "slot_index": 0,
+          "links": [
+            48
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoLoraSelect"
+      },
+      "widgets_values": [
+        "场景环绕_图生视频_平面转3D_建筑效果视频展示_v1",
+        1,
+        false
+      ],
+      "_widget_cache_map": {
+        "捏捏乐+切割万物=万相lora模型_捏捏乐loraV1": {
+          "name": "捏捏乐+切割万物=万相lora模型_捏捏乐loraV1",
+          "baseType": 19,
+          "value": "e9a4470f29ea4fc09ea662b79fa908af"
+        },
+        "真人快打Fighting GO_V1.0": {
+          "name": "真人快打Fighting GO_V1.0",
+          "baseType": 25,
+          "value": "13d2196e17894488bb794475c972589c"
+        },
+        "Tai Chi ITV_打太极": {
+          "name": "Tai Chi ITV_打太极",
+          "baseType": 25,
+          "value": "ec94191bec3a415ba98597f8e748732e"
+        },
+        "放气效果（Wan2.1 I2V LoRA）_V1": {
+          "name": "放气效果（Wan2.1 I2V LoRA）_V1",
+          "baseType": 25,
+          "value": "26c61761a98f460a87ea18133e2a8a68"
+        },
+        "360度旋转lora 1.0版本(Wan2.1万相lora)_V1.0": {
+          "name": "360度旋转lora 1.0版本(Wan2.1万相lora)_V1.0",
+          "baseType": 25,
+          "value": "c179dd35e11444e3aeddf1fb349534c1"
+        },
+        "万相视频-绮梦流光-自由飞翔(wan2.1 I2V)_v1": {
+          "name": "万相视频-绮梦流光-自由飞翔(wan2.1 I2V)_v1",
+          "baseType": 25,
+          "value": "4100804c3d994b1ba91c6e8a3d6ff121"
+        },
+        "sk001_万相_照片拥抱_beat0.1": {
+          "name": "sk001_万相_照片拥抱_beat0.1",
+          "baseType": 25,
+          "value": "7cb562935e7949edaf839ea87d02340e"
+        },
+        "老化延时摄影 (Wan2.1 I2V LoRA)_v1.0": {
+          "name": "老化延时摄影 (Wan2.1 I2V LoRA)_v1.0",
+          "baseType": 25,
+          "value": "65d2198d55a948b5b8feb9cbbe141654"
+        },
+        "化身天使_V1.0": {
+          "name": "化身天使_V1.0",
+          "baseType": 25,
+          "value": "e9ec6cf7be144a148bec04155e2957b1"
+        },
+        "万物被压扁_V1": {
+          "name": "万物被压扁_V1",
+          "baseType": 25,
+          "value": "8887316cfb6740368cdbc4f49129fd21"
+        },
+        "wan-绮梦流光-解压神器之撕掉贴纸人(I2V)_v1": {
+          "name": "wan-绮梦流光-解压神器之撕掉贴纸人(I2V)_v1",
+          "baseType": 25,
+          "value": "e41810c834804a699001ee68159863e6"
+        },
+        "变身小丑_V1.0": {
+          "name": "变身小丑_V1.0",
+          "baseType": 25,
+          "value": "8fffa5bb39b545f5a00aec1c6c8889f7"
+        },
+        "耳光巴掌特效（Wan2.1 I2V LoRA）_V3.0": {
+          "name": "耳光巴掌特效（Wan2.1 I2V LoRA）_V3.0",
+          "baseType": 25,
+          "value": "c4b16f7190b441268d8b11dbe6c11d94"
+        },
+        "WAN2.1 ZOEY 法阵特效_Alpha": {
+          "name": "WAN2.1 ZOEY 法阵特效_Alpha",
+          "baseType": 25,
+          "value": "385ff64cf554402f97ed60e2ba9f6eec"
+        },
+        "Wan2.1_汽车360度漂移特效_V1.0_Car Dri_Wan2.1_LoRA": {
+          "name": "Wan2.1_汽车360度漂移特效_V1.0_Car Dri_Wan2.1_LoRA",
+          "baseType": 25,
+          "value": "8d5de2eeaede49b2893b58367cd054f2"
+        },
+        "万物成盒（Wan2.1 I2V LoRA）_万物成盒V1.0": {
+          "name": "万物成盒（Wan2.1 I2V LoRA）_万物成盒V1.0",
+          "baseType": 25,
+          "value": "11f2ccb8649540f7be9a9b20c8ce820f"
+        },
+        "Wan2.1-分裂复制-Division_v1": {
+          "name": "Wan2.1-分裂复制-Division_v1",
+          "baseType": 25,
+          "value": "b12fcf9ff5204ecaacfb2bbadf6e705c"
+        },
+        "场景环绕_图生视频_平面转3D_建筑效果视频展示_v1": {
+          "name": "场景环绕_图生视频_平面转3D_建筑效果视频展示_v1",
+          "baseType": 25,
+          "value": "cc805637c4e640fc83dc252082221246"
+        }
+      }
+    },
+    {
+      "id": 27,
+      "type": "WanVideoSampler",
+      "pos": {
+        "0": 1110,
+        "1": 230
+      },
+      "size": {
+        "0": 315,
+        "1": 498
+      },
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "WANVIDEOMODEL",
+          "link": 29
+        },
+        {
+          "label": "text_embeds",
+          "name": "text_embeds",
+          "type": "WANVIDEOTEXTEMBEDS",
+          "link": 30
+        },
+        {
+          "label": "image_embeds",
+          "name": "image_embeds",
+          "type": "WANVIDIMAGE_EMBEDS",
+          "link": 49
+        },
+        {
+          "label": "samples",
+          "name": "samples",
+          "shape": 7,
+          "type": "LATENT"
+        },
+        {
+          "label": "feta_args",
+          "name": "feta_args",
+          "shape": 7,
+          "type": "FETAARGS",
+          "link": null
+        },
+        {
+          "label": "context_options",
+          "name": "context_options",
+          "shape": 7,
+          "type": "WANVIDCONTEXT",
+          "link": null
+        },
+        {
+          "label": "teacache_args",
+          "name": "teacache_args",
+          "shape": 7,
+          "type": "TEACACHEARGS",
+          "link": null
+        },
+        {
+          "label": "flowedit_args",
+          "name": "flowedit_args",
+          "shape": 7,
+          "type": "FLOWEDITARGS",
+          "link": null
+        },
+        {
+          "label": "slg_args",
+          "name": "slg_args",
+          "shape": 7,
+          "type": "SLGARGS",
+          "link": null
+        },
+        {
+          "label": "loop_args",
+          "name": "loop_args",
+          "shape": 7,
+          "type": "LOOPARGS",
+          "link": null
+        },
+        {
+          "label": "experimental_args",
+          "name": "experimental_args",
+          "shape": 7,
+          "type": "EXPERIMENTALARGS",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "samples",
+          "name": "samples",
+          "type": "LATENT",
+          "slot_index": 0,
+          "links": [
+            33
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoSampler"
+      },
+      "widgets_values": [
+        20,
+        6,
+        5,
+        1057359483639287,
+        "fixed",
+        true,
+        "dpm++_sde",
+        0,
+        1,
+        false,
+        "comfy"
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 16,
+      "type": "WanVideoTextEncode",
+      "pos": {
+        "0": 596,
+        "1": 374
+      },
+      "size": {
+        "0": 468.081787109375,
+        "1": 266.0641174316406
+      },
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "t5",
+          "name": "t5",
+          "type": "WANTEXTENCODER",
+          "link": 15
+        },
+        {
+          "label": "model_to_offload",
+          "name": "model_to_offload",
+          "shape": 7,
+          "type": "WANVIDEOMODEL",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "text_embeds",
+          "name": "text_embeds",
+          "type": "WANVIDEOTEXTEMBEDS",
+          "slot_index": 0,
+          "links": [
+            30
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoTextEncode"
+      },
+      "widgets_values": [
+        "When moving the camera, the camera rotates smoothly around.",
+        "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走",
+        true
+      ],
+      "color": "#322",
+      "bgcolor": "#533",
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 47,
+      "type": "LoadImage",
+      "pos": {
+        "0": 102,
+        "1": 853
+      },
+      "size": {
+        "0": 315,
+        "1": 314
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "图像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            50
+          ]
+        },
+        {
+          "label": "遮罩",
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "未来都市的立体交通网络在暴雨中闪烁霓虹，全息广告投影与东亚文字招牌交错于几何玻璃幕墙，悬浮列车穿梭在纳米碳纤维结构之间，赛博朋克风格，航拍俯视视角，霓虹蓝与深紫撞色….jpeg",
+        "image",
+        ""
+      ],
+      "_widget_cache_map": {
+        "fb5c0c2e973bd093b9eba7c50a5bdc4fd9288fe01b3a01-vWWm7d-2.jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/7d91e0dea2a39000bb78fbb9493f7c6c25c8bee3878cb0a6ee214174da03436f.jpeg",
+          "name": "fb5c0c2e973bd093b9eba7c50a5bdc4fd9288fe01b3a01-vWWm7d-2.jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/7d91e0dea2a39000bb78fbb9493f7c6c25c8bee3878cb0a6ee214174da03436f.jpeg",
+          "width": 1134,
+          "height": 1417
+        },
+        "315482759-a5748300ac8bfa82bc97ab9744e14e2b05fa8e28e7c62473a76f6ea4b6f42ff6.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/a5748300ac8bfa82bc97ab9744e14e2b05fa8e28e7c62473a76f6ea4b6f42ff6.png",
+          "name": "315482759-a5748300ac8bfa82bc97ab9744e14e2b05fa8e28e7c62473a76f6ea4b6f42ff6.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/a5748300ac8bfa82bc97ab9744e14e2b05fa8e28e7c62473a76f6ea4b6f42ff6.png",
+          "width": 1536,
+          "height": 2048
+        },
+        "一个日本的男性程序员拿着键盘面对着一哥拿着香蕉站立的大猩猩，他们两个面对面，背景是办公室场景，远景，全身像.png": {
+          "name": "一个日本的男性程序员拿着键盘面对着一哥拿着香蕉站立的大猩猩，他们两个面对面，背景是办公室场景，远景，全身像.png"
+        },
+        "一个日本老大爷拿着大大的香蕉，一个金发美女拿着菠萝，他们两个面对面，背景是公交车上，远景，全身像.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/1b1121bae02b59a67096d5952b87edcc3e7e6b473f9aa209ab2da3fe535d504c.png",
+          "name": "一个日本老大爷拿着大大的香蕉，一个金发美女拿着菠萝，他们两个面对面，背景是公交车上，远景，全身像.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/1b1121bae02b59a67096d5952b87edcc3e7e6b473f9aa209ab2da3fe535d504c.png",
+          "width": 1728,
+          "height": 2304
+        },
+        "可爱的猴子，3D，Macaron配色方案，动漫风格，粉红色头发和粉色西装的孙悟空形象，英俊，酷炫，3D猴王全身像，艺术趋势，高品质，杰作，纯色的干净的背景.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/dddeec08818e7f599c1647256af500baf27ef76ab89a56c09ecdecabdc06199d.png",
+          "name": "可爱的猴子，3D，Macaron配色方案，动漫风格，粉红色头发和粉色西装的孙悟空形象，英俊，酷炫，3D猴王全身像，艺术趋势，高品质，杰作，纯色的干净的背景.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/dddeec08818e7f599c1647256af500baf27ef76ab89a56c09ecdecabdc06199d.png",
+          "width": 1536,
+          "height": 2048
+        },
+        "一只胖乎乎的斑马像是被充满气鼓鼓的跟球一样，表情搞笑，3D毛绒绒材质，正面，背景是蓝色的天空，柔和的光线，精细的毛绒感，暖色，C4D.jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/a9e997ba51cb79314b72041b4ac1e99b61ca8896932cdc2efa430ec06edff092.jpeg",
+          "name": "一只胖乎乎的斑马像是被充满气鼓鼓的跟球一样，表情搞笑，3D毛绒绒材质，正面，背景是蓝色的天空，柔和的光线，精细的毛绒感，暖色，C4D.jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/a9e997ba51cb79314b72041b4ac1e99b61ca8896932cdc2efa430ec06edff092.jpeg",
+          "width": 768,
+          "height": 1024
+        },
+        "一只拟人化的猫，穿西装打领带戴着眼镜和耳机，正在看报纸，干净的背景.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/3a69b2f5906ab1fad3f31bd1d6cdb380eeca566ae2c83bea620f35eb663d53da.png",
+          "name": "一只拟人化的猫，穿西装打领带戴着眼镜和耳机，正在看报纸，干净的背景.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/3a69b2f5906ab1fad3f31bd1d6cdb380eeca566ae2c83bea620f35eb663d53da.png",
+          "width": 1536,
+          "height": 2048
+        },
+        "未来主义的机械光谱东方龙，以红色为主题，超精细的金属结构，虚幻引擎渲染，超高清32k分辨率，超现实，电影般的质感，史诗般的宏伟构图，超现实的氛围，发光的红色调调，复杂的….png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/4f313736bbe16c25547905c70a7ce7347535100e16fea0d3aff1cc0bebe6012c.png",
+          "name": "未来主义的机械光谱东方龙，以红色为主题，超精细的金属结构，虚幻引擎渲染，超高清32k分辨率，超现实，电影般的质感，史诗般的宏伟构图，超现实的氛围，发光的红色调调，复杂的….png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/4f313736bbe16c25547905c70a7ce7347535100e16fea0d3aff1cc0bebe6012c.png",
+          "width": 1536,
+          "height": 2048
+        },
+        "穿着红色机甲材质的泳装的的机器人少女，亚洲小女孩，全身像，机械构造，超精细化机械，构成复杂，维米尔风格，电影灯光，超高清，计算机图形渲染，体积光，虚幻引擎。.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/818e8957afaa65178567f2a8786ed4170ebad7b9620264cf6a57b7be7bd423a8.png",
+          "name": "穿着红色机甲材质的泳装的的机器人少女，亚洲小女孩，全身像，机械构造，超精细化机械，构成复杂，维米尔风格，电影灯光，超高清，计算机图形渲染，体积光，虚幻引擎。.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/818e8957afaa65178567f2a8786ed4170ebad7b9620264cf6a57b7be7bd423a8.png",
+          "width": 1728,
+          "height": 2304
+        },
+        "未命名项目.jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/0ea04bb7691f87a77e7d3107d84a3043a4ae6ae64d03f03fe3418ad35e902375.jpeg",
+          "name": "未命名项目.jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/0ea04bb7691f87a77e7d3107d84a3043a4ae6ae64d03f03fe3418ad35e902375.jpeg",
+          "width": 768,
+          "height": 1024
+        },
+        "未命名项目-2.jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/75119096abbef3f9975841fa199d765e72e08f2d1570d062bb5689570a7783a3.jpeg",
+          "name": "未命名项目-2.jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/75119096abbef3f9975841fa199d765e72e08f2d1570d062bb5689570a7783a3.jpeg",
+          "width": 768,
+          "height": 1024
+        },
+        "一个穿着僧衣的可爱亚洲小和尚，平静，沉思，睿智，极致细节，顶级画面质量，极致画面质感，正面肖像，自然生动，极致清晰度，微距.jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/98285443102721b19503898e569cd80e24b73a95f0f4c88400f5609f3a920296.jpeg",
+          "name": "一个穿着僧衣的可爱亚洲小和尚，平静，沉思，睿智，极致细节，顶级画面质量，极致画面质感，正面肖像，自然生动，极致清晰度，微距.jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/98285443102721b19503898e569cd80e24b73a95f0f4c88400f5609f3a920296.jpeg",
+          "width": 768,
+          "height": 1024
+        },
+        "胶片颗粒，亚洲女子肖像，拥有一头粉色短发，穿着黑色吊带，粉色恶魔角，猫眼烟熏妆，漏光，虚化的城市背景，迷幻渐变，抽象，胶片划痕，胶片写真，黑色，超细节，逼真.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/be276227419e0a81bca5fb0feb587414c0dda2ada9376546a7203efc954a8ed9.png",
+          "name": "胶片颗粒，亚洲女子肖像，拥有一头粉色短发，穿着黑色吊带，粉色恶魔角，猫眼烟熏妆，漏光，虚化的城市背景，迷幻渐变，抽象，胶片划痕，胶片写真，黑色，超细节，逼真.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/be276227419e0a81bca5fb0feb587414c0dda2ada9376546a7203efc954a8ed9.png",
+          "width": 1676,
+          "height": 2235
+        },
+        "5e3718d53d3e1b5d3fc83aecacc46d1d2510b901146df2-mfGqZA_fw1200.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/c87fab09782135ac4539fb3e63b0cb692c434b8eebdb557ba774855de7f664ef.png",
+          "name": "5e3718d53d3e1b5d3fc83aecacc46d1d2510b901146df2-mfGqZA_fw1200.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/c87fab09782135ac4539fb3e63b0cb692c434b8eebdb557ba774855de7f664ef.png",
+          "width": 1024,
+          "height": 1542
+        },
+        "2025-03-25 13_37_25.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/ed37dc03e96fdb6aef4e071fb07ba131ac02d0698bddf6930a80391ef88e769f.png",
+          "name": "2025-03-25 13_37_25.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/ed37dc03e96fdb6aef4e071fb07ba131ac02d0698bddf6930a80391ef88e769f.png",
+          "width": 1151,
+          "height": 1535
+        },
+        "都市白领在落地窗前完成下犬式，高腰裸感瑜伽裤搭配运动背心，玻璃倒映城市天际线，冷调室内光线与暖色夕阳交融.jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/7f8ed1357cd362cfe0ef24ad4549aa8ad178e96f1208506a07a426ca7f3dc9ba.jpeg",
+          "name": "都市白领在落地窗前完成下犬式，高腰裸感瑜伽裤搭配运动背心，玻璃倒映城市天际线，冷调室内光线与暖色夕阳交融.jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/7f8ed1357cd362cfe0ef24ad4549aa8ad178e96f1208506a07a426ca7f3dc9ba.jpeg",
+          "width": 768,
+          "height": 1024
+        },
+        "樱花树下的JK少女近景，水手服领巾被风吹起30度角，阳光穿透半透明耳朵显出血管脉络，飘落的花瓣粘在唇釉反光表面.jpeg": {
+          "name": "樱花树下的JK少女近景，水手服领巾被风吹起30度角，阳光穿透半透明耳朵显出血管脉络，飘落的花瓣粘在唇釉反光表面.jpeg"
+        },
+        "樱花脉络，飘落的花瓣粘在唇釉反光表面.jpeg": {
+          "name": "樱花脉络，飘落的花瓣粘在唇釉反光表面.jpeg"
+        },
+        "樱花脉络.jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/75dda84a6942862719a7bc327403a47ffee0ec429d516e2533e2ce8da31ff35b.jpeg",
+          "name": "樱花脉络.jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/75dda84a6942862719a7bc327403a47ffee0ec429d516e2533e2ce8da31ff35b.jpeg",
+          "width": 768,
+          "height": 1024
+        },
+        "微信截图_20250403002313.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/772eb875fb6c5c35f7b02b8fcc58795063bc7940c7dc2106b0a6a62343600336.png",
+          "name": "微信截图_20250403002313.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/772eb875fb6c5c35f7b02b8fcc58795063bc7940c7dc2106b0a6a62343600336.png",
+          "width": 794,
+          "height": 697
+        },
+        "放学后坐在神社台阶的JK少女，解开领口蝴蝶结挽起衣袖，斜挎书包旁躺着三色猫，暖阳透过鸟居形成光影栅栏.jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/5c980a7adf36bda5c9fdc9033abfb6cf4d3c2807fdd3d68a3e226ad30a7ae6e9.jpeg",
+          "name": "放学后坐在神社台阶的JK少女，解开领口蝴蝶结挽起衣袖，斜挎书包旁躺着三色猫，暖阳透过鸟居形成光影栅栏.jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/5c980a7adf36bda5c9fdc9033abfb6cf4d3c2807fdd3d68a3e226ad30a7ae6e9.jpeg",
+          "width": 768,
+          "height": 1024
+        },
+        "皮克斯风格，拟人化橘猫穿着婚纱，拟人化的狗穿着西装，面对面.png": {
+          "name": "皮克斯风格，拟人化橘猫穿着婚纱，拟人化的狗穿着西装，面对面.png"
+        },
+        "皮克斯风格面对面.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/ae76ca1825cb6d6dede23bb039f817f003aa85301503c066ed4032671cc779e8.png",
+          "name": "皮克斯风格面对面.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/ae76ca1825cb6d6dede23bb039f817f003aa85301503c066ed4032671cc779e8.png",
+          "width": 1536,
+          "height": 2048
+        },
+        "一个性感又可爱的游戏动漫角色的正面展示，穿着清凉，3D渲染，游戏场景，暗黑色调.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/2a2754ef634e85e239a1c8f756e9239725b290a0c3d8da4f6d22d8e7706f1de6.png",
+          "name": "一个性感又可爱的游戏动漫角色的正面展示，穿着清凉，3D渲染，游戏场景，暗黑色调.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/2a2754ef634e85e239a1c8f756e9239725b290a0c3d8da4f6d22d8e7706f1de6.png",
+          "width": 1728,
+          "height": 2304
+        },
+        "一个游戏动漫女性角色的正面展示，手里拿着一把武士刀，3D渲染，游戏场景，暗黑色调.jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/58fbcb08a0b638d386da3418570b58a0ec7acbcda5ef2270a4a42d4b32ae787f.jpeg",
+          "name": "一个游戏动漫女性角色的正面展示，手里拿着一把武士刀，3D渲染，游戏场景，暗黑色调.jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/58fbcb08a0b638d386da3418570b58a0ec7acbcda5ef2270a4a42d4b32ae787f.jpeg",
+          "width": 864,
+          "height": 1152
+        },
+        "一张布加迪在赛道上的壁纸.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/218d63f34ff1736a341711a28cffa391b2192afd909a60ff98c9c4a9e2a30975.png",
+          "name": "一张布加迪在赛道上的壁纸.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/218d63f34ff1736a341711a28cffa391b2192afd909a60ff98c9c4a9e2a30975.png",
+          "width": 1728,
+          "height": 2304
+        },
+        "一个POPMART风格的可爱的布偶猫玩偶.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/e1a326b939437a68d6a457f0164c768f665a3caabb624ecde17885c5ad37a287.png",
+          "name": "一个POPMART风格的可爱的布偶猫玩偶.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/e1a326b939437a68d6a457f0164c768f665a3caabb624ecde17885c5ad37a287.png",
+          "width": 2208,
+          "height": 2944
+        },
+        "一个POPMART风格的可爱的漂亮的性感的女仆玩偶.png": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/92f81c109799c31b383abb94590df0f62058c27a0dd08244142ce4fc09bdc7d4.png",
+          "name": "一个POPMART风格的可爱的漂亮的性感的女仆玩偶.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/92f81c109799c31b383abb94590df0f62058c27a0dd08244142ce4fc09bdc7d4.png",
+          "width": 2880,
+          "height": 3840
+        },
+        "未来都市的立体交通网络在暴雨中闪烁霓虹，全息广告投影与东亚文字招牌交错于几何玻璃幕墙，悬浮列车穿梭在纳米碳纤维结构之间，赛博朋克风格，航拍俯视视角，霓虹蓝与深紫撞色….jpeg": {
+          "value": "img/a7c59925c301ddc58f1e3157a6c7b866/2cc0def796f291e48173728fe95ab481f08e6f7669d4e29eabacbbd88feeeac8.jpeg",
+          "name": "未来都市的立体交通网络在暴雨中闪烁霓虹，全息广告投影与东亚文字招牌交错于几何玻璃幕墙，悬浮列车穿梭在纳米碳纤维结构之间，赛博朋克风格，航拍俯视视角，霓虹蓝与深紫撞色….jpeg",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/a7c59925c301ddc58f1e3157a6c7b866/2cc0def796f291e48173728fe95ab481f08e6f7669d4e29eabacbbd88feeeac8.jpeg",
+          "width": 1104,
+          "height": 1472
+        }
+      }
+    }
+  ],
+  "links": [
+    [
+      15,
+      11,
+      0,
+      16,
+      0,
+      "WANTEXTENCODER"
+    ],
+    [
+      29,
+      22,
+      0,
+      27,
+      0,
+      "WANVIDEOMODEL"
+    ],
+    [
+      30,
+      16,
+      0,
+      27,
+      1,
+      "WANVIDEOTEXTEMBEDS"
+    ],
+    [
+      33,
+      27,
+      0,
+      28,
+      1,
+      "LATENT"
+    ],
+    [
+      36,
+      28,
+      0,
+      30,
+      0,
+      "IMAGE"
+    ],
+    [
+      43,
+      38,
+      0,
+      28,
+      0,
+      "VAE"
+    ],
+    [
+      47,
+      39,
+      0,
+      22,
+      1,
+      "BLOCKSWAPARGS"
+    ],
+    [
+      48,
+      45,
+      0,
+      22,
+      2,
+      "WANVIDLORA"
+    ],
+    [
+      49,
+      46,
+      0,
+      27,
+      2,
+      "WANVIDIMAGE_EMBEDS"
+    ],
+    [
+      50,
+      47,
+      0,
+      46,
+      1,
+      "IMAGE"
+    ],
+    [
+      54,
+      38,
+      0,
+      46,
+      2,
+      "WANVAE"
+    ],
+    [
+      56,
+      48,
+      0,
+      46,
+      0,
+      "CLIP_VISION"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "WAN2.1_14B-场景运镜",
+      "bounding": [
+        -389,
+        -367,
+        3692,
+        1893
+      ],
+      "color": "#3f789e",
+      "font_size": 66,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.3073560549142821,
+      "offset": [
+        1621.8903633463865,
+        528.5230738472872
+      ]
+    },
+    "VHS_KeepIntermediate": true,
+    "VHS_MetadataImage": true,
+    "0246.VERSION": [
+      0,
+      0,
+      4
+    ],
+    "VHS_latentpreviewrate": 0,
+    "VHS_latentpreview": false,
+    "node_versions": {
+      "ComfyUI-WanVideoWrapper": "518013fd189b8445d3b674c19f56003d7b4de39e",
+      "ComfyUI-VideoHelperSuite": "2c25b8b53835aaeb63f831b3137c705cf9f85dce"
+    },
+    "ue_links": []
+  },
+  "version": 0.4,
+  "widget_idx_map": {
+    "27": {
+      "seed": 3,
+      "scheduler": 6
+    }
+  },
+  "seed_widgets": {
+    "27": 3
+  }
+}

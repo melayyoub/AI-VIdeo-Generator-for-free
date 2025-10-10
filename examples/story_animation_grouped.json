@@ -1,0 +1,408 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "sd_xl_base_1.0_0.9vae.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Base Model"
+    }
+  },
+  "2": {
+    "inputs": {
+      "text": "ugly, blurry, watermark, lowres, text, logo, nsfw",
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative Prompt"
+    }
+  },
+  "3": {
+    "inputs": {
+      "text": "cinematic, luminous forest with a curious fox discovering a glowing cave entrance, 8k concept art, volumetric lighting",
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Prompt 1"
+    }
+  },
+  "4": {
+    "inputs": {
+      "text": "cinematic, inside the cave, the fox gazes at sparkling crystals lining the walls, bioluminescent light, 8k concept art",
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Prompt 2"
+    }
+  },
+  "5": {
+    "inputs": {
+      "text": "cinematic, the fox finds an ancient pedestal bathed in golden light, mystical symbols glowing, 8k concept art",
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Prompt 3"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "cinematic, the fox places its paw on the pedestal and the entire cave fills with radiant energy, epic magic, 8k concept art",
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Prompt 4"
+    }
+  },
+  "7": {
+    "inputs": {
+      "width": 1024,
+      "height": 576,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Init Latent"
+    }
+  },
+  "8": {
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "seed": 0,
+      "steps": 30,
+      "cfg": 7.0,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "positive": [
+        "3",
+        0
+      ],
+      "negative": [
+        "2",
+        0
+      ],
+      "latent_image": [
+        "7",
+        0
+      ],
+      "denoise": 1.0
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Sampler 1"
+    }
+  },
+  "9": {
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "seed": 1,
+      "steps": 30,
+      "cfg": 7.0,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "2",
+        0
+      ],
+      "latent_image": [
+        "7",
+        0
+      ],
+      "denoise": 1.0
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Sampler 2"
+    }
+  },
+  "10": {
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "seed": 2,
+      "steps": 30,
+      "cfg": 7.0,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "positive": [
+        "5",
+        0
+      ],
+      "negative": [
+        "2",
+        0
+      ],
+      "latent_image": [
+        "7",
+        0
+      ],
+      "denoise": 1.0
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Sampler 3"
+    }
+  },
+  "11": {
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "seed": 3,
+      "steps": 30,
+      "cfg": 7.0,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "2",
+        0
+      ],
+      "latent_image": [
+        "7",
+        0
+      ],
+      "denoise": 1.0
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Sampler 4"
+    }
+  },
+  "12": {
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode 1"
+    }
+  },
+  "13": {
+    "inputs": {
+      "samples": [
+        "9",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode 2"
+    }
+  },
+  "14": {
+    "inputs": {
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode 3"
+    }
+  },
+  "15": {
+    "inputs": {
+      "samples": [
+        "11",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode 4"
+    }
+  },
+  "16": {
+    "inputs": {
+      "images_1": [
+        "12",
+        0
+      ],
+      "images_2": [
+        "13",
+        0
+      ],
+      "fade_len": 8,
+      "interpolation": "linear"
+    },
+    "class_type": "CrossFadeVideo",
+    "_meta": {
+      "title": "CrossFade 1"
+    }
+  },
+  "17": {
+    "inputs": {
+      "images_1": [
+        "16",
+        0
+      ],
+      "images_2": [
+        "14",
+        0
+      ],
+      "fade_len": 8,
+      "interpolation": "linear"
+    },
+    "class_type": "CrossFadeVideo",
+    "_meta": {
+      "title": "CrossFade 2"
+    }
+  },
+  "18": {
+    "inputs": {
+      "images_1": [
+        "17",
+        0
+      ],
+      "images_2": [
+        "15",
+        0
+      ],
+      "fade_len": 8,
+      "interpolation": "linear"
+    },
+    "class_type": "CrossFadeVideo",
+    "_meta": {
+      "title": "CrossFade 3"
+    }
+  },
+  "19": {
+    "inputs": {
+      "ckpt_name": "rife47.pth",
+      "frames": [
+        "18",
+        0
+      ],
+      "clear_cache_after_n_frames": 10,
+      "multiplier": 2,
+      "fast_mode": true,
+      "ensemble": true,
+      "scale_factor": 1
+    },
+    "class_type": "RIFE VFI",
+    "_meta": {
+      "title": "Frame Interpolation"
+    }
+  },
+  "20": {
+    "inputs": {
+      "filename": "story_audio.wav"
+    },
+    "class_type": "LoadAudio",
+    "_meta": {
+      "title": "Load Audio"
+    }
+  },
+  "21": {
+    "inputs": {
+      "images": [
+        "19",
+        0
+      ],
+      "audio": [
+        "20",
+        0
+      ],
+      "frame_rate": 8,
+      "loop_count": 0,
+      "filename_prefix": "story_video",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 19,
+      "save_metadata": false,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Create Video"
+    }
+  },
+  "groups": {
+    "0": {
+      "title": "Story Animation Group",
+      "nodes": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21"
+      ],
+      "color": "#b58b2a",
+      "collapsed": false
+    }
+  }
+}

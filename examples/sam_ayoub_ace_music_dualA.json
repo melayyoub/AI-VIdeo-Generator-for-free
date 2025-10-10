@@ -1,0 +1,158 @@
+{
+  "40": {
+    "inputs": {
+      "ckpt_name": "ace_step_v1_3.5b.safetensors",
+      "precision": "fp32"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": { "title": "Load Checkpoint (fp32)" }
+  },
+  "14": {
+    "inputs": {
+      "tags": "romance, piano, male vocal",
+      "lyrics": "[intro]\nبغيابها أنا ما بقدر عيش\nمعاها عيش ,عيشت دراويش\nكل العمر مرّو دقايق\nمن يوم ما قالت لي تعيش\n\n[verse1]\nيا ويل قلبي شو بينادي\nاسمها مطبوع بفؤادي\nمهما تغيب، ترجع قريب\nوإن غابت... بضيع عادي\n\n[chorus]\nبغيابها أنا ما بقدر عيش\nمعاها عيشت دراويش\nكل العمر مرّو دقايق\nمن يوم ما قالت لي تعيش\n\n[verse2]\nأنا عالسكّة ناطرها\nالدنيا برد بدونها\nلو ينسوني كل الناس\nأنا قلبي ما بينساها\n\n(إعادة القرار):\nبغيابها أنا ما بقدر عيش\nمعاها عيشت دراويش\nكل العمر مرّو دقايق\nمن يوم ما قالت لي تعيش\n\n[Bridge]\nحبك قدّر وما فيه أهرب\nقلبي لعيونك صار مكتوب\nإن جيتي بقلبك حبّيني\nوإن رحتي... خبّيني\n\n[outer]\nبغيابها أنا ما بقدر عيش\nمعاها عيشت دراويش\nكل العمر مرّو دقايق\nمن يوم ما قالت لي تعيش",
+      "lyrics_strength": 0.8,
+      "clip": ["40", 1]
+    },
+    "class_type": "TextEncodeAceStepAudio",
+    "_meta": { "title": "Vocal Conditioning" }
+  },
+  "14m": {
+    "inputs": {
+      "tags": "instrumental, cinematic, piano, strings",
+      "lyrics": "romantic emotional piano and soft strings instrumental background, no vocals, cinematic tone, warm reverb, clean mastering",
+      "lyrics_strength": 0.3,
+      "clip": ["40", 1]
+    },
+    "class_type": "TextEncodeAceStepAudio",
+    "_meta": { "title": "Music Conditioning" }
+  },
+  "17": {
+    "inputs": { "seconds": 150, "batch_size": 1 },
+    "class_type": "EmptyAceStepLatentAudio",
+    "_meta": { "title": "Empty Latent Audio" }
+  },
+  "51": {
+    "inputs": { "shift": 1, "model": ["40", 0] },
+    "class_type": "ModelSamplingSD3",
+    "_meta": { "title": "ModelSamplingSD3" }
+  },
+  "49": {
+    "inputs": {
+      "model": ["51", 0],
+      "operation": ["50", 0]
+    },
+    "class_type": "LatentApplyOperationCFG",
+    "_meta": { "title": "LatentApplyOperationCFG" }
+  },
+  "50": {
+    "inputs": { "multiplier": 1.25 },
+    "class_type": "LatentOperationTonemapReinhard",
+    "_meta": { "title": "LatentOperationTonemapReinhard" }
+  },
+  "84": {
+    "inputs": { "min": 50, "max": 70 },
+    "class_type": "RandomInt",
+    "_meta": { "title": "Random Int Steps" }
+  },
+  "85": {
+    "inputs": {
+      "number_type": "float",
+      "minimum": 3.5,
+      "maximum": 8,
+      "seed": 316360742543308
+    },
+    "class_type": "Random Number",
+    "_meta": { "title": "Random Number CFG" }
+  },
+  "52": {
+    "inputs": {
+      "seed": 232422472772991,
+      "steps": ["84", 0],
+      "cfg": ["85", 1],
+      "sampler_name": "uni_pc",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": ["49", 0],
+      "positive": ["14", 0],
+      "latent_image": ["17", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": { "title": "Shared KSampler (Vocal + Music)" }
+  },
+  "ScaleVocal": {
+    "inputs": { "scale": 0.7, "samples": ["52", 0] },
+    "class_type": "LatentMultiply",
+    "_meta": { "title": "Scale Vocal Latent 70%" }
+  },
+  "ScaleMusic": {
+    "inputs": { "scale": 0.3, "samples": ["52", 0] },
+    "class_type": "LatentMultiply",
+    "_meta": { "title": "Scale Music Latent 30%" }
+  },
+  "LatentAddMix": {
+    "inputs": {
+      "samples1": ["ScaleVocal", 0],
+      "samples2": ["ScaleMusic", 0]
+    },
+    "class_type": "LatentAdd",
+    "_meta": { "title": "LatentAdd (Balanced Mix)" }
+  },
+  "18v": {
+    "inputs": { "samples": ["ScaleVocal", 0], "vae": ["40", 2] },
+    "class_type": "VAEDecodeAudio",
+    "_meta": { "title": "VAEDecodeAudio Vocal" }
+  },
+  "18m": {
+    "inputs": { "samples": ["ScaleMusic", 0], "vae": ["40", 2] },
+    "class_type": "VAEDecodeAudio",
+    "_meta": { "title": "VAEDecodeAudio Music" }
+  },
+  "18_final": {
+    "inputs": { "samples": ["LatentAddMix", 0], "vae": ["40", 2] },
+    "class_type": "VAEDecodeAudio",
+    "_meta": { "title": "VAEDecodeAudio Final Mix" }
+  },
+  "87": {
+    "inputs": {
+      "denoise_strength": 0.5,
+      "dereverb_strength": 0.7,
+      "high_pass_freq": 100,
+      "low_pass_freq": 8000,
+      "normalize": "true",
+      "audio": ["18_final", 0]
+    },
+    "class_type": "AudioCleanupNode",
+    "_meta": { "title": "Audio Cleaner Final" }
+  },
+  "Save_Vocal": {
+    "inputs": {
+      "filename_prefix": "music/vocals/SamAyoub_vocal_",
+      "quality": "128k",
+      "audioUI": "",
+      "audio": ["18v", 0]
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": { "title": "Save Vocal (MP3)" }
+  },
+  "Save_Music": {
+    "inputs": {
+      "filename_prefix": "music/instrumentals/SamAyoub_music_",
+      "quality": "128k",
+      "audioUI": "",
+      "audio": ["18m", 0]
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": { "title": "Save Music (MP3)" }
+  },
+  "Save_Final": {
+    "inputs": {
+      "filename_prefix": "music/final/SamAyoub_final_",
+      "quality": "128k",
+      "audioUI": "",
+      "audio": ["87", 0]
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": { "title": "Save Final (MP3)" }
+  }
+}
