@@ -60,6 +60,9 @@ comfy-loader/ # Optional React loader app
 # bash
 pip install torch==2.5.1+cu121 torchvision==0.20.1+cu121 torchaudio==2.5.1+cu121 --index-url https://download.pytorch.org/whl/cu121
 
+pip install torch==2.7.0+cu128 torchvision==0.22.0+cu128 torchaudio==2.7.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+
+
 # From the folder containing install.sh + wan2_cli.py:
 chmod +x install.sh
 
@@ -93,7 +96,7 @@ curl http://127.0.0.1:8188/queue
 # From the folder containing install.ps1 + wan2_cli.py:
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
  # From E:\python-projects\custom-wan (where wan2_cli.py lives)
-.\install.ps1 -Cuda cu121 -Models 5b -WithManager -Start
+.\install.ps1 -Cuda cu128 -Models 5b -WithManager -Start
 # This will create/refresh: E:\python-projects\custom-wan\ComfyUI and ComfyUI\.venv
 
 # Either activate:
