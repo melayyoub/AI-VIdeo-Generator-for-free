@@ -192,7 +192,7 @@ def ensure_model_dirs(base: Path, dry: bool = False) -> None:
 def install_comfy_requirements(venv: Path, base: Path, dry: bool = False) -> None:
     comfy = comfy_root(base)
     pip(venv, ["-r", "requirements.txt"], cwd=comfy, dry=dry)
-    pip(venv, ["-r", "all-requirements.txt"], cwd=comfy, dry=dry)
+    pip(venv, ["-r", "all-requirements.txt", "--no-deps"], cwd=comfy, dry=dry)
 
 def install_manager(venv: Path, base: Path, dry: bool = False) -> None:
     comfy = comfy_root(base)
