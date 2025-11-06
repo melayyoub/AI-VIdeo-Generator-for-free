@@ -73,8 +73,10 @@ def py_exec(py_ver: Optional[str] = None, venv_bin: Optional[Path] = None) -> st
     if venv_bin:
         return str(venv_bin / ("python.exe" if is_windows() else "python"))
     if is_windows():
-        return "py" + (f"-{py_ver}" if py_ver else "")
+        # ✅ Correct Windows launcher syntax: py -3.10
+        return "py" if not py_ver else f"py -{py_ver}"
     return "python"
+
 
 def ensure_tools() -> None:
     for tool in ["git", "node", "npm", "ffmpeg"]:
@@ -134,7 +136,7 @@ def recreate_venv(base: Path, py_ver: Optional[str], dry: bool = False) -> Path:
         log(f"Creating {comfy}")
         if not dry:
             comfy.mkdir(parents=True, exist_ok=True)
-    run([py_exec(py_ver), "-m", "venv", str(venv)], cwd=comfy, dry=dry)
+    run(py_exec(py_ver).split() + ["-m", "venv", str(venv)], cwd=comfy, dry=dry)
     return venv
 
 def ensure_venv(base: Path, py_ver: Optional[str], dry: bool = False) -> Path:

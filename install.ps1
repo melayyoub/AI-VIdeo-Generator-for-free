@@ -29,7 +29,8 @@ $installArgs = @(
   '--cuda',       $Cuda,
   '--path',       $BasePath,
   '--models',     $Models,
-  '--port',       "$Port"
+  '--port',       "$Port",
+  '--python',       "$PyVersion"
 )
 if ($WithManager) { $installArgs += '--with-manager' }
 if ($Start)       { $installArgs += '--start' }
