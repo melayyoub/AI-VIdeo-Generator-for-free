@@ -1,0 +1,93 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "frame_0001.png"
+    },
+    "_meta": { "title": "🎞️ Load Target Frame" }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "reference_face.png"
+    },
+    "_meta": { "title": "🧑 Load Reference Face" }
+  },
+  "3": {
+    "class_type": "Florence2ModelLoader",
+    "inputs": {},
+    "widgets_values": ["CogFlorence-2.2-Large","fp16","sdpa"],
+    "_meta": { "title": "📦 Load Florence2 Model" }
+  },
+  "4": {
+    "class_type": "Florence2Run",
+    "inputs": {
+      "image": ["2", 0],
+      "florence2_model": ["3", 0]
+    },
+    "widgets_values": ["head","caption_to_phrase_grounding",true,false,1024,3,true,"",1234567890,"fixed"],
+    "_meta": { "title": "🔹 Encode Reference Face" }
+  },
+  "5": {
+    "class_type": "Florence2Run",
+    "inputs": {
+      "image": ["1", 0],
+      "florence2_model": ["3", 0]
+    },
+    "widgets_values": ["head","caption_to_phrase_grounding",true,false,1024,3,true,"",987654321,"fixed"],
+    "_meta": { "title": "🎯 Detect Face in Target Frame" }
+  },
+  "6": {
+    "class_type": "PulidFluxModelLoader",
+    "inputs": {},
+    "widgets_values": ["pulid_flux_v0.9.0.safetensors"],
+    "_meta": { "title": "🧠 Load PulidFlux Model" }
+  },
+  "7": {
+    "class_type": "PulidFluxEvaClipLoader",
+    "inputs": {},
+    "_meta": { "title": "🔹 Load Eva Clip" }
+  },
+  "8": {
+    "class_type": "PulidFluxInsightFaceLoader",
+    "inputs": {},
+    "widgets_values": ["CUDA"],
+    "_meta": { "title": "👤 Load Face Analysis" }
+  },
+  "9": {
+    "class_type": "ApplyPulidFlux",
+    "inputs": {
+      "pulid_flux": ["6", 0],
+      "eva_clip": ["7", 0],
+      "face_analysis": ["8", 0],
+      "image": ["5", 0],
+      "prior_image": ["4", 0]
+    },
+    "widgets_values": [1,0,1,"mean",1,0,1000,true],
+    "_meta": { "title": "🤖 Apply Face Swap" }
+  },
+  "10": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["9", 0]
+    },
+    "widgets_values": ["swapped_frame"],
+    "_meta": { "title": "💾 Save Swapped Frame" }
+  },
+  "links": [
+    [2, 0, 4, 0],
+    [1, 0, 5, 0],
+    [3, 0, 4, 1],
+    [3, 0, 5, 1],
+    [6, 0, 9, 0],
+    [7, 0, 9, 1],
+    [8, 0, 9, 2],
+    [5, 0, 9, 3],
+    [4, 0, 9, 6],
+    [9, 0, 10, 0]
+  ],
+  "workflow": {
+    "last_node_id": 10,
+    "last_link_id": 10
+  }
+}

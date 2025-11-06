@@ -1,0 +1,82 @@
+{
+  "last_node_id": 5,
+  "last_link_id": 5,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "ForLoopStart",
+      "pos": [50, 300],
+      "size": [240, 100],
+      "title": "For Loop Start",
+      "outputs": [
+        { "name": "loop_input", "type": "ANY", "links": [1] },
+        { "name": "index", "type": "INT", "links": [2] }
+      ],
+      "widgets_values": [0, 8, 1]
+    },
+    {
+      "id": 2,
+      "type": "MathAdd",
+      "pos": [320, 300],
+      "size": [200, 80],
+      "title": "Seed Offset",
+      "inputs": [
+        { "name": "value1", "type": "FLOAT", "link": null },
+        { "name": "value2", "type": "INT", "link": 2 }
+      ],
+      "outputs": [
+        { "name": "result", "type": "FLOAT", "links": [3] }
+      ],
+      "widgets_values": [100]
+    },
+    {
+      "id": 3,
+      "type": "VideoS2VExtend",
+      "pos": [600, 280],
+      "size": [300, 200],
+      "title": "Video S2V Extend",
+      "inputs": [
+        { "name": "seed", "type": "FLOAT", "link": 3 }
+      ],
+      "outputs": [
+        { "name": "latent", "type": "LATENT", "links": [4] }
+      ],
+      "widgets_values": [10, 6.0, "uni_pc", "simple", 77]
+    },
+    {
+      "id": 4,
+      "type": "ForLoopEnd",
+      "pos": [950, 300],
+      "size": [260, 100],
+      "title": "For Loop End",
+      "inputs": [
+        { "name": "loop_input", "type": "ANY", "link": 1 },
+        { "name": "loop_data_input", "type": "ANY", "link": 4 }
+      ],
+      "outputs": [
+        { "name": "results", "type": "ANY", "links": [5] }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "PreviewLatent",
+      "pos": [1250, 300],
+      "size": [240, 120],
+      "title": "Preview Results",
+      "inputs": [
+        { "name": "samples", "type": "LATENT", "link": 5 }
+      ]
+    }
+  ],
+  "links": [
+    [1, 1, 0, 4, 0, "ANY"],
+    [2, 1, 1, 2, 1, "INT"],
+    [3, 2, 0, 3, 0, "FLOAT"],
+    [4, 3, 0, 4, 1, "LATENT"],
+    [5, 4, 0, 5, 0, "LATENT"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 1
+}

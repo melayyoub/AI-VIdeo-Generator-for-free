@@ -163,6 +163,6 @@ cd ComfyStack/comfy-loader && npm run dev and open the printed URL.
 or 
 
 .\ComfyUI\.venv\Scripts\activate
-python wan2_cli_RTX.py start --path . --port 8188
+python wan2_cli.py start --path . --port 8188
 
 ```

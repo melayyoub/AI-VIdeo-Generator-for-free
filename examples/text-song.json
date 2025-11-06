@@ -1,0 +1,276 @@
+{
+  "id": "a51e68d7-297d-4464-8801-a2fd01cf0e18",
+  "revision": 0,
+  "last_node_id": 30,
+  "last_link_id": 28,
+  "nodes": [
+    {
+      "id": 9,
+      "type": "GenerationParameters",
+      "pos": [308.9670715332031, 531.0650634765625],
+      "size": [315, 442],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "label": "parameters", "name": "parameters", "type": "STRING", "links": [8] }
+      ],
+      "properties": { "Node name for S&R": "GenerationParameters" },
+      "widgets_values": [
+        202.19997916666668,
+        60,
+        15,
+        "euler",
+        "apg",
+        10,
+        3056738084,
+        "randomize",
+        0.5,
+        0,
+        3,
+        true,
+        true,
+        true,
+        "",
+        0,
+        0
+      ]
+    },
+    {
+      "id": 14,
+      "type": "CR Text",
+      "pos": [-622.6915283203125, 138.62998962402344],
+      "size": [399.20001220703125, 184.80001831054688],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "label": "text", "name": "text", "type": "*", "links": [11] },
+        { "label": "show_help", "name": "show_help", "type": "STRING", "links": null }
+      ],
+      "title": "Music Style Setting",
+      "properties": { "Node name for S&R": "CR Text" },
+      "widgets_values": ["You are a musician. Please create a piece of music in the {R&B} style."]
+    },
+    {
+      "id": 7,
+      "type": "LmcqDeepLoader",
+      "pos": [-540.838623046875, 35.258304595947266],
+      "size": [315, 58],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "label": "model", "name": "model", "type": "DEEP_MODEL", "links": [10] }
+      ],
+      "properties": { "Node name for S&R": "LmcqDeepLoader" },
+      "widgets_values": ["DeepSeek-R1-Distill-Qwen-7B"]
+    },
+    {
+      "id": 15,
+      "type": "CR Text",
+      "pos": [-620.2514038085938, 363.07000732421875],
+      "size": [400, 200],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "label": "text", "name": "text", "type": "*", "links": [12] },
+        { "label": "show_help", "name": "show_help", "type": "STRING", "links": null }
+      ],
+      "title": "Music Lyrics Description",
+      "properties": { "Node name for S&R": "CR Text" },
+      "widgets_values": ["Please create lyrics describing the rain."]
+    },
+    {
+      "id": 10,
+      "type": "MultiLineLyrics",
+      "pos": [225.7385711669922, 281.1449279785156],
+      "size": [400, 200],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        { "name": "multi_line_prompt", "type": "STRING", "widget": { "name": "multi_line_prompt" }, "link": 15 }
+      ],
+      "outputs": [
+        { "label": "lyrics", "name": "lyrics", "type": "STRING", "links": [7] }
+      ],
+      "properties": { "Node name for S&R": "MultiLineLyrics" },
+      "widgets_values": [
+        "**Verse 1**  \nRaindrops tap upon the glass,  \nPlaying a melody of sorrow.  \nThe folds on the leaf’s edge  \nAre time’s furrowed brow.  \n(The turntable spins, tick-tock sounds  \nCut through an already empty night.)\n**Chorus**  \nI gaze at the curtain of falling rain,  \nAs if feeling an unspoken embrace.  \nThe world blurs in the rain,  \nLonging flows like water, fading the lines.  \n(Moist eyes soaked in stories,  \nYet the future’s direction is lost.)\n**Bridge**  \nThe rain falls silently,  \nBut washes away all the lies.  \nI curl up by the window,  \nListening to the rain knock inside my heart.  \n**Chorus**  \nI gaze at the curtain of falling rain,  \nAs if feeling an embrace turned into an old dream.  \nThe world blurs in the rain,  \nLonging flows like water, fading the lines.  \n**Outro**  \nThe rain still falls, like an unfinished poem,  \nAnd I know,  \nEach note is my final kiss to you."
+      ]
+    },
+    {
+      "id": 12,
+      "type": "PreviewAudio",
+      "pos": [975.1869506835938, 142.0650634765625],
+      "size": [315, 88],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        { "label": "audio", "name": "audio", "type": "AUDIO", "link": 9 }
+      ],
+      "outputs": [],
+      "properties": { "Node name for S&R": "PreviewAudio" },
+      "widgets_values": [""]
+    },
+    {
+      "id": 13,
+      "type": "LmcqDeepGen",
+      "pos": [-211.73126220703125, 37.750099182128906],
+      "size": [400, 306],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        { "label": "deep_model", "name": "deep_model", "type": "DEEP_MODEL", "link": 10 },
+        { "name": "system_prompt", "type": "STRING", "widget": { "name": "system_prompt" }, "link": 11 },
+        { "name": "user_prompt", "type": "STRING", "widget": { "name": "user_prompt" }, "link": 12 }
+      ],
+      "outputs": [
+        { "label": "raw_output", "name": "raw_output", "type": "STRING", "links": null },
+        { "label": "clean_output", "name": "clean_output", "type": "STRING", "links": [14, 15] }
+      ],
+      "properties": { "Node name for S&R": "LmcqDeepGen" },
+      "widgets_values": ["", "", 1013903548800841, "randomize", 1024, 1, 50, 1]
+    },
+    {
+      "id": 17,
+      "type": "Note",
+      "pos": [-629.062744140625, -144.43490600585938],
+      "size": [464.1109924316406, 95.42284393310547],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "1. Use the built-in DeepSeek large language model in LMCQ to generate lyrics that meet your requirements.\n2. Import the generated lyrics directly into the ACE-Step node to create music.\n3. Set the music style in the ACE-Step prompt.\n4. To create lyrics of different styles, modify the content inside the {} in the “Music Style Setting” node.\n5. Running DeepSeek-7B and ACE-Step together may cause out-of-memory issues. Run them separately if needed."
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+    },
+    {
+      "id": 16,
+      "type": "ShowText",
+      "pos": [-138.52865600585938, 389.4798583984375],
+      "size": [324.51312255859375, 465.0687255859375],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        { "name": "text", "type": "STRING", "widget": { "name": "text" }, "link": 14 }
+      ],
+      "outputs": [
+        { "label": "text", "name": "text", "type": "STRING", "links": null }
+      ],
+      "properties": { "Node name for S&R": "ShowText" },
+      "widgets_values": [
+        "",
+        "**Verse 1**  \nRaindrops tap upon the glass,  \nPlaying a melody of sorrow.  \nThe folds on the leaf’s edge  \nAre time’s furrowed brow.  \n(The turntable spins, tick-tock sounds  \nCut through an already empty night.)\n**Chorus**  \nI gaze at the curtain of falling rain,  \nAs if feeling an unspoken embrace.  \nThe world blurs in the rain,  \nLonging flows like water, fading the lines.  \n(Moist eyes soaked in stories,  \nYet the future’s direction is lost.)\n**Bridge**  \nThe rain falls silently,  \nBut washes away all the lies.  \nI curl up by the window,  \nListening to the rain knock inside my heart.  \n**Chorus**  \nI gaze at the curtain of falling rain,  \nAs if feeling an embrace turned into an old dream.  \nThe world blurs in the rain,  \nLonging flows like water, fading the lines.  \n**Outro**  \nThe rain still falls, like an unfinished poem,  \nAnd I know,  \nEach note is my final kiss to you."
+      ]
+    },
+    {
+      "id": 8,
+      "type": "MultiLinePromptACES",
+      "pos": [218.53919982910156, 36.55470275878906],
+      "size": [400, 200],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "label": "prompt", "name": "prompt", "type": "STRING", "links": [6] }
+      ],
+      "properties": { "Node name for S&R": "MultiLinePromptACES" },
+      "widgets_values": ["R&B"]
+    },
+    {
+      "id": 11,
+      "type": "ACEStepGen",
+      "pos": [637.2667236328125, 131.50502014160156],
+      "size": [315, 106],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        { "name": "prompt", "type": "STRING", "widget": { "name": "prompt" }, "link": 6 },
+        { "name": "lyrics", "type": "STRING", "widget": { "name": "lyrics" }, "link": 7 },
+        { "name": "parameters", "type": "STRING", "widget": { "name": "parameters" }, "link": 8 }
+      ],
+      "outputs": [
+        { "label": "music", "name": "music", "type": "AUDIO", "links": [9] }
+      ],
+      "properties": { "Node name for S&R": "ACEStepGen" },
+      "widgets_values": ["", "", ""]
+    },
+    {
+      "id": 30,
+      "type": "Fast Groups Muter (rgthree)",
+      "pos": [-871.402587890625, -4.975562572479248],
+      "size": [226.8000030517578, 130],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "label": "OPT_CONNECTION", "name": "OPT_CONNECTION", "type": "*", "links": null }
+      ],
+      "properties": {
+        "matchColors": "",
+        "matchTitle": "",
+        "showNav": true,
+        "sort": "position",
+        "customSortAlphabet": "",
+        "toggleRestriction": "default"
+      }
+    }
+  ],
+  "links": [
+    [6, 8, 0, 11, 0, "STRING"],
+    [7, 10, 0, 11, 1, "STRING"],
+    [8, 9, 0, 11, 2, "STRING"],
+    [9, 11, 0, 12, 0, "AUDIO"],
+    [10, 7, 0, 13, 0, "DEEP_MODEL"],
+    [11, 14, 0, 13, 1, "STRING"],
+    [12, 15, 0, 13, 2, "STRING"],
+    [14, 13, 1, 16, 0, "STRING"],
+    [15, 13, 1, 10, 0, "STRING"]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Lyrics Generation",
+      "bounding": [-632.6915283203125, -38.34169387817383, 830.9602661132812, 910.025146484375],
+      "color": "#8A8",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "Music Generation",
+      "bounding": [208.53919982910156, -37.04529571533203, 1091.6478271484375, 1020.1103515625],
+      "color": "#88A",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "0246.VERSION": [0, 0, 4],
+    "ds": { "scale": 0.6115909044841483, "offset": [834.1243896484375, 743.3082275390625] },
+    "ue_links": [],
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}

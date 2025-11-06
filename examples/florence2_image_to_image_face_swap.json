@@ -1,0 +1,233 @@
+{
+  "226": {
+    "inputs": { "image": "target_image.png" },
+    "class_type": "LoadImage",
+    "_meta": { "title": "Load Target Image" }
+  },
+
+  "260": {
+    "inputs": { "image": "reference_face.png" },
+    "class_type": "LoadImage",
+    "_meta": { "title": "Load Reference Face" }
+  },
+
+  "236": {
+    "inputs": {
+      "model": "florence2_large",
+      "precision": "fp16",
+      "attention": "sdpa",
+      "convert_to_safetensors": false
+    },
+    "class_type": "Florence2ModelLoader",
+    "_meta": { "title": "Florence2ModelLoader" }
+  },
+
+  "237": {
+    "inputs": {
+      "text_input": "head",
+      "task": "caption_to_phrase_grounding",
+      "fill_mask": true,
+      "keep_model_loaded": false,
+      "max_new_tokens": 1024,
+      "num_beams": 3,
+      "do_sample": true,
+      "output_mask_select": "",
+      "seed": 374141333135024,
+      "image": ["226", 0],
+      "florence2_model": ["236", 0]
+    },
+    "class_type": "Florence2Run",
+    "_meta": { "title": "Florence2Run (Target Mask)" }
+  },
+
+  "233": {
+    "inputs": {
+      "mask": ["237", 1],
+      "combined": false,
+      "crop_factor": 1.2,
+      "bbox_fill": false,
+      "drop_size": 100,
+      "contour_fill": false
+    },
+    "class_type": "MaskToSEGS",
+    "_meta": { "title": "MASK to SEGS" }
+  },
+
+  "234": {
+    "inputs": {
+      "segs": ["233", 0],
+      "fallback_image_opt": ["226", 0],
+      "alpha_mode": false,
+      "min_alpha": 1
+    },
+    "class_type": "SEGSPreview",
+    "_meta": { "title": "SEGSPreview (Masked Target)" }
+  },
+
+  "228": {
+    "inputs": { "ckpt_name": "flux\\flux1CompactCLIPAnd_Flux1DevFp16.safetensors" },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": { "title": "Load Checkpoint (Flux w/ CLIP+VAE)" }
+  },
+
+  "229": {
+    "inputs": {
+      "lora_name": "flux\\style\\DollCute.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": ["228", 0],
+      "clip": ["228", 1]
+    },
+    "class_type": "LoraLoader",
+    "_meta": { "title": "LoRA (Style)" }
+  },
+
+  "219": {
+    "inputs": {
+      "lora_name": "flux\\alimama-creative-FLUX.1-Turbo-Alpha.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": ["229", 0],
+      "clip": ["229", 1]
+    },
+    "class_type": "LoraLoader",
+    "_meta": { "title": "LoRA (Turbo Alpha)" }
+  },
+
+  "223": {
+    "inputs": { "pulid_file": "pulid_flux_v0.9.0.safetensors" },
+    "class_type": "PulidFluxModelLoader",
+    "_meta": { "title": "Load PuLID Flux Model" }
+  },
+
+  "224": {
+    "inputs": {},
+    "class_type": "PulidFluxEvaClipLoader",
+    "_meta": { "title": "Load Eva Clip (PuLID Flux)" }
+  },
+
+  "225": {
+    "inputs": { "provider": "CUDA" },
+    "class_type": "PulidFluxInsightFaceLoader",
+    "_meta": { "title": "Load InsightFace (PuLID Flux)" }
+  },
+
+  "227": {
+    "inputs": {
+      "weight": 1,
+      "start_at": 0,
+      "end_at": 1,
+      "model": ["219", 0],
+      "pulid_flux": ["223", 0],
+      "eva_clip": ["224", 0],
+      "face_analysis": ["225", 0],
+      "image": ["234", 0],
+      "prior_image": ["260", 0]
+    },
+    "class_type": "ApplyPulidFlux",
+    "_meta": { "title": "Apply PuLID Flux (Inject Identity)" }
+  },
+
+  "216": {
+    "inputs": { "aspect_ratio": "2:3" },
+    "class_type": "SDXLAspectRatioSelector",
+    "_meta": { "title": "Aspect Ratio → Width/Height" }
+  },
+
+  "5": {
+    "inputs": {
+      "width": ["216", 1],
+      "height": ["216", 2],
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": { "title": "Empty Latent" }
+  },
+
+  "25": {
+    "inputs": { "noise_seed": 352240988432605 },
+    "class_type": "RandomNoise",
+    "_meta": { "title": "RandomNoise" }
+  },
+
+  "6": {
+    "inputs": {
+      "text": "",
+      "clip": ["219", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "CLIP Text Encode (empty)" }
+  },
+
+  "60": {
+    "inputs": {
+      "guidance": 3.5,
+      "conditioning": ["6", 0]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": { "title": "Flux Guidance (CFG)" }
+  },
+
+  "61": {
+    "inputs": {
+      "max_shift": 1.15,
+      "base_shift": 0.5,
+      "width": ["216", 1],
+      "height": ["216", 2],
+      "model": ["227", 0]
+    },
+    "class_type": "ModelSamplingFlux",
+    "_meta": { "title": "ModelSamplingFlux" }
+  },
+
+  "17": {
+    "inputs": { "scheduler": "simple", "steps": 12, "denoise": 1, "model": ["61", 0] },
+    "class_type": "BasicScheduler",
+    "_meta": { "title": "BasicScheduler" }
+  },
+
+  "16": {
+    "inputs": { "sampler_name": "euler" },
+    "class_type": "KSamplerSelect",
+    "_meta": { "title": "KSamplerSelect" }
+  },
+
+  "22": {
+    "inputs": {
+      "model": ["61", 0],
+      "conditioning": ["60", 0]
+    },
+    "class_type": "BasicGuider",
+    "_meta": { "title": "BasicGuider" }
+  },
+
+  "13": {
+    "inputs": {
+      "noise": ["25", 0],
+      "guider": ["22", 0],
+      "sampler": ["16", 0],
+      "sigmas": ["17", 0],
+      "latent_image": ["5", 0]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": { "title": "SamplerCustomAdvanced" }
+  },
+
+  "147": {
+    "inputs": {
+      "samples": ["13", 0],
+      "vae": ["228", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": { "title": "VAE Decode" }
+  },
+
+  "215": {
+    "inputs": {
+      "filename_prefix": "face_swap_output/img_",
+      "images": ["147", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": { "title": "Save Image" }
+  }
+}

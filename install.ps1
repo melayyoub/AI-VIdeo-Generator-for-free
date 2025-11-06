@@ -1,14 +1,14 @@
-﻿# Sam Ayoub — Wan 2.2 + ComfyUI installer (Windows PowerShell)
+﻿# Sam Ayoub — Wan 2.2 + ComfyUI installer (Windows PowerShell) — cu128 + Python3.10 Fixed
 [CmdletBinding()]
 param(
-  [ValidateSet('cu121','cu118','cpu')] [string] $Cuda    = 'cu121',
+  [ValidateSet('cu128','cu121','cu118','cpu')] [string] $Cuda    = 'cu128',
   [ValidateSet('5b','14b','i2v','all')] [string] $Models = '5b',
   [switch] $WithManager,
   [switch] $Start,
   [int]    $Port        = 8188,
   [switch] $ListenAll,
-  [string] $BasePath    = $PSScriptRoot,   # base (repo will be under BasePath\ComfyUI)
-  [string] $PyVersion   = '3.11',
+  [string] $BasePath    = $PSScriptRoot,
+  [string] $PyVersion   = '3.10',
   [string] $HfToken     = $env:HF_TOKEN,
   [switch] $ReuseVenv
 )
@@ -17,11 +17,13 @@ Write-Host ("[install.ps1] Base: {0}  CUDA: {1}  MODELS: {2}  Manager: {3}  Star
   -f $BasePath,$Cuda,$Models,$WithManager.IsPresent,$Start.IsPresent,$Port,$ListenAll.IsPresent,$ReuseVenv.IsPresent)
 
 if (-not (Get-Command py -ErrorAction SilentlyContinue)) {
-  Write-Error "Python launcher 'py' not found. Install Python 3.10–3.12 from python.org."
+  Write-Error "Python launcher 'py' not found. Install Python 3.10 from https://www.python.org/downloads/release/python-31011/"
   exit 1
 }
+
 if ($HfToken) { $env:HF_TOKEN = $HfToken }
 
+# WAN 2.2 CLI Install Args
 $installArgs = @(
   'install',
   '--cuda',       $Cuda,
@@ -39,13 +41,28 @@ $cliPath = Join-Path $PSScriptRoot 'wan2_cli.py'
 $exit = $LASTEXITCODE
 if ($exit -ne 0) { Write-Error "wan2_cli.py install failed ($exit)"; exit $exit }
 
-Write-Host ''
-Write-Host '[install.ps1] Done.'
-Write-Host ("Root: {0}" -f $BasePath)
-Write-Host ("ComfyUI: {0}" -f (Join-Path $BasePath 'ComfyUI'))
-Write-Host ("Venv: {0}" -f (Join-Path $BasePath 'ComfyUI\.venv'))
+# ✅ Fix the venv environment for cu128 & face-swap support
+Write-Host "[install.ps1] Applying environment patches..."
+$venv = Join-Path $BasePath 'ComfyUI\.venv\Scripts\activate.ps1'
+& $venv
 
-# Start later (no reinstall):
+pip install -U pip wheel
+pip uninstall -y google-protobuf protobuf onnx onnxruntime tensorflow tensorboard
+pip install protobuf==3.20.3
+pip install onnx==1.14.1
+pip install onnxruntime-gpu==1.19.2
+pip install insightface==0.7.3
+pip install audiotools==0.7.4 dac librosa==0.10.1 ffmpeg-python soundfile
+
+Write-Host ''
+Write-Host '[install.ps1] ✅ Environment patched for cu128 + Python 3.10'
+Write-Host ("Root:        {0}" -f $BasePath)
+Write-Host ("ComfyUI:     {0}" -f (Join-Path $BasePath 'ComfyUI'))
+Write-Host ("Venv:        {0}" -f (Join-Path $BasePath 'ComfyUI\.venv'))
+Write-Host ("Run with:    run_nvidia_gpu.bat")
+Write-Host ''
+
+# Start command (if --start not used)
 $startArgs = @('start','--path',$BasePath,'--port',"$Port")
 if ($ListenAll) { $startArgs += '--listen-all' }
 $startCmd = @('py', "-$PyVersion", $cliPath) + $startArgs

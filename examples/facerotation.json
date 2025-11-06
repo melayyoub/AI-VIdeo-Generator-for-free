@@ -1,0 +1,587 @@
+{
+  "last_node_id": 22,
+  "last_link_id": 24,
+  "nodes": [
+    {
+      "id": 6,
+      "type": "RIFE VFI",
+      "pos": {
+        "0": 570,
+        "1": 290
+      },
+      "size": {
+        "0": 260,
+        "1": 198
+      },
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "frames",
+          "type": "IMAGE",
+          "link": 5,
+          "label": "图像"
+        },
+        {
+          "name": "optional_interpolation_states",
+          "type": "INTERPOLATION_STATES",
+          "link": null,
+          "label": "插值规则(可选)",
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            23
+          ],
+          "slot_index": 0,
+          "label": "图像",
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RIFE VFI",
+        "cnr_id": "comfyui-frame-interpolation",
+        "ver": "c336f7184cb1ac1243381e725fea1ad2c0a10c09"
+      },
+      "widgets_values": [
+        "rife47.pth",
+        10,
+        2,
+        false,
+        true,
+        1
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 18,
+      "type": "PreviewImage",
+      "pos": {
+        "0": 570,
+        "1": 530
+      },
+      "size": {
+        "0": 260,
+        "1": 310
+      },
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 22,
+          "label": "图像"
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage",
+        "cnr_id": "comfy-core",
+        "ver": "0.3.15"
+      },
+      "widgets_values": [],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 19,
+      "type": "VHS_VideoCombine",
+      "pos": {
+        "0": 850,
+        "1": 290
+      },
+      "size": [
+        210,
+        661.7777777777778
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 23,
+          "label": "图像"
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 24,
+          "label": "音频",
+          "shape": 7
+        },
+        {
+          "name": "meta_batch",
+          "type": "VHS_BatchManager",
+          "link": null,
+          "label": "批次管理",
+          "shape": 7
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Filenames",
+          "type": "VHS_FILENAMES",
+          "links": null,
+          "label": "文件名",
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VHS_VideoCombine",
+        "cnr_id": "comfyui-videohelpersuite",
+        "ver": "4c7858ddd5126f7293dc3c9f6e0fc4c263cde079"
+      },
+      "widgets_values": {
+        "frame_rate": 25,
+        "loop_count": 0,
+        "filename_prefix": "AnimateDiff",
+        "format": "video/h264-mp4",
+        "pix_fmt": "yuv420p",
+        "crf": 19,
+        "save_metadata": true,
+        "pingpong": false,
+        "save_output": true,
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {
+            "filename": "AnimateDiff_00016-audio.mp4",
+            "subfolder": "",
+            "type": "output",
+            "format": "video/h264-mp4",
+            "frame_rate": 25,
+            "url": "https://liblibai-tmp-image.liblib.cloud/sd-images/f748e0fab77058f1ec35440fa2f329c1cceac11c3765dd84cf974da0e26d7303.mp4",
+            "coverUrl": null,
+            "workflow": "AnimateDiff_00016.png",
+            "fullpath": "D:\\ComfyUI-aki-v1\\ComfyUI-aki-v1\\output\\AnimateDiff_00016-audio.mp4"
+          }
+        }
+      },
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 22,
+      "type": "Note",
+      "pos": {
+        "0": 600,
+        "1": 180
+      },
+      "size": {
+        "0": 210,
+        "1": 58
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "1.补帧乘数2，还原原视频帧数"
+      ],
+      "_widget_cache_map": {},
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 20,
+      "type": "Note",
+      "pos": {
+        "0": -340,
+        "1": 670
+      },
+      "size": {
+        "0": 210,
+        "1": 58
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "1.上传目标人脸"
+      ],
+      "_widget_cache_map": {},
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 21,
+      "type": "Note",
+      "pos": {
+        "0": -120,
+        "1": 160
+      },
+      "size": {
+        "0": 340,
+        "1": 90
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "1.上传视频文件\n2.设置读取帧数上限，如果视频10秒，帧速率：每秒25帧，那么写250\n3.设置模选为1，每2帧跳过1次，"
+      ],
+      "_widget_cache_map": {},
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 2,
+      "type": "ReActorFaceSwap",
+      "pos": {
+        "0": 230,
+        "1": 290
+      },
+      "size": {
+        "0": 315,
+        "1": 358
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "input_image",
+          "type": "IMAGE",
+          "link": 1,
+          "label": "目标图像"
+        },
+        {
+          "name": "source_image",
+          "type": "IMAGE",
+          "link": 2,
+          "slot_index": 1,
+          "label": "源图像",
+          "shape": 7
+        },
+        {
+          "name": "face_model",
+          "type": "FACE_MODEL",
+          "link": null,
+          "label": "面部模型",
+          "shape": 7
+        },
+        {
+          "name": "face_boost",
+          "type": "FACE_BOOST",
+          "link": null,
+          "label": "面部增强",
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            5,
+            22
+          ],
+          "slot_index": 0,
+          "label": "图像",
+          "shape": 3
+        },
+        {
+          "name": "FACE_MODEL",
+          "type": "FACE_MODEL",
+          "links": null,
+          "label": "面部模型",
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ReActorFaceSwap",
+        "cnr_id": "comfyui-reactor-node",
+        "ver": "a43075813dbd17de9c51c9fc7ea768eaf1681d89"
+      },
+      "widgets_values": [
+        true,
+        "inswapper_128.onnx",
+        "retinaface_resnet50",
+        "GPEN-BFR-512.onnx",
+        0.49,
+        0.5,
+        "no",
+        "no",
+        "0",
+        "0",
+        1
+      ],
+      "_widget_cache_map": {}
+    },
+    {
+      "id": 1,
+      "type": "VHS_LoadVideo",
+      "pos": {
+        "0": -120,
+        "1": 290
+      },
+      "size": [
+        340,
+        844.8888888888889
+      ],
+      "flags": {
+        "collapsed": false
+      },
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "meta_batch",
+          "type": "VHS_BatchManager",
+          "link": null,
+          "label": "批次管理",
+          "shape": 7
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ],
+          "slot_index": 0,
+          "label": "图像",
+          "shape": 3
+        },
+        {
+          "name": "frame_count",
+          "type": "INT",
+          "links": null,
+          "slot_index": 1,
+          "label": "帧计数",
+          "shape": 3
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            24
+          ],
+          "slot_index": 2,
+          "label": "音频",
+          "shape": 3
+        },
+        {
+          "name": "video_info",
+          "type": "VHS_VIDEOINFO",
+          "links": null,
+          "label": "视频信息",
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VHS_LoadVideo",
+        "cnr_id": "comfyui-videohelpersuite",
+        "ver": "4c7858ddd5126f7293dc3c9f6e0fc4c263cde079"
+      },
+      "widgets_values": {
+        "video": "原视频.mp4",
+        "force_rate": 25,
+        "force_size": "Disabled",
+        "custom_width": 720,
+        "custom_height": 1280,
+        "frame_load_cap": 330,
+        "skip_first_frames": 0,
+        "select_every_nth": 2,
+        "choose video to upload": "image",
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {
+            "frame_load_cap": 330,
+            "skip_first_frames": 0,
+            "force_rate": 25,
+            "filename": "原视频.mp4",
+            "type": "input",
+            "format": "video/mp4",
+            "select_every_nth": 2,
+            "value": "video/eca755ce1b6946a886182665ed2f528e/63d81c024227ba7776958802936b223bb2631fbdd4c725478db20f530ac25dfe.mp4",
+            "name": "原视频.mp4",
+            "url": "https://liblibai-tmp-image.liblib.cloud/video/eca755ce1b6946a886182665ed2f528e/63d81c024227ba7776958802936b223bb2631fbdd4c725478db20f530ac25dfe.mp4"
+          }
+        }
+      },
+      "_widget_cache_map": {
+        "原视频.mp4": {
+          "value": "video/eca755ce1b6946a886182665ed2f528e/63d81c024227ba7776958802936b223bb2631fbdd4c725478db20f530ac25dfe.mp4",
+          "name": "原视频.mp4",
+          "filename": "原视频.mp4",
+          "format": "video/mp4",
+          "url": "https://liblibai-tmp-image.liblib.cloud/video/eca755ce1b6946a886182665ed2f528e/63d81c024227ba7776958802936b223bb2631fbdd4c725478db20f530ac25dfe.mp4"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "LoadImage",
+      "pos": {
+        "0": -340,
+        "1": 300
+      },
+      "size": {
+        "0": 210,
+        "1": 330
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2
+          ],
+          "label": "图像",
+          "shape": 3
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "label": "遮罩",
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage",
+        "cnr_id": "comfy-core",
+        "ver": "0.3.15"
+      },
+      "widgets_values": [
+        "新人.png",
+        "image"
+      ],
+      "_widget_cache_map": {
+        "新人.png": {
+          "value": "img/eca755ce1b6946a886182665ed2f528e/042aa82c7de9dcd367170683d7cdb2bd320feff6c26d9007e06a983ab09c3ea6.png",
+          "name": "新人.png",
+          "url": "https://liblibai-tmp-image.liblib.cloud/img/eca755ce1b6946a886182665ed2f528e/042aa82c7de9dcd367170683d7cdb2bd320feff6c26d9007e06a983ab09c3ea6.png",
+          "width": 1024,
+          "height": 1536
+        }
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      3,
+      0,
+      2,
+      1,
+      "IMAGE"
+    ],
+    [
+      5,
+      2,
+      0,
+      6,
+      0,
+      "IMAGE"
+    ],
+    [
+      22,
+      2,
+      0,
+      18,
+      0,
+      "IMAGE"
+    ],
+    [
+      23,
+      6,
+      0,
+      19,
+      0,
+      "IMAGE"
+    ],
+    [
+      24,
+      1,
+      2,
+      19,
+      1,
+      "VHS_AUDIO"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "给视频人物换脸",
+      "bounding": [
+        -370,
+        30,
+        1450,
+        1170
+      ],
+      "color": "#b06634",
+      "font_size": 60,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.1671841070450009,
+      "offset": [
+        576.8054974643919,
+        -106.27976980881752
+      ]
+    },
+    "0246.VERSION": [
+      0,
+      0,
+      4
+    ],
+    "ue_links": [],
+    "workspace_info": {
+      "id": "dzVd1PnJ-xzkpcB2wgs_B"
+    }
+  },
+  "version": 0.4,
+  "widget_idx_map": {},
+  "seed_widgets": {}
+}

@@ -157,14 +157,19 @@ def pip(venv: Path, args: List[str], cwd: Optional[Path] = None, dry: bool = Fal
 
 def install_torch(venv: Path, cuda: str, dry: bool = False) -> None:
     idx_map = {
+        "cu128": "https://download.pytorch.org/whl/cu128",
+        "cu125": "https://download.pytorch.org/whl/cu125",
+        "cu124": "https://download.pytorch.org/whl/cu124",
         "cu121": "https://download.pytorch.org/whl/cu121",
         "cu118": "https://download.pytorch.org/whl/cu118",
         "cpu":   "https://download.pytorch.org/whl/cpu",
     }
     if cuda not in idx_map:
-        raise ValueError("--cuda must be one of cu121|cu118|cpu")
+        raise ValueError("--cuda must be one of cu128|cu125|cu124|cu121|cu118|cpu")
+
     pip(venv, ["-U", "pip", "setuptools", "wheel"], dry=dry)
     pip(venv, ["torch", "torchvision", "torchaudio", "--index-url", idx_map[cuda]], dry=dry)
+
 
 
 # ------------------------------ requirements ----------------------------------
@@ -331,7 +336,8 @@ def start_comfy(venv: Path, base: Path, port: int, listen_all: bool, dry: bool =
 def main() -> None:
     parser = argparse.ArgumentParser(prog=APP_NAME, description="ComfyUI + Wan 2.2 setup CLI (Subfolder Layout).")
     sub = parser.add_subparsers(dest="cmd", required=True)
-
+    # kill port if exist
+    # run(["npx", "kill-port", "8188"])
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--path", type=Path, default=DEFAULT_DIR, help=f"Base directory (default: {DEFAULT_DIR})")
     common.add_argument("--dry-run", action="store_true", help="Print commands, don’t execute")
@@ -339,7 +345,7 @@ def main() -> None:
 
     p_install = sub.add_parser("install", parents=[common], help="Full install into <base>/ComfyUI (fresh venv by default).")
     p_install.add_argument("--python", dest="pyver", default=None, help="Python launcher version (Windows), e.g. 3.11")
-    p_install.add_argument("--cuda", choices=["cu121", "cu118", "cpu"], required=True, help="Torch build")
+    p_install.add_argument("--cuda", choices=["cu121","cu124","cu128","cu125", "cu118", "cpu"], required=True, help="Torch build")
     p_install.add_argument("--with-manager", action="store_true", help="Install ComfyUI-Manager")
     p_install.add_argument("--models", choices=["5b", "14b", "i2v", "all"], default=None, help="Wan 2.2 model set")
     p_install.add_argument("--hf-token", default=None, help="Hugging Face token (optional)")
