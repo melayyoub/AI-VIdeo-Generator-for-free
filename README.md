@@ -144,7 +144,18 @@ or:
 .\ComfyUI\.venv\Scripts\activate
 python wan2_cli.py start --path . --port 8188
 
+Example Usage
+If you have backup wheels
+.\install.ps1 -Cuda cu121 -Models all -WithManager -Start -Wheelhouse "E:\python-projects\custom-wan\wheel_backup"
 
+
+This will only install from your offline .whl collection.
+
+If no wheelhouse specified
+.\install.ps1 -Cuda cu121 -Models all -WithManager -Start
+
+
+It will install online normally.
 
 
 🏁 Done

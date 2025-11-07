@@ -27,6 +27,7 @@ DEFAULT_DIR = Path.cwd()       # default to current folder as base
 COMFY_DIR   = "ComfyUI"        # enforced subfolder for repo
 VENV_DIR    = ".venv"
 DEFAULT_PORT = 8188
+WHEELHOUSE = None
 
 WAN_REPO = "Comfy-Org/Wan_2.2_ComfyUI_Repackaged"
 
@@ -154,8 +155,20 @@ def ensure_venv(base: Path, py_ver: Optional[str], dry: bool = False) -> Path:
     return venv
 
 def pip(venv: Path, args: List[str], cwd: Optional[Path] = None, dry: bool = False) -> int:
-    pip_cmd = [py_exec(venv_bin=venv / ("Scripts" if is_windows() else "bin")), "-m", "pip", "install", "--no-cache-dir"] + args
+    global WHEELHOUSE
+    py = py_exec(venv_bin=venv / ("Scripts" if is_windows() else "bin"))
+
+    # If wheelhouse mode enabled → force offline install
+    if WHEELHOUSE and Path(WHEELHOUSE).exists():
+        pip_cmd = [
+            py, "-m", "pip", "install", "--no-cache-dir",
+            "--no-index", "--find-links", str(WHEELHOUSE)
+        ] + args
+    else:
+        pip_cmd = [py, "-m", "pip", "install", "--no-cache-dir"] + args
+
     return run(pip_cmd, cwd=cwd, dry=dry)
+
 
 def install_torch(venv: Path, cuda: str, dry: bool = False) -> None:
     idx_map = {
@@ -170,7 +183,13 @@ def install_torch(venv: Path, cuda: str, dry: bool = False) -> None:
         raise ValueError("--cuda must be one of cu128|cu125|cu124|cu121|cu118|cpu")
 
     pip(venv, ["-U", "pip", "setuptools", "wheel"], dry=dry)
-    pip(venv, ["torch", "torchvision", "torchaudio", "--index-url", idx_map[cuda]], dry=dry)
+    pip(venv, [
+        "--upgrade",
+        "torch",
+        "torchvision",
+        "torchaudio",
+        "--index-url", idx_map[cuda]
+    ], dry=dry)
 
 
 
@@ -190,9 +209,20 @@ def ensure_model_dirs(base: Path, dry: bool = False) -> None:
                 p.mkdir(parents=True, exist_ok=True)
 
 def install_comfy_requirements(venv: Path, base: Path, dry: bool = False) -> None:
+    """
+    Install only what is required, but in the correct order:
+      1) ComfyUI minimal deps (WITHOUT upgrading our pinned libs)
+      2) Apply our locked all-requirements.txt (no dependency solving)
+    """
     comfy = comfy_root(base)
-    pip(venv, ["-r", "requirements.txt"], cwd=comfy, dry=dry)
-    pip(venv, ["-r", "all-requirements.txt", "--no-deps"], cwd=comfy, dry=dry)
+
+    # 1) ComfyUI minimal deps (NO upgrading our working env)
+    #    We prevent pip from modifying anything core
+    pip(venv, ["--no-deps", "-r", "requirements.txt"], cwd=comfy, dry=dry)
+
+    # 2) Apply Sam’s locked master environment
+    pip(venv, ["--no-deps", "-r", "all-requirements.txt"], cwd=comfy, dry=dry)
+
 
 def install_manager(venv: Path, base: Path, dry: bool = False) -> None:
     comfy = comfy_root(base)
@@ -356,7 +386,8 @@ def main() -> None:
     p_install.add_argument("--port", type=int, default=DEFAULT_PORT, help=f"Port (default {DEFAULT_PORT})")
     p_install.add_argument("--listen-all", action="store_true", help="Bind 0.0.0.0")
     p_install.add_argument("--reuse-venv", action="store_true", help="Reuse existing .venv instead of recreating")
-
+    p_install.add_argument("--wheelhouse", type=str, default=None,
+                       help="Directory of .whl files for offline install (pip --no-index mode)")
     p_models = sub.add_parser("models", parents=[common], help="Download/refresh Wan 2.2 models (uses venv).")
     p_models.add_argument("--models", choices=["5b", "14b", "i2v", "all"], required=True)
     p_models.add_argument("--hf-token", default=None, help="Hugging Face token (optional)")
@@ -381,6 +412,8 @@ def main() -> None:
     ensure_base_dir(base, dry=dry)
 
     if args.cmd == "install":
+        global WHEELHOUSE
+        WHEELHOUSE = args.wheelhouse
         # 1) Ensure ComfyUI code exists in subfolder
         clone_comfy(base, dry=dry)
         ensure_model_dirs(base, dry=dry)
