@@ -210,18 +210,27 @@ def ensure_model_dirs(base: Path, dry: bool = False) -> None:
 
 def install_comfy_requirements(venv: Path, base: Path, dry: bool = False) -> None:
     """
-    Install only what is required, but in the correct order:
-      1) ComfyUI minimal deps (WITHOUT upgrading our pinned libs)
-      2) Apply our locked all-requirements.txt (no dependency solving)
+    Install dependencies in a safe and controlled order:
+      1) Install ComfyUI internal requirements with NO dependency solving.
+      2) Apply our pinned environment (all-requirements.txt) also with NO dependency solving.
+    This ensures:
+      - No surprise upgrades
+      - HuggingFace / transformers / torch remain stable
+      - Custom speech stack remains intact
     """
     comfy = comfy_root(base)
 
-    # 1) ComfyUI minimal deps (NO upgrading our working env)
-    #    We prevent pip from modifying anything core
-    pip(venv, ["--no-deps", "-r", "requirements.txt"], cwd=comfy, dry=dry)
+    # 1) Install ComfyUI core deps (frozen)
+    pip(venv, [
+        "--no-deps", 
+        "-r", "requirements.txt"
+    ], cwd=comfy, dry=dry)
 
-    # 2) Apply Sam’s locked master environment
-    pip(venv, ["--no-deps", "-r", "all-requirements.txt"], cwd=comfy, dry=dry)
+    # 2) Apply our full locked stack (frozen, no dependency solver allowed)
+    pip(venv, [
+        "--no-deps",
+        "-r", "all-requirements.txt"
+    ], cwd=comfy, dry=dry)
 
 
 def install_manager(venv: Path, base: Path, dry: bool = False) -> None:
