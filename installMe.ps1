@@ -7,6 +7,7 @@ Get-ChildItem -Path .\ComfyUI\custom_nodes -Recurse -Filter requirements.txt |
 # 2. Dynamic cleanup
 $requirements = Get-Content all-requirements-raw.txt
 $best = @{}
+$env:GIT_CLONE_PROTECTION_ACTIVE = "false"
 
 # Get list of already installed packages
 $installed = pip list --format=freeze | ForEach-Object {

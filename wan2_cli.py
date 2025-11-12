@@ -22,6 +22,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Optional, List
 
+
 APP_NAME    = "wan2_cli"
 DEFAULT_DIR = Path.cwd()       # default to current folder as base
 COMFY_DIR   = "ComfyUI"        # enforced subfolder for repo
@@ -108,7 +109,7 @@ def clone_comfy(base: Path, dry: bool = False) -> None:
     if comfy.exists():
         if (comfy / ".git").exists():
             log("ComfyUI already cloned — pulling latest.")
-            run(["git", "pull", "--ff-only"], cwd=comfy, dry=dry)
+            run(["git", "pull", "origin", "master"], cwd=comfy, dry=dry)
             return
         # not a repo: check if empty
         try:
@@ -229,7 +230,12 @@ def install_comfy_requirements(venv: Path, base: Path, dry: bool = False) -> Non
     # 2) Apply our full locked stack (frozen, no dependency solver allowed)
     pip(venv, [
         "--no-deps",
-        "-r", "all-requirements.txt"
+        "-r", "../requirements.txt"
+    ], cwd=comfy, dry=dry)
+    
+    pip(venv, [
+        "--no-deps",
+        "-r", "../all-requirements.txt"
     ], cwd=comfy, dry=dry)
 
 

@@ -46,14 +46,15 @@ if ($exit -ne 0) { Write-Error "wan2_cli.py install failed ($exit)"; exit $exit 
 Write-Host "[install.ps1] Applying environment patches..."
 $venv = Join-Path $BasePath 'ComfyUI\.venv\Scripts\activate.ps1'
 & $venv
+$env:GIT_CLONE_PROTECTION_ACTIVE = "false"
 
-pip install -U pip wheel
-pip uninstall -y google-protobuf protobuf onnx onnxruntime tensorflow tensorboard
-pip install protobuf==3.20.3
-pip install onnx==1.14.1
-pip install onnxruntime-gpu==1.19.2
-pip install insightface==0.7.3
-pip install audiotools==0.7.4 dac librosa==0.10.1 ffmpeg-python soundfile
+pip install -U pip setuptools wheel build
+pip install protobuf
+pip install onnx
+pip install onnxruntime-gpu
+pip install insightface
+pip install git+https://github.com/descriptinc/audiotools
+pip install audiotoolbox dac librosa ffmpeg-python soundfile huggingface_hub regex
 
 Write-Host ''
 Write-Host '[install.ps1] ✅ Environment patched for cu128 + Python 3.10'
