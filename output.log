@@ -90,3 +90,124 @@ Requirement already satisfied: lazy-loader>=0.4 in e:\python-projects\custom-wan
 ✗ RIFE not available. Will auto-download on first use.
 ✗ FILM not available. Will auto-download on first use.
 F5TTS. Checking out submodules
+F5TTS. Something is wrong with your git installation.  It is unable to checkout submodules.  You can install the latest from https://git-scm.com/downloads
+!!!fish_speech path was added to E:\python-projects\custom-wan\ComfyUI\.venv\lib\site-packages/fish_speech.pth
+ if meet `No module` error,try `python main.py` again
+[VisualMarquee] API route registered: POST /flow_assistor/submit_crop
+[VisualMarquee] API route registered: POST /api/flow_assistor/submit_crop
+!!!GPT_SoVITS path was added to E:\python-projects\custom-wan\ComfyUI\.venv\lib\site-packages/GPT_SoVITS.pth
+ if meet `No module` error,try `python main.py` again, don't be foolish to pip install tools
+GPT_SoVITS use cache models,make sure your 'pretrained_models' complete
+[ComfyUI-Grounding] Initializing custom node...
+[ComfyUI-Grounding] Initializing...
+[ComfyUI-Grounding] Modern ComfyUI detected - using automatic web extension serving
+[ComfyUI-Grounding] [OK] Initialization script completed
+[ComfyUI-Grounding] Loading nodes module...
+[ComfyUI-Grounding] [OK] Imported basic dependencies (torch, numpy, etc.)
+[ComfyUI-Grounding] [OK] Imported config (MODEL_REGISTRY, MASK_MODEL_REGISTRY)
+[ComfyUI-Grounding] [OK] Imported utils.cache
+[ComfyUI-Grounding] [OK] Imported utils (draw_boxes, boxes_to_masks)
+[ComfyUI-Grounding] [OK] Imported grounding_dino
+[ComfyUI-Grounding] [OK] Imported owlv2
+[ComfyUI-Grounding] [OK] Imported florence2
+[ComfyUI-Grounding] [OK] Imported yolo_world
+[ComfyUI-Grounding] [OK] Imported florence2_seg
+[ComfyUI-Grounding] [OK] Imported sa2va
+[ComfyUI-Grounding] [OK] Imported sam2
+[ComfyUI-Grounding] [OK] Imported visualizer
+[ComfyUI-Grounding] [OK] All modules imported successfully
+[ComfyUI-Grounding] [OK] Node classes imported successfully
+[ComfyUI-Grounding] [OK] Loaded successfully!
+Unable to import guidedFilter, make sure you have only opencv-contrib-python or run the import_error_install.bat script
+--------------------- Jake Upgrade Nodes ---------------------
+🔶 Version 2.6.3
+🔶 Config file loaded successfully
+🔶 Using standard version of RandomPrompter
+🔶 All main modules loaded
+🔶 No deprecated nodes loaded
+🔶 Total nodes: 106
+--------------------------------------------------------------
+jjk_util loding
+Set up system temp directory: E:\temp\latentsync_b48f0ff8
+
+----------------------------------------------------------------------
+[ComfyUI-Manager] NOTICE: Legacy backup exists
+  - Your old Manager data was backed up to:
+      E:\python-projects\custom-wan\ComfyUI\user\__manager\.legacy-manager-backup
+  - Please verify and remove it when no longer needed.
+----------------------------------------------------------------------
+
+json_repair## OK
+FETCH ComfyRegistry Data: 5/137
+pls check  transformers.__version__>=4.36.0:: AutoProcessor, BlipForConditionalGeneration
+## clip_interrogator_model not found: E:\python-projects\custom-wan\ComfyUI\models\clip_interrogator\Salesforce\blip-image-captioning-base, pls download from https://huggingface.co/Salesforce/blip-image-captioning-base
+fal-client## OK
+FETCH ComfyRegistry Data: 10/137
+FETCH ComfyRegistry Data: 15/137
+FETCH ComfyRegistry Data: 20/137
+Imported human4d_nodes nodes
+Imported mgpt_nodes nodes
+Imported smpl_nodes nodes
+Imported spectre_nodes nodes
+Orpheus TTS and Audio Effects nodes loaded successfully
+Please 'pip install xformers'
+Nvidia APEX normalization not installed, using PyTorch LayerNorm
+Please install flash attention
+Added submodule to path: E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-quadmoons-nodes\efficiency_nodes
+Failed to auto update `Quality of Life Suit` 
+QualityOfLifeSuit_Omar92_DIR: E:\python-projects\custom-wan\ComfyUI\custom_nodes\ComfyUI-QualityOfLifeSuit_Omar92
+Error loading module AILab_QwenVL: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading module AILab_QwenVL_PromptEnhancer: cannot import name 'ATTENTION_MODES' from 'AILab_QwenVL' (E:\python-projects\custom-wan\ComfyUI\custom_nodes\ComfyUI-QwenVL\AILab_QwenVL.py)
+
+[ReActor] - STATUS - Running v0.6.2-a4 in ComfyUI
+Torch version: 2.5.1+cu121
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\AILab_ClothSegment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\AILab_FaceSegment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\AILab_FashionSegment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\AILab_SAM2Segment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\AILab_SegmentV2.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_ClothSegment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_FaceSegment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_FashionSegment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_Florence2.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_SAM2Segment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_SegmentV2.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\SDMatte\modeling\SDMatte\meta_arch.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\SDMatte\utils\replace.py: Failed to import diffusers.models.unets.unet_2d_condition because of the following error (look up to see its traceback):
+DLL load failed while importing _C_flashattention: The specified procedure could not be found.
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\SDMatte\utils\utils.py: DLL load failed while importing _C_flashattention: The specified procedure could not be found.
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_ClothSegment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_FaceSegment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_FashionSegment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_Florence2.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_SAM2Segment.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+Error loading E:\python-projects\custom-wan\ComfyUI\custom_nodes\comfyui-rmbg\py\AILab_SegmentV2.py: initialization of _pywrap_checkpoint_reader raised unreported exception
+[ComfyUI-RMBG] v3.0.0 | 37 nodes Loaded
+[RNDNANTHU] : THANKS FOR USING
+[RNDNANTHU] : KINDLY GIVE YOUR SUPPORT TO RNDNANTHU
+!!!RVC path was added to E:\python-projects\custom-wan\ComfyUI\.venv\lib\site-packages/users.pth
+ if meet `No module` error,try `python main.py` again
+!!!RVC use cache models,make sure your 'assets' complete
+FETCH ComfyRegistry Data: 25/137
+AudioX: Python executable: E:\python-projects\custom-wan\ComfyUI\.venv\Scripts\python.exe
+AudioX: Python version: 3.10.11
+AudioX: AudioX root: E:\python-projects\custom-wan\ComfyUI\custom_nodes\ComfyUI-StableAudioX\audiox
+AudioX: Current working directory: E:\python-projects\custom-wan\ComfyUI
+AudioX: Added to path: E:\python-projects\custom-wan\ComfyUI\custom_nodes\ComfyUI-StableAudioX
+AudioX: EMERGENCY DEPENDENCY CHECK...
+AudioX: vector_quantize_pytorch already available
+AudioX: EMERGENCY DEPENDENCY CHECK...
+here: E:\python-projects\custom-wan\ComfyUI\custom_nodes\ComfyUI-tbox
+Using ckpts path: E:\python-projects\custom-wan\ComfyUI\custom_nodes\ComfyUI-tbox\..\..\models\annotator
+Using symlinks: False
+Using ort providers: ['CUDAExecutionProvider', 'DirectMLExecutionProvider', 'OpenVINOExecutionProvider', 'ROCMExecutionProvider', 'CPUExecutionProvider']
+E:\python-projects\custom-wan\ComfyUI\custom_nodes\ComfyUI-TTS\AutoUpdate.json
+Imported node: DT_Flatten_Colors
+Imported node: DT_FontText
+Imported node: DT_GenerateNoise
+Imported node: DT_Glitch_This
+Imported node: DT_Hue_Rotation
+Imported node: DT_Load_Picture_Index
+Imported node: DT_PILGram
+Imported node: DT_Pixel_Sort
+Imported node: DT_Play_Sound_At_Execution

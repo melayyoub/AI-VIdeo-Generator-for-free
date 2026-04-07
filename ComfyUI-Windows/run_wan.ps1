@@ -1,64 +1,71 @@
 # =========================
-# WAN Service Launcher
+# WAN Service Launcher (STABLE)
 # =========================
 
-Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 # Config
 $projectPath = "E:\python-projects\custom-wan"
-$pythonExe = "$projectPath\ComfyUI\.venv\Scripts\python.exe"
-$args = "wan2_cli.py start --path . --port 8188"
+$pythonExe   = "$projectPath\ComfyUI\.venv\Scripts\python.exe"
+$args        = "wan2_cli.py start --path . --port 8188"
 
-# Logs
 $logOut = "$projectPath\output.log"
 $logErr = "$projectPath\error.log"
 
-# Move to project directory
+# Validate
+if (!(Test-Path $projectPath)) { Write-Host "Bad project path"; Read-Host; exit }
+if (!(Test-Path $pythonExe))   { Write-Host "Bad python path"; Read-Host; exit }
+
 Set-Location $projectPath
 
 Write-Host "====================================="
-Write-Host "   WAN Service Launcher Started"
+Write-Host " WAN Service Launcher (Stable Mode)"
 Write-Host "====================================="
 Write-Host "Logs:"
-Write-Host " - Output: $logOut"
-Write-Host " - Error : $logErr"
-Write-Host ""
-Write-Host "Close this window to stop the service."
+Write-Host " - $logOut"
+Write-Host " - $logErr"
 Write-Host ""
 
-# Global process reference
-$global:process = $null
+$process = $null
 
-# Cleanup on exit
-$null = Register-EngineEvent PowerShell.Exiting -Action {
-    if ($global:process -and -not $global:process.HasExited) {
-        Write-Host "`nStopping Python process..."
-        Stop-Process -Id $global:process.Id -Force
+# Kill on exit
+Register-EngineEvent PowerShell.Exiting -Action {
+    if ($process -and -not $process.HasExited) {
+        taskkill /PID $process.Id /T /F | Out-Null
     }
-}
+} | Out-Null
 
-# Restart loop
 while ($true) {
-    Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting service..."
 
-    $global:process = Start-Process `
-        -FilePath $pythonExe `
-        -ArgumentList $args `
-        -RedirectStandardOutput $logOut `
-        -RedirectStandardError $logErr `
-        -NoNewWindow `
-        -PassThru
+    Write-Host "`n[$(Get-Date)] Starting..."
 
     try {
-        Wait-Process -Id $global:process.Id
+        $process = Start-Process `
+            -FilePath $pythonExe `
+            -ArgumentList $args `
+            -WorkingDirectory $projectPath `
+            -RedirectStandardOutput $logOut `
+            -RedirectStandardError $logErr `
+            -NoNewWindow `
+            -PassThru
+
+        Start-Sleep 2
+
+        if ($process.HasExited) {
+            Write-Host "❌ Crashed immediately (exit $($process.ExitCode))"
+        }
+        else {
+            Write-Host "✅ Running at http://localhost:8188"
+            Start-Process "http://localhost:8188"
+        }
+
+        Wait-Process -Id $process.Id
     }
     catch {
-        Write-Warning "Process interrupted."
+        Write-Host "ERROR:"
+        Write-Host $_
     }
 
-    if ($global:process.HasExited) {
-        Write-Warning "[$(Get-Date -Format 'HH:mm:ss')] Process exited. Restarting in 3 seconds..."
-        Start-Sleep -Seconds 3
-    }
+    Write-Host "Restarting in 3 seconds..."
+    Start-Sleep 3
 }
