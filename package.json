@@ -4,11 +4,10 @@
   "description": "**Author:** Sam Ayoub  \r **Copyright:** © 2025 Sam Ayoub  \r **License:** MIT",
   "main": "index.js",
   "directories": {
-    "example": "examples",
-      "example": "examples"
+    "example": "examples"
   },
   "scripts": {
-    "wnew" : ".\\installMe.ps1 && .\\install.ps1 -Cuda cu128 -Models 5b -WithManager -Start",
+    "wnew": ".\\installMe.ps1 && .\\install.ps1 -Cuda cu128 -Models 5b -WithManager -Start",
     "wstart": ".\\ComfyUI\\.venv\\Scripts\\Activate.ps1 && python wan2_cli.py start --path . --port 8188",
     "lstart": ".\\ComfyUI\\.venv\\Scripts\\activate && python wan2_cli.py start --path . --port 8188"
   },
@@ -23,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/melayyoub/AI-VIdeo-Generator-for-free/issues"
   },
-  "homepage": "https://github.com/melayyoub/AI-VIdeo-Generator-for-free#readme"
+  "homepage": "https://github.com/melayyoub/AI-VIdeo-Generator-for-free#readme",
+  "dependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+  }
 }

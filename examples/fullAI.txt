@@ -1,0 +1,351 @@
+================= VIRAL VIDEO PACK – 20 ORIGINAL IDEAS (TXT FILE) =================
+
+
+====================================================================================
+1. THE GPS THAT JUDGES YOUR LIFE
+====================================================================================
+
+SCRIPT:
+GPS (dead serious): “In 200 meters… turn left. Unlike you, this direction actually makes sense.”
+You: “Bro relax.”
+GPS: “You’ve missed the turn. Again. Just like you missed that gym membership.”
+You: “I JUST WANT STARBUCKS.”
+GPS: “Maybe try fixing your life before fixing your caffeine addiction.”
+
+SHOT LIST:
+– POV driving
+– Close-up of phone GPS talking
+– Reaction shots
+
+SFX:
+– Car blinkers, soft bass humor tone
+
+COMFYUI PROMPT:
+“funny cinematic car interior, phone GPS with expressive face, daylight, high realism, clean lighting, subtle humor tone, WAN 2.2 detail, emotional facial reactions”
+NEGATIVE: “blurry, extra limbs, text, watermark, distortion, warped phone”
+
+TIMING:
+0-3s intro, 3-10s insults, 10-18s argument, 18-22s punchline
+
+CAPTION:
+“My GPS needs therapy 😂”
+HASHTAGS:
+#funny #gps #ai #viral #tiktok
+
+
+====================================================================================
+2. DRAMATIC AI TRANSLATOR
+====================================================================================
+
+SCRIPT:
+You: “Translate: I’m hungry.”
+AI Translator (deep voice): “His soul cries for nourishment… feed him before he falls into darkness.”
+You: “BRO STOP.”
+AI: “Silence… mortal.”
+
+SHOT LIST:
+– Split screen: you vs translator
+– Dramatic lighting for translator
+
+SFX:
+– Thunder hit, dramatic choir
+
+PROMPT:
+“AI translator hologram, overly dramatic expression, cinematic lighting, humor tone”
+NEGATIVE:
+“grain, glitch, long neck”
+
+TIMING:
+0-4s setup, 4-12s dramatic lines, 12-20s chaos
+
+CAPTION:
+“AI went Shakespeare on me 💀”
+
+
+====================================================================================
+3. FUTURE YOU VOICE MESSAGES
+====================================================================================
+
+SCRIPT:
+*Phone buzzes*
+Future You: “Stop drinking energy drinks. We’re bald at 37.”
+You: “HUH?”
+Another message: “Also… don’t trust the guy with the silver Toyota.”
+
+SFX:
+– WhatsApp sounds, sci-fi whoosh
+
+PROMPT:
+“future hologram message screen, digital glitch effect, comedic futuristic theme”
+
+CAPTION:
+“When future-you is toxic”
+
+
+====================================================================================
+4. TALKING OBJECTS (FRIDGE, KEYS, SHOES)
+====================================================================================
+
+SCRIPT:
+Keys: “Ya zalameh, again? You dropped me for the 17th time today.”
+Shoes: “My back hurts, stop stomping like an elephant.”
+Fridge: “Open me one more time and I’m blocking you.”
+
+PROMPT:
+“animated household objects with faces, comedic expressions, Pixar style realism”
+
+CAPTION:
+“When your house has had ENOUGH”
+
+
+====================================================================================
+5. GYM EQUIPMENT THAT TALKS SH*T
+====================================================================================
+
+SCRIPT:
+Dumbbell: “10 pounds, big man? Wow.”
+Treadmill: “You lasted 22 seconds. New record: FAILURE.”
+
+PROMPT:
+“gym equipment with mouths, sarcastic expressions, comedic surreal realism”
+
+CAPTION:
+“The gym bullied me today.”
+
+
+====================================================================================
+6. THE HONEST BABY MONITOR
+====================================================================================
+
+SCRIPT:
+Baby Monitor: “He’s crying because you used the cheap bottle.”
+You: “WHAT?”
+Baby Monitor: “Unbelievable parenting.”
+
+PROMPT:
+“baby monitor with LED mouth, sarcastic, glowing face”
+
+CAPTION:
+“This baby monitor needs to chill.”
+
+
+====================================================================================
+7. AI DETECTS YOUR MOOD WRONG EVERY TIME
+====================================================================================
+
+SCRIPT:
+You crying.
+AI: “User appears happy.”
+You laughing.
+AI: “User is depressed.”
+
+PROMPT:
+“glitchy emotion detection HUD overlay, futuristic blue hologram”
+
+CAPTION:
+“Mood detection be like 💀”
+
+
+====================================================================================
+8. PHONE BATTERY BEFORE DYING
+====================================================================================
+
+SCRIPT:
+Phone at 3%:
+“I’m fading… tell my apps I loved them.”
+You: “BRO STOP BEING DRAMATIC.”
+
+PROMPT:
+“talking phone battery icon with face, cinematic humor lighting”
+
+CAPTION:
+“When your phone acts like it’s dying in a movie.”
+
+
+====================================================================================
+9. FOOD THAT REJECTS YOU
+====================================================================================
+
+SCRIPT:
+Pizza: “No. You ate me yesterday. Respect yourself.”
+Milk: “I expired last week, good luck.”
+
+PROMPT:
+“talking food items, comedic personalities, kitchen scene”
+
+CAPTION:
+“When food has boundaries now.”
+
+
+====================================================================================
+10. GOOGLE SEARCH THAT JUDGES YOU
+====================================================================================
+
+SCRIPT:
+You type: “Why am I tired?”
+Google (sassy voice): “Maybe because you sleep at 4 AM watching TikTok. I’m just saying.”
+
+PROMPT:
+“talking Google search bar, expressive face, digital hologram”
+
+CAPTION:
+“Google needs to mind its business 💀”
+
+
+====================================================================================
+11. YOUR SHADOW HAS OPINIONS
+====================================================================================
+
+SCRIPT:
+Shadow walks away.
+Shadow: “I need space bro. You’re too dramatic.”
+
+PROMPT:
+“stylized shadow separate from body, black humor aesthetic”
+
+CAPTION:
+“When even your shadow leaves you.”
+
+
+====================================================================================
+12. JORDANIAN MOM VS SIRI
+====================================================================================
+
+SCRIPT:
+You: “Hey Siri—”
+Mom: “ANSWER HER YOURSELF!”
+Siri: “I wasn’t talking to her ya zalameh.”
+
+PROMPT:
+“middle eastern mom, expressive reaction, comedic realism, Siri hologram”
+
+CAPTION:
+“This is every Arab house.”
+
+
+====================================================================================
+13. THOUGHTS WITH SOUND EFFECTS
+====================================================================================
+
+SCRIPT:
+You lie → Pinocchio sound  
+You see food → choir sound  
+You try to work → Windows error
+
+PROMPT:
+“floating thought bubbles with SFX icons, comedic”
+
+CAPTION:
+“If thoughts had sound effects.”
+
+
+====================================================================================
+14. MOVIE TRAILER OF YOUR BORING LIFE
+====================================================================================
+
+SCRIPT:
+Narrator: “In a world… where Sam tries to find parking at Walmart…”
+(Explosion SFX)
+
+PROMPT:
+“hyper-dramatic movie trailer scenes, slow motion, cinematic lighting”
+
+CAPTION:
+“My life is a movie… a bad one 😂”
+
+
+====================================================================================
+15. APPLIANCES TEXTING YOU
+====================================================================================
+
+SCRIPT:
+Washing Machine: “Stop putting ONE sock.”
+Fridge: “Stop opening me every 10 minutes.”
+
+PROMPT:
+“phone messages from appliances, humor, bright style”
+
+CAPTION:
+“Appliances are toxic now.”
+
+
+====================================================================================
+16. BIRTHDAY KNOCKS ON YOUR DOOR
+====================================================================================
+
+SCRIPT:
+Birthday: “I’m here. Where’s my cake?”
+You: “Bro, I’m broke.”
+Birthday: “Not my problem.”
+
+PROMPT:
+“human-sized birthday number character knocking on door”
+
+CAPTION:
+“Birthdays don’t care.”
+
+
+====================================================================================
+17. REAL LIFE NPC GENERATOR
+====================================================================================
+
+SCRIPT:
+NPC walks up: “Nice weather we’re having.”
+Another NPC: “I used to be an adventurer…”
+
+PROMPT:
+“glitchy NPC characters spawning, comedic jitter animation”
+
+CAPTION:
+“When your life becomes a video game.”
+
+
+====================================================================================
+18. SARCASTIC ARABIC AI
+====================================================================================
+
+SCRIPT:
+You: “How do I fix my life?”
+AI (Jordanian sarcasm): “Step one: Wake up before noon. Step two: Stop eating shawarma at 1AM.”
+
+PROMPT:
+“sarcastic Arabic AI hologram, glowing face, humor”
+
+CAPTION:
+“AI became Arab real quick 💀”
+
+
+====================================================================================
+19. THE WI-FI MONSTER
+====================================================================================
+
+SCRIPT:
+Weak WiFi appears as a skinny monster:
+“Please… stop watching 4K videos… I’m dying…”
+
+PROMPT:
+“small weak monster symbolizing WiFi, comedic, glowing antenna”
+
+CAPTION:
+“My WiFi at night…”
+
+
+====================================================================================
+20. FUTURE KID TELEPORTS TO WARN YOU
+====================================================================================
+
+SCRIPT:
+Kid appears: “Baba… stop buying GPUs. We need money for school.”
+You: “HOW DID YOU GET HERE?”
+Kid: “Future problems.”
+
+PROMPT:
+“future child hologram, blue light, cute + chaotic”
+
+CAPTION:
+“My kid from the future hates my GPU obsession.”
+
+
+====================================================================================
+END OF FILE
+====================================================================================

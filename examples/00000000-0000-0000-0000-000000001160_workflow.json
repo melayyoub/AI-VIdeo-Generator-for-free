@@ -1,0 +1,372 @@
+{
+  "extra": {
+    "ds": {
+      "scale": 0.7627768444385512,
+      "offset": [
+        -62.026512575016916,
+        24.717734287205552
+      ]
+    }
+  },
+  "links": [
+    [
+      32,
+      29,
+      0,
+      28,
+      0,
+      "OMNIGEN_MODEL"
+    ],
+    [
+      33,
+      30,
+      0,
+      28,
+      1,
+      "LATENT"
+    ],
+    [
+      34,
+      27,
+      0,
+      28,
+      2,
+      "IMAGE"
+    ],
+    [
+      35,
+      32,
+      0,
+      28,
+      3,
+      "IMAGE"
+    ],
+    [
+      36,
+      28,
+      0,
+      33,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "nodes": [
+    {
+      "id": 27,
+      "pos": [
+        190,
+        350
+      ],
+      "mode": 0,
+      "size": [
+        210,
+        314
+      ],
+      "type": "LoadImage",
+      "color": "#232",
+      "flags": {},
+      "order": 0,
+      "title": "Image_1",
+      "inputs": [],
+      "bgcolor": "#353",
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            34
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "showAdvanced": null,
+      "widgets_values": [
+        "Runcomfy_Example_1160_1.png",
+        "image"
+      ]
+    },
+    {
+      "id": 30,
+      "pos": [
+        190,
+        170
+      ],
+      "mode": 0,
+      "size": [
+        315,
+        106
+      ],
+      "type": "EmptySD3LatentImage",
+      "color": "#232",
+      "flags": {},
+      "order": 1,
+      "title": "Output Resolution",
+      "inputs": [],
+      "bgcolor": "#353",
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            33
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptySD3LatentImage"
+      },
+      "showAdvanced": null,
+      "widgets_values": [
+        768,
+        512,
+        1
+      ]
+    },
+    {
+      "id": 32,
+      "pos": [
+        190,
+        720
+      ],
+      "mode": 0,
+      "size": [
+        210,
+        314
+      ],
+      "type": "LoadImage",
+      "color": "#232",
+      "flags": {},
+      "order": 2,
+      "title": "Image_2",
+      "inputs": [],
+      "bgcolor": "#353",
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            35
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "showAdvanced": null,
+      "widgets_values": [
+        "Runcomfy_Example_1160_2.png",
+        "image"
+      ]
+    },
+    {
+      "id": 31,
+      "pos": [
+        5,
+        -80
+      ],
+      "mode": 0,
+      "size": [
+        464.31817626953125,
+        58
+      ],
+      "type": "Note",
+      "color": "#223",
+      "flags": {},
+      "order": 3,
+      "inputs": [],
+      "bgcolor": "#335",
+      "outputs": [],
+      "properties": {},
+      "showAdvanced": null,
+      "widgets_values": [
+        "https://github.com/AIFSH/OmniGen-ComfyUI"
+      ]
+    },
+    {
+      "id": 28,
+      "pos": [
+        800,
+        450
+      ],
+      "mode": 0,
+      "size": [
+        400,
+        324
+      ],
+      "type": "OmniGenNode",
+      "color": "#323",
+      "flags": {},
+      "order": 6,
+      "title": "OmniGen Sampler",
+      "inputs": [
+        {
+          "link": 32,
+          "name": "model",
+          "type": "OMNIGEN_MODEL"
+        },
+        {
+          "link": 33,
+          "name": "latent",
+          "type": "LATENT"
+        },
+        {
+          "link": 34,
+          "name": "image_1",
+          "type": "IMAGE",
+          "shape": 7
+        },
+        {
+          "link": 35,
+          "name": "image_2",
+          "type": "IMAGE",
+          "shape": 7
+        },
+        {
+          "link": null,
+          "name": "image_3",
+          "type": "IMAGE",
+          "shape": 7
+        }
+      ],
+      "bgcolor": "#535",
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            36
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "OmniGenNode"
+      },
+      "showAdvanced": null,
+      "widgets_values": [
+        "selfie with a lion, the person in image_1 is on the left and the lion in image_2 is on right, background is city",
+        30,
+        2.5,
+        1.6,
+        1024,
+        false,
+        1729,
+        "fixed"
+      ]
+    },
+    {
+      "id": 29,
+      "pos": [
+        849,
+        221
+      ],
+      "mode": 0,
+      "size": [
+        315,
+        154
+      ],
+      "type": "OmniGenLoader",
+      "color": "#223",
+      "flags": {},
+      "order": 4,
+      "inputs": [],
+      "bgcolor": "#335",
+      "outputs": [
+        {
+          "name": "OMNIGEN_MODEL",
+          "type": "OMNIGEN_MODEL",
+          "links": [
+            32
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "OmniGenLoader"
+      },
+      "showAdvanced": null,
+      "widgets_values": [
+        "OmniGen-v1",
+        "default",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": 34,
+      "pos": [
+        -403,
+        538
+      ],
+      "mode": 0,
+      "size": [
+        367.035888671875,
+        77.23751831054688
+      ],
+      "type": "Note",
+      "color": "#432",
+      "flags": {},
+      "order": 5,
+      "title": "Notes",
+      "inputs": [],
+      "bgcolor": "#653",
+      "outputs": [],
+      "properties": {},
+      "showAdvanced": null,
+      "widgets_values": [
+        "- Use 24 GB Vram Machine for Image to Image \n\n- Higher Resolution = Higher Vram Consumption.\n"
+      ]
+    },
+    {
+      "id": 33,
+      "pos": [
+        1451,
+        451
+      ],
+      "mode": 0,
+      "size": [
+        315,
+        270
+      ],
+      "type": "SaveImage",
+      "color": "#2a363b",
+      "flags": {},
+      "order": 7,
+      "inputs": [
+        {
+          "link": 36,
+          "name": "images",
+          "type": "IMAGE"
+        }
+      ],
+      "bgcolor": "#3f5159",
+      "outputs": [],
+      "properties": {},
+      "showAdvanced": null,
+      "widgets_values": [
+        "1160"
+      ]
+    }
+  ],
+  "config": {},
+  "groups": [],
+  "version": 0.4,
+  "last_link_id": 36,
+  "last_node_id": 34
+}

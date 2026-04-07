@@ -70,3 +70,4 @@ pip install --upgrade pip setuptools wheel build
 pip install --no-deps facenet-pytorch==2.6.0
 pip install  --no-deps git+https://github.com/facebookresearch/sam2
 pip install -r all-requirements.txt
+pip install nvidia-ml-py
