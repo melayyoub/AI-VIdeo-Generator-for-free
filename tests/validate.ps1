@@ -63,12 +63,28 @@ Write-Output 'PASS: parsed example workflow JSON files'
 
 $trackedFiles = @(& git ls-files)
 Assert-NativeSuccess 'Tracked-file inventory'
+$escapedBackslash = [Regex]::Escape([string] [char] 92)
 $forbiddenPatterns = @(
   ('(?i)[a-z]:\\' + 'Users\\'),
   ('(?i)[a-z]:\\[^\r\n]*\\python-' + 'projects\\'),
+  ('(?i)(?<![a-z])[a-z]:' + '\\'),
+  ('(?i)(?<![a-z])[a-z]:' + '/'),
   ('(?i)/ho' + 'me/[^/\s]+/'),
-  ('(?i)/Us' + 'ers/[^/\s]+/')
+  ('(?i)/Us' + 'ers/[^/\s]+/'),
+  ('(?i)\b[A-Z0-9._%+-]+@(?!(?:example\.(?:com|org|net)|github\.com)\b)[A-Z0-9.-]+\.[A-Z]{2,}\b')
 )
+$uncPatterns = @(
+  "(?i)(?<![\p{L}\p{N}_.-])$escapedBackslash$escapedBackslash[^$escapedBackslash\s]+$escapedBackslash",
+  "(?i)$escapedBackslash$escapedBackslash$escapedBackslash$escapedBackslash[^$escapedBackslash\s]+$escapedBackslash$escapedBackslash"
+)
+$forbiddenPatterns += $uncPatterns
+$machineSpecificValues = @(
+  $env:USERNAME,
+  $env:COMPUTERNAME,
+  $env:USERDOMAIN,
+  $env:USERPROFILE
+) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and $_.Length -ge 4 } |
+  Sort-Object -Unique
 $textExtensions = @('.json', '.md', '.ps1', '.psm1', '.py', '.sh', '.txt', '.yml', '.yaml')
 foreach ($trackedFile in $trackedFiles) {
   if ($textExtensions -notcontains [IO.Path]::GetExtension($trackedFile)) {
@@ -79,13 +95,22 @@ foreach ($trackedFile in $trackedFiles) {
     continue
   }
   $content = Get-Content -Raw -LiteralPath $fullTrackedPath -ErrorAction Stop
+  $searchableText = "$trackedFile$([Environment]::NewLine)$content"
   foreach ($pattern in $forbiddenPatterns) {
-    if ($content -match $pattern) {
+    if ($trackedFile -eq 'tests/validate.ps1' -and $uncPatterns -contains $pattern) {
+      continue
+    }
+    if ($searchableText -match $pattern) {
       throw "Tracked file contains a personal or machine-specific value: $trackedFile"
     }
   }
+  foreach ($value in $machineSpecificValues) {
+    if ($searchableText.IndexOf($value, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+      throw "Tracked file contains a value identifying the current machine or account: $trackedFile"
+    }
+  }
 }
-Write-Output 'PASS: tracked text files contain no personal or machine-specific paths'
+Write-Output 'PASS: tracked text paths and contents contain no personal or machine-specific values'
 
 if (-not (Get-Command ruff -ErrorAction SilentlyContinue)) {
   throw 'ruff is required for source validation.'
@@ -129,9 +154,19 @@ if ($IsWindows) {
 else {
   $npm = 'npm'
 }
+$metadataPaths = @('package.json', 'package-lock.json')
+$metadataBefore = @{}
+foreach ($metadataPath in $metadataPaths) {
+  $metadataBefore[$metadataPath] = (Get-FileHash -LiteralPath $metadataPath -Algorithm SHA256).Hash
+}
 & $npm install --package-lock-only --ignore-scripts --offline
 Assert-NativeSuccess 'Offline npm lockfile validation'
-& git diff --exit-code -- package.json package-lock.json
-Assert-NativeSuccess 'npm metadata consistency'
+foreach ($metadataPath in $metadataPaths) {
+  $metadataAfter = (Get-FileHash -LiteralPath $metadataPath -Algorithm SHA256).Hash
+  if ($metadataBefore[$metadataPath] -cne $metadataAfter) {
+    throw "Offline npm lockfile validation changed $metadataPath; commit synchronized metadata first."
+  }
+}
+Write-Output 'PASS: npm metadata is internally consistent'
 
 Write-Output 'PASS: repository validation suite'

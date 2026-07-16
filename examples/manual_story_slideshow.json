@@ -10,7 +10,7 @@
         10
       ],
       "properties": {
-        "text": "\ud83d\udc49 Manual Story \u2192 Images \u2192 Slideshow Video\nHow to use:\n1) Paste your story (one scene per line) into [2: Story Text].\n2) Each line will become one prompt \u2192 one image.\n3) Images are stitched into a slideshow video by [15: VHS_MakeVideo].\nRequirements:\n- SDXL checkpoint (sd_xl_base_1.0_0.9vae.safetensors)\n- rgthree util nodes (String Split, Map, etc.)\n- ComfyUI-VideoHelperSuite\n"
+        "text": "\ud83d\udc49 Manual Story \u2192 Images \u2192 Slideshow Video\nHow to us./local-assets Paste your story (one scene per line) into [2: Story Text].\n2) Each line will become one prompt \u2192 one image.\n3) Images are stitched into a slideshow video by [15: VHS_MakeVideo].\nRequirement./local-assets SDXL checkpoint (sd_xl_base_1.0_0.9vae.safetensors)\n- rgthree util nodes (String Split, Map, etc.)\n- ComfyUI-VideoHelperSuite\n"
       }
     },
     {

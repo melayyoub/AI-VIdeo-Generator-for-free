@@ -3109,7 +3109,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "AnimateDiff_00001.png",
-            "fullpath": "D:\\33_Unique-Perspective\\ComfyUI_windows_portable_sageattention_updating\\ComfyUI\\temp\\AnimateDiff_00001.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -6336,7 +6336,7 @@
         }
       },
       "widgets_values": [
-        "Choose Resolution:\n1 = 720p\n2 = 576p\n3 = 480p"
+        "Choose Resolutio./local-assets = 720p\n2 = 576p\n3 = 480p"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -7600,7 +7600,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "AnimateDiff_00601.png",
-            "fullpath": "D:\\33_Unique-Perspective\\ComfyUI_windows_portable_sageattention_updating\\ComfyUI\\output\\AnimateDiff_00601.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -7686,7 +7686,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "AnimateDiff_00599.png",
-            "fullpath": "D:\\33_Unique-Perspective\\ComfyUI_windows_portable_sageattention_updating\\ComfyUI\\output\\AnimateDiff_00599.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -8968,7 +8968,7 @@
         }
       },
       "widgets_values": [
-        "Wan2_1_VAE_bf16.safetensors:\n\n[https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan2_1_VAE_bf16.safetensors](https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan2_1_VAE_bf16.safetensors)\n\n📁 ComfyUI/models/vae"
+        "Wan2_1_VAE_bf16.safetensor./local-assets ComfyUI/models/vae"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -9912,7 +9912,7 @@
         }
       },
       "widgets_values": [
-        "umt5_xxl_fp8_e4m3fn_scaled.safetensors:\n\n[https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors](https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors)\n\n📁 ComfyUI/models/text_encoders\n"
+        "umt5_xxl_fp8_e4m3fn_scaled.safetensor./local-assets ComfyUI/models/text_encoders\n"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -9983,7 +9983,7 @@
         }
       },
       "widgets_values": [
-        "Wan21_T2V_14B_lightx2v_cfg_step_distill_lora_rank32.safetensors:\n\n[https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan21_T2V_14B_lightx2v_cfg_step_distill_lora_rank32.safetensors](https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan21_T2V_14B_lightx2v_cfg_step_distill_lora_rank32.safetensors)\n\n📁 ComfyUI/models/loras"
+        "Wan21_T2V_14B_lightx2v_cfg_step_distill_lora_rank32.safetensor./local-assets ComfyUI/models/loras"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -10013,7 +10013,7 @@
         }
       },
       "widgets_values": [
-        "Wan2_1-VACE_module_14B_fp8_e4m3fn.safetensors:\n\n[https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan2_1-VACE_module_14B_fp8_e4m3fn.safetensors](https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan2_1-VACE_module_14B_fp8_e4m3fn.safetensors)\n\n📁 ComfyUI/models/diffusion_models"
+        "Wan2_1-VACE_module_14B_fp8_e4m3fn.safetensor./local-assets ComfyUI/models/diffusion_models"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -10043,7 +10043,7 @@
         }
       },
       "widgets_values": [
-        "Wan2_1-T2V-14B_fp8_e4m3fn.safetensors:\n\n[https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan2_1-T2V-14B_fp8_e4m3fn.safetensors](https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan2_1-T2V-14B_fp8_e4m3fn.safetensors)\n\n📁 ComfyUI/models/diffusion_models"
+        "Wan2_1-T2V-14B_fp8_e4m3fn.safetensor./local-assets ComfyUI/models/diffusion_models"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -10103,7 +10103,7 @@
         }
       },
       "widgets_values": [
-        "umt5-xxl-enc-bf16.safetensors:\n\n[https://huggingface.co/Kijai/WanVideo_comfy/blob/main/umt5-xxl-enc-bf16.safetensors](https://huggingface.co/Kijai/WanVideo_comfy/blob/main/umt5-xxl-enc-bf16.safetensors)\n\n📁 ComfyUI/models/text_encoders\n"
+        "umt5-xxl-enc-bf16.safetensor./local-assets ComfyUI/models/text_encoders\n"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -10133,7 +10133,7 @@
         }
       },
       "widgets_values": [
-        "Download the largest possible GGUF model that is compatible with your card here:\n\n[https://huggingface.co/QuantStack/Wan2.1_14B_VACE-GGUF/tree/main](https://huggingface.co/QuantStack/Wan2.1_14B_VACE-GGUF/tree/main)\n\nWe had good results with:\n- Wan2.1_14B_VACE-Q5_1.gguf\n- Wan2.1_14B_VACE-Q6_K.gguf\n- Wan2.1_14B_VACE-Q8_0.gguf\n\n\n📁 ComfyUI/models/unet"
+        "Download the largest possible GGUF model that is compatible with your card her./local-assets had good results wit./local-assets Wan2.1_14B_VACE-Q5_1.gguf\n- Wan2.1_14B_VACE-Q6_K.gguf\n- Wan2.1_14B_VACE-Q8_0.gguf\n\n\n📁 ComfyUI/models/unet"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -10163,7 +10163,7 @@
         }
       },
       "widgets_values": [
-        "Wan21_T2V_14B_lightx2v_cfg_step_distill_lora_rank32.safetensors:\n\n[https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan21_T2V_14B_lightx2v_cfg_step_distill_lora_rank32.safetensors](https://huggingface.co/Kijai/WanVideo_comfy/blob/main/Wan21_T2V_14B_lightx2v_cfg_step_distill_lora_rank32.safetensors)\n\n📁 ComfyUI/models/loras"
+        "Wan21_T2V_14B_lightx2v_cfg_step_distill_lora_rank32.safetensor./local-assets ComfyUI/models/loras"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -10193,7 +10193,7 @@
         }
       },
       "widgets_values": [
-        "wan_2.1_vae.safetensors:\n\n[https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/vae/wan_2.1_vae.safetensors](https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/vae/wan_2.1_vae.safetensors)\n\n📁 ComfyUI/models/vae"
+        "wan_2.1_vae.safetensor./local-assets ComfyUI/models/vae"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",

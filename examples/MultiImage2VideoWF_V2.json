@@ -1633,7 +1633,7 @@
         "Node name for S&R": "VHS_LoadImagesPath"
       },
       "widgets_values": {
-        "directory": "D:\\COMFY\\ComfyUI\\ComfyUI_windows_portable\\ComfyUI\\output\\New folder (41)\\New folder (2)",
+        "directory": "./local-assets",
         "image_load_cap": 0,
         "skip_first_images": 0,
         "select_every_nth": 1,
@@ -1644,7 +1644,7 @@
           "params": {
             "frame_load_cap": 0,
             "skip_first_images": 0,
-            "filename": "D:\\COMFY\\ComfyUI\\ComfyUI_windows_portable\\ComfyUI\\output\\New folder (41)\\New folder (2)",
+            "filename": "./local-assets",
             "type": "path",
             "format": "folder",
             "select_every_nth": 1
@@ -2145,7 +2145,7 @@
         "text": ""
       },
       "widgets_values": [
-        "The controlnet checkpoint I use is here:\nhttps://huggingface.co/crishhh/animatediff_controlnet/tree/main"
+        "The controlnet checkpoint I use is her./local-assets"
       ],
       "color": "#432",
       "bgcolor": "#653"

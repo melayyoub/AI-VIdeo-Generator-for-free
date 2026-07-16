@@ -167,7 +167,7 @@
             "url": "https://liblibai-tmp-image.liblib.cloud/sd-images/f748e0fab77058f1ec35440fa2f329c1cceac11c3765dd84cf974da0e26d7303.mp4",
             "coverUrl": null,
             "workflow": "AnimateDiff_00016.png",
-            "fullpath": "D:\\ComfyUI-aki-v1\\ComfyUI-aki-v1\\output\\AnimateDiff_00016-audio.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },

@@ -4,6 +4,12 @@ param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$portTestPath = Join-Path $PSScriptRoot 'port-validation.Tests.ps1'
+& pwsh -NoProfile -File $portTestPath
+if ($LASTEXITCODE -ne 0) {
+  throw "Port validation test failed with exit code $LASTEXITCODE."
+}
+
 if (-not [Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
   [Runtime.InteropServices.OSPlatform]::Windows
 )) {

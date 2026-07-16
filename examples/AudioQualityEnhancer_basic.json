@@ -75,7 +75,7 @@
       "widgets_values": [
         0,
         1,
-        "C:\\Program Files (x86)\\sox-14-4-2\\sox.exe",
+        "./local-assets/example.exe",
         0,
         true,
         false,

@@ -3967,7 +3967,7 @@
         "widget_ue_connectable": {}
       },
       "widgets_values": [
-        "[RECOMMENDED] \njuggernautXL_juggXIByRundiffusion:\n\n[https://huggingface.co/misri/juggernautXL_juggXIByRundiffusion/blob/main/juggernautXL_juggXIByRundiffusion.safetensors](https://huggingface.co/misri/juggernautXL_juggXIByRundiffusion/blob/main/juggernautXL_juggXIByRundiffusion.safetensors)\n\n📁 ComfyUI/models/checkpoints\n\nAny SDXL model will work, don't forget to adjust the sampler settings!"
+        "[RECOMMENDED] \njuggernautXL_juggXIByRundiffusio./local-assets ComfyUI/models/checkpoints\n\nAny SDXL model will work, don't forget to adjust the sampler settings!"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -3994,7 +3994,7 @@
         "widget_ue_connectable": {}
       },
       "widgets_values": [
-        "Install via Model Manager.\n\nSearch for:\n\ncontrolnet-promax and install → xinsir/ControlNet++: All-in-one ControlNet (ProMax model)"
+        "Install via Model Manager.\n\nSearch fo./local-assets and install → xinsir/ControlNet++: All-in-one ControlNet (ProMax model)"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",

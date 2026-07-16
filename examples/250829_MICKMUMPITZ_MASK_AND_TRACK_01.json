@@ -657,7 +657,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "010_actor_masked_00017.png",
-            "fullpath": "D:\\33_Unique-Perspective\\ComfyUI_windows_portable_sageattention_updating\\ComfyUI\\output\\mask_output\\010_actor_masked_00017.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -1541,7 +1541,7 @@
         }
       },
       "widgets_values": [
-        "Easy workflow to quickly upload a clip and generate outputs with the actor masked out!\n\nOutputs created:\n- Actor in front of a 50% grey background. The grey is ideal for WAN VACE integration.\n- Alpha output of the actor for the VACE nodes.\n- Export of the footage reformatted to a smaller resolution.\n- Camera tracking workflow.\n\n\n----\n\nPlease note that this workflow can sometimes have issues with unloading memory. If you export many shots one after another, it is best practice to restart ComfyUI through the manager before starting a new shot."
+        "Easy workflow to quickly upload a clip and generate outputs with the actor masked out!\n\nOutputs create./local-assets Actor in front of a 50% grey background. The grey is ideal for WAN VACE integration.\n- Alpha output of the actor for the VACE nodes.\n- Export of the footage reformatted to a smaller resolution.\n- Camera tracking workflow.\n\n\n----\n\nPlease note that this workflow can sometimes have issues with unloading memory. If you export many shots one after another, it is best practice to restart ComfyUI through the manager before starting a new shot."
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -1819,7 +1819,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "010_actor_footage_00015.png",
-            "fullpath": "D:\\33_Unique-Perspective\\ComfyUI_windows_portable_sageattention_updating\\ComfyUI\\output\\mask_output\\010_actor_footage_00015.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -1912,7 +1912,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "010_actor_alpha_00017.png",
-            "fullpath": "D:\\33_Unique-Perspective\\ComfyUI_windows_portable_sageattention_updating\\ComfyUI\\output\\mask_output\\010_actor_alpha_00017.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -3820,7 +3820,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "010_track_00001.png",
-            "fullpath": "D:\\33_Unique-Perspective\\ComfyUI_windows_portable_sageattention_updating\\ComfyUI\\temp\\mask_output\\010_track_00001.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },

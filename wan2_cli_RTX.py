@@ -22,6 +22,8 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Optional, List
 
+from wan2_cli_args import port_number
+
 APP_NAME = "wan2_cli"
 DEFAULT_DIR = Path.cwd()  # default to current folder as base
 COMFY_DIR = "ComfyUI"  # enforced subfolder for repo
@@ -497,7 +499,10 @@ def main() -> None:
         "--start", action="store_true", help="Start ComfyUI when done"
     )
     p_install.add_argument(
-        "--port", type=int, default=DEFAULT_PORT, help=f"Port (default {DEFAULT_PORT})"
+        "--port",
+        type=port_number,
+        default=DEFAULT_PORT,
+        help=f"TCP port (1-65535; default: {DEFAULT_PORT})",
     )
     p_install.add_argument("--listen-all", action="store_true", help="Bind 0.0.0.0")
     p_install.add_argument(
@@ -533,7 +538,12 @@ def main() -> None:
     p_start = sub.add_parser(
         "start", parents=[common], help="Run ComfyUI from the local venv."
     )
-    p_start.add_argument("--port", type=int, default=DEFAULT_PORT)
+    p_start.add_argument(
+        "--port",
+        type=port_number,
+        default=DEFAULT_PORT,
+        help=f"TCP port (1-65535; default: {DEFAULT_PORT})",
+    )
     p_start.add_argument("--listen-all", action="store_true")
 
     args = parser.parse_args()

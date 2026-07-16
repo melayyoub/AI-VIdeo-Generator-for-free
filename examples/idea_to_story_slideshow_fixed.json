@@ -109,7 +109,7 @@
         { "name": "VHS_AUDIO", "type": "VHS_AUDIO", "links": [12] }
       ],
       "widgets_values": {
-        "file": "C:/path/to/music.mp3"
+        "file": "./local-assets/example.mp3"
       }
     },
     {

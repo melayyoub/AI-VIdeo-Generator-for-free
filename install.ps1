@@ -11,7 +11,8 @@ param(
 
   [switch] $WithManager,
   [switch] $Start,
-  [int]    $Port = 8188,
+  [ValidateRange(1, 65535)]
+  [int] $Port = 8188,
   [switch] $ListenAll,
   [string] $BasePath = $PSScriptRoot,
   [string] $PyVersion = '3.10',

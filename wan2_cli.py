@@ -11,6 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from wan2_cli_args import port_number
+
 
 def cuda_available() -> bool:
     try:
@@ -54,7 +56,12 @@ def main() -> None:
     parser.add_argument(
         "--host", default=os.getenv("CUSTOM_WAN_COMFYUI_HOST", "127.0.0.1")
     )
-    parser.add_argument("--port", default=os.getenv("CUSTOM_WAN_COMFYUI_PORT", "8188"))
+    parser.add_argument(
+        "--port",
+        type=port_number,
+        default=os.getenv("CUSTOM_WAN_COMFYUI_PORT", "8188"),
+        help="TCP port (1-65535; default: 8188)",
+    )
     parser.add_argument("--listen-all", action="store_true")
     parser.add_argument(
         "--device",

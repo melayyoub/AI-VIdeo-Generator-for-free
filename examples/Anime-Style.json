@@ -474,7 +474,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 16,
             "workflow": "hyloom_00003.png",
-            "fullpath": "D:\\ComfyUI-aki-v1.6\\ComfyUI\\output\\hyloom_00003.mp4"
+            "fullpath": "./local-assets/example.mp4"
           },
           "muted": false
         }

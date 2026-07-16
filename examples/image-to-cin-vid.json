@@ -306,7 +306,7 @@
           "params": {
             "filename": "output.mp4",
             "workflow": "WanVideo2_1_00044.png",
-            "fullpath": "N:\\AI\\ComfyUI\\output\\WanVideo2_1_00044.mp4",
+            "fullpath": "./local-assets/example.mp4",
             "format": "video/mp4",
             "subfolder": "",
             "type": "output",

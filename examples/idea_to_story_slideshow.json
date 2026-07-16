@@ -10,7 +10,7 @@
         10
       ],
       "properties": {
-        "text": "\ud83d\udc49 Idea \u2192 Story \u2192 Images \u2192 Slideshow Video\nHow to use:\n1) Enter a short idea in node [2: Idea].\n2) LLM node [3] expands it into multiple story scenes.\n3) Scenes are split \u2192 formatted into prompts \u2192 SDXL images.\n4) VHS_MakeVideo [20] outputs MP4 slideshow with transitions.\nRequirements:\n- SDXL base model (sd_xl_base_1.0_0.9vae.safetensors)\n- rgthree util nodes (String Split, Map, etc.)\n- ComfyUI-LLM nodes (OpenAI / Kobold / etc.)\n- ComfyUI-VideoHelperSuite\n"
+        "text": "\ud83d\udc49 Idea \u2192 Story \u2192 Images \u2192 Slideshow Video\nHow to us./local-assets Enter a short idea in node [2: Idea].\n2) LLM node [3] expands it into multiple story scenes.\n3) Scenes are split \u2192 formatted into prompts \u2192 SDXL images.\n4) VHS_MakeVideo [20] outputs MP4 slideshow with transitions.\nRequirement./local-assets SDXL base model (sd_xl_base_1.0_0.9vae.safetensors)\n- rgthree util nodes (String Split, Map, etc.)\n- ComfyUI-LLM nodes (OpenAI / Kobold / etc.)\n- ComfyUI-VideoHelperSuite\n"
       }
     },
     {

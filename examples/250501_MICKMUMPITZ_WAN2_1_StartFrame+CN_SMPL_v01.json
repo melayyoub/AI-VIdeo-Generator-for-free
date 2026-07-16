@@ -679,7 +679,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 16,
             "workflow": "control_00009.png",
-            "fullpath": "C:\\01_AI_TOOLS\\ComfyUI_windows_portable_WAN\\ComfyUI\\temp\\control_00009.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -760,7 +760,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 16,
             "workflow": "control_00007.png",
-            "fullpath": "C:\\01_AI_TOOLS\\ComfyUI_windows_portable_WAN\\ComfyUI\\temp\\control_00007.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -841,7 +841,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 16,
             "workflow": "control_00004.png",
-            "fullpath": "C:\\01_AI_TOOLS\\ComfyUI_windows_portable_WAN\\ComfyUI\\temp\\control_00004.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -922,7 +922,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 16,
             "workflow": "control_00008.png",
-            "fullpath": "C:\\01_AI_TOOLS\\ComfyUI_windows_portable_WAN\\ComfyUI\\temp\\control_00008.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -3015,7 +3015,7 @@
         "widget_ue_connectable": {}
       },
       "widgets_values": [
-        "umt5_xxl_fp8_e4m3fn_scaled.safetensors:\n\n[https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors](https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors)\n\n📁 ComfyUI/models/text_encoders\n"
+        "umt5_xxl_fp8_e4m3fn_scaled.safetensor./local-assets ComfyUI/models/text_encoders\n"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -3042,7 +3042,7 @@
         "widget_ue_connectable": {}
       },
       "widgets_values": [
-        "clip_vision_h:\n\n[https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/clip_vision/clip_vision_h.safetensors](https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/clip_vision/clip_vision_h.safetensors)\n\n📁 ComfyUI/models/clip_vision"
+        "clip_vision_./local-assets ComfyUI/models/clip_vision"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -3069,7 +3069,7 @@
         "widget_ue_connectable": {}
       },
       "widgets_values": [
-        "This should download automatically. Otherwise search for \"Depth Anything\" in the ComfyUI Model Manager and install:\n\n\nkijai/DepthAnythingV2 (vitl/fp16)"
+        "This should download automatically. Otherwise search for \"Depth Anything\" in the ComfyUI Model Manager and instal./local-assets (vitl/fp16)"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -4297,7 +4297,7 @@
         "widget_ue_connectable": {}
       },
       "widgets_values": [
-        "wan2_1_vae:\n\n[https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/vae/wan_2.1_vae.safetensors](https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/blob/main/split_files/vae/wan_2.1_vae.safetensors)\n\n📁 ComfyUI/models/vae"
+        "wan2_1_va./local-assets ComfyUI/models/vae"
       ],
       "color": "#ffc14b",
       "bgcolor": "#f1ad37",
@@ -5554,7 +5554,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "WanVideoWrapper_FunControl_00749.png",
-            "fullpath": "C:\\01_AI_TOOLS\\ComfyUI_windows_portable_WAN\\ComfyUI\\output\\WanVideoWrapper_FunControl_00749.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -5672,7 +5672,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "WanVideoWrapper_FunControl_00748.png",
-            "fullpath": "C:\\01_AI_TOOLS\\ComfyUI_windows_portable_WAN\\ComfyUI\\output\\WanVideoWrapper_FunControl_00748.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
@@ -5854,7 +5854,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 16,
             "workflow": "control_00007.png",
-            "fullpath": "C:\\01_AI_TOOLS\\ComfyUI_windows_portable_WAN\\ComfyUI\\output\\control_00007.mp4"
+            "fullpath": "./local-assets/example.mp4"
           }
         }
       },
