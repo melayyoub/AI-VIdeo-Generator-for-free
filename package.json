@@ -1,29 +1,24 @@
 {
   "name": "custom-wan",
   "version": "1.0.0",
-  "description": "**Author:** Sam Ayoub  \r **Copyright:** © 2025 Sam Ayoub  \r **License:** MIT",
-  "main": "index.js",
+  "private": true,
+  "description": "Local ComfyUI and Wan 2.2 bootstrap installer and launcher.",
   "directories": {
     "example": "examples"
   },
   "scripts": {
-    "wnew": ".\\installMe.ps1 && .\\install.ps1 -Cuda cu128 -Models 5b -WithManager -Start",
-    "wstart": ".\\ComfyUI\\.venv\\Scripts\\Activate.ps1 && python wan2_cli.py start --path . --port 8188",
-    "lstart": ".\\ComfyUI\\.venv\\Scripts\\activate && python wan2_cli.py start --path . --port 8188"
+    "check": "npm test && pwsh -NoProfile -File tests/validate.ps1",
+    "test": "pwsh -NoProfile -File tests/run.ps1",
+    "wnew": "pwsh -NoProfile -File installMe.ps1 && pwsh -NoProfile -File install.ps1 -Cuda cu128 -Models 5b -WithManager -Start",
+    "wstart": ".\\ComfyUI\\.venv\\Scripts\\python.exe wan2_cli.py start --path . --port 8188",
+    "lstart": "./ComfyUI/.venv/bin/python wan2_cli.py start --path . --port 8188"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/melayyoub/AI-VIdeo-Generator-for-free.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/melayyoub/AI-VIdeo-Generator-for-free/issues"
-  },
-  "homepage": "https://github.com/melayyoub/AI-VIdeo-Generator-for-free#readme",
-  "dependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
-  }
+  "keywords": [
+    "comfyui",
+    "wan",
+    "ai-video",
+    "local-ai"
+  ],
+  "license": "MIT",
+  "type": "commonjs"
 }

@@ -2819,7 +2819,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 16,
             "workflow": "Compare_00013.png",
-            "fullpath": "/home/ubuntu/user_data/comfyui/outputs/Video2Video_Restyle_Wan/Compare_00013.mp4"
+            "fullpath": ""
           }
         }
       }
@@ -2941,7 +2941,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 23.976023976023978,
             "workflow": "Output_00012.png",
-            "fullpath": "/home/ubuntu/user_data/comfyui/outputs/Video2Video_Restyle_Wan/Output_00012-audio.mp4"
+            "fullpath": ""
           }
         }
       },

@@ -1,71 +1,87 @@
-# =========================
-# WAN Service Launcher (STABLE)
-# =========================
+[CmdletBinding()]
+param(
+    [string] $ProjectPath = (Split-Path -Parent $PSScriptRoot),
+    [ValidateRange(1, 65535)]
+    [int] $Port = 8188,
+    [switch] $OpenBrowser,
+    [ValidateRange(1, 300)]
+    [int] $RestartDelaySeconds = 3
+)
 
-$ErrorActionPreference = "Continue"
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
-# Config
-$projectPath = "E:\python-projects\custom-wan"
-$pythonExe   = "$projectPath\ComfyUI\.venv\Scripts\python.exe"
-$args        = "wan2_cli.py start --path . --port 8188"
+$projectRoot = [IO.Path]::GetFullPath($ProjectPath)
+$pythonExe = Join-Path $projectRoot 'ComfyUI\.venv\Scripts\python.exe'
+$launcher = Join-Path $projectRoot 'wan2_cli.py'
+$logOut = Join-Path $projectRoot 'output.log'
+$logErr = Join-Path $projectRoot 'error.log'
 
-$logOut = "$projectPath\output.log"
-$logErr = "$projectPath\error.log"
+if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf)) {
+    throw "Virtual-environment Python was not found: $pythonExe"
+}
+if (-not (Test-Path -LiteralPath $launcher -PathType Leaf)) {
+    throw "Launcher was not found: $launcher"
+}
 
-# Validate
-if (!(Test-Path $projectPath)) { Write-Host "Bad project path"; Read-Host; exit }
-if (!(Test-Path $pythonExe))   { Write-Host "Bad python path"; Read-Host; exit }
+Set-Location -LiteralPath $projectRoot
 
-Set-Location $projectPath
+Write-Host '====================================='
+Write-Host ' WAN Service Launcher'
+Write-Host '====================================='
+Write-Host "Logs:`n - $logOut`n - $logErr"
 
-Write-Host "====================================="
-Write-Host " WAN Service Launcher (Stable Mode)"
-Write-Host "====================================="
-Write-Host "Logs:"
-Write-Host " - $logOut"
-Write-Host " - $logErr"
-Write-Host ""
+$wanProcess = $null
+$browserOpened = $false
 
-$process = $null
+try {
+    while ($true) {
+        Write-Host "`n[$(Get-Date -Format o)] Starting..."
 
-# Kill on exit
-Register-EngineEvent PowerShell.Exiting -Action {
-    if ($process -and -not $process.HasExited) {
-        taskkill /PID $process.Id /T /F | Out-Null
-    }
-} | Out-Null
+        $arguments = @(
+            ('"{0}"' -f $launcher),
+            'start',
+            '--path',
+            ('"{0}"' -f $projectRoot),
+            '--port',
+            $Port
+        ) -join ' '
 
-while ($true) {
+        try {
+            $wanProcess = Start-Process `
+                -FilePath $pythonExe `
+                -ArgumentList $arguments `
+                -WorkingDirectory $projectRoot `
+                -RedirectStandardOutput $logOut `
+                -RedirectStandardError $logErr `
+                -NoNewWindow `
+                -PassThru
 
-    Write-Host "`n[$(Get-Date)] Starting..."
+            Start-Sleep -Seconds 2
+            if ($wanProcess.HasExited) {
+                Write-Warning "Process exited immediately with code $($wanProcess.ExitCode)."
+            }
+            else {
+                $url = "http://127.0.0.1:$Port"
+                Write-Host "Running at $url"
+                if ($OpenBrowser -and -not $browserOpened) {
+                    Start-Process $url
+                    $browserOpened = $true
+                }
+            }
 
-    try {
-        $process = Start-Process `
-            -FilePath $pythonExe `
-            -ArgumentList $args `
-            -WorkingDirectory $projectPath `
-            -RedirectStandardOutput $logOut `
-            -RedirectStandardError $logErr `
-            -NoNewWindow `
-            -PassThru
-
-        Start-Sleep 2
-
-        if ($process.HasExited) {
-            Write-Host "❌ Crashed immediately (exit $($process.ExitCode))"
+            Wait-Process -Id $wanProcess.Id
         }
-        else {
-            Write-Host "✅ Running at http://localhost:8188"
-            Start-Process "http://localhost:8188"
+        catch {
+            Write-Warning $_.Exception.Message
         }
 
-        Wait-Process -Id $process.Id
+        Write-Host "Restarting in $RestartDelaySeconds seconds..."
+        Start-Sleep -Seconds $RestartDelaySeconds
     }
-    catch {
-        Write-Host "ERROR:"
-        Write-Host $_
+}
+finally {
+    if ($wanProcess -and -not $wanProcess.HasExited) {
+        taskkill.exe /PID $wanProcess.Id /T /F 2>$null | Out-Null
     }
-
-    Write-Host "Restarting in 3 seconds..."
-    Start-Sleep 3
 }

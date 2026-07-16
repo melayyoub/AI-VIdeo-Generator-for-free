@@ -546,7 +546,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 16,
             "workflow": "WanVideo_00064.png",
-            "fullpath": "/home/ubuntu/user_data/comfyui/outputs/WanVideo_00064.mp4"
+            "fullpath": ""
           }
         }
       }
@@ -933,7 +933,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 24,
             "workflow": "Wan vid2vid_00068.png",
-            "fullpath": "/home/ubuntu/user_data/comfyui/outputs/Wan vid2vid_00068.mp4"
+            "fullpath": ""
           }
         }
       }

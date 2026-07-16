@@ -1,4 +1,16 @@
-$root = "E:\python-projects\custom-wan\ComfyUI\custom_nodes"
+[CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+param(
+    [string] $ProjectPath = $PSScriptRoot
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+$projectRoot = [IO.Path]::GetFullPath($ProjectPath)
+$root = Join-Path $projectRoot 'ComfyUI\custom_nodes'
+if (-not (Test-Path -LiteralPath $root -PathType Container)) {
+    throw "Custom-node directory was not found: $root"
+}
 
 # List of failed node folder names from your log:
 $failed = @(
@@ -7,7 +19,6 @@ $failed = @(
 "ComfyUI-LMCQ",
 "ComfyUI-XTTS",
 "comfyui_sunxAI_facetools",
-"reallexi_video_output",
 "ComfyUI_PuLID_Flux_ll_FaceNet",
 "pulid_comfyui",
 "comfyui_pulid_flux_ll",
@@ -31,8 +42,8 @@ $failed = @(
 
 foreach ($f in $failed) {
     $path = Join-Path $root $f
-    if (Test-Path $path) {
+    if ((Test-Path -LiteralPath $path) -and $PSCmdlet.ShouldProcess($path, 'Remove custom node directory')) {
         Write-Host "Deleting $path" -ForegroundColor Red
-        Remove-Item $path -Recurse -Force
+        Remove-Item -LiteralPath $path -Recurse -Force
     }
 }

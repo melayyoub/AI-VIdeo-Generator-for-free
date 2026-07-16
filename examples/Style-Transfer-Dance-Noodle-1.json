@@ -147,7 +147,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 25,
             "workflow": "AD_upscaled_model_00001.png",
-            "fullpath": "/home/ubuntu/user_data/comfyui/outputs/2024-12-26/upscaled_model/AD_upscaled_model_00001.mp4"
+            "fullpath": ""
           }
         }
       },
@@ -2525,7 +2525,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 15,
             "workflow": "AD_preview_00002.png",
-            "fullpath": "/home/ubuntu/user_data/comfyui/outputs/2024-12-27/previews/AD_preview_00002.mp4"
+            "fullpath": ""
           }
         }
       },
@@ -2602,7 +2602,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 15,
             "workflow": "AD_upscaled_00001.png",
-            "fullpath": "/home/ubuntu/user_data/comfyui/outputs/2024-12-26/upscaled(denoise)/AD_upscaled_00001.mp4"
+            "fullpath": ""
           }
         }
       },
@@ -2679,7 +2679,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 30,
             "workflow": "AD_interpolated_00001.png",
-            "fullpath": "/home/ubuntu/user_data/comfyui/outputs/2024-12-26/interpolated/AD_interpolated_00001.mp4"
+            "fullpath": ""
           }
         }
       },

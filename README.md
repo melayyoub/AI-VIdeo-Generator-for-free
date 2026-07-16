@@ -1,489 +1,238 @@
-# Wan 2.2 + ComfyUI Bootstrap CLI
-**Author:** Sam Ayoub  
-**License:** MIT — © 2025 Sam Ayoub
+# Wan 2.2 AI Video Generator for ComfyUI
 
-A clean, cross-platform installer + launcher for **ComfyUI + Wan 2.2**, with optional **ComfyUI-Manager** and **React Loader UI**.  
-Includes both Windows PowerShell and macOS/Linux setup support.
+Local-first installers and launchers for running **Wan 2.2 text-to-video and
+image-to-video workflows in ComfyUI** on Windows, Linux, or macOS. The project
+creates an isolated Python environment, selects a PyTorch CUDA or CPU backend,
+optionally installs ComfyUI Manager, and downloads official ComfyUI-packaged Wan
+model files.
 
----
+This repository is designed for creators and developers who want a repeatable
+local AI video setup without sending prompts, source images, or generated media
+to an application server operated by this project.
 
-## ✨ Features
+## Highlights
 
-- 🔧 **One-shot environment setup** (venv + PyTorch + ComfyUI)
-- 🎛️ Supports **CUDA 12.8 / 12.5 / 12.4 / 12.1 / 11.8** and **CPU**
-- ⬇️ Automated **Wan 2.2 model downloads**:
-  - `5b` (T→V base)
-  - `14b` high/low noise (cinematic long shots)
-  - `i2v` (Image → Video motion)
-  - or **`all`**
-- 🧩 Optional **ComfyUI-Manager** for nodes/plugins
-- ⚛️ Optional **React Loader UI** (Vite + TypeScript)
-- 🌐 Bind to `0.0.0.0` for LAN/remote system access
-- ♻️ Idempotent: re-run safely, only updates what's needed
-- 💻 Works on **Windows, macOS, and Linux**
+- Windows PowerShell and Bash installation paths
+- CUDA 12.8, CUDA 12.1, CUDA 11.8, and CPU PyTorch backends
+- Wan 2.2 5B, 14B text-to-video, and 14B image-to-video model selections
+- Optional ComfyUI Manager integration
+- Local-only binding by default in the launcher
+- Scoped Windows virtual-environment lock detection
+- Bounded retry and resume controls for large package/model downloads
+- Explicit dependency consistency checks before completion
+- Network-free installer dry run and local integration tests
 
----
+## Requirements
 
-## 📂 Project Layout
+| Component | Requirement |
+| --- | --- |
+| Operating system | Windows 10/11, current Linux, or macOS |
+| Python | 3.10 recommended |
+| Git | Required for ComfyUI and Manager updates |
+| curl | Required by the Windows model downloader |
+| ffmpeg | Required for normal video workflows |
+| GPU | NVIDIA CUDA GPU recommended; CPU is supported but slow |
+| Disk | Allow substantial space for PyTorch, ComfyUI, models, and outputs |
 
-<your-directory>/
-│ README.md
-│ wan2_cli.py # Main CLI
-│ install.ps1 # Windows installer wrapper
-│ install.sh # macOS/Linux installer wrapper
-│
-└─ ComfyUI/ # Auto-created on install
-├─ .venv/ # Virtual environment
-├─ main.py
-├─ requirements.txt
-└─ models/
-├─ diffusion_models/
-├─ vae/
-└─ text_encoders/
-└─ custom_nodes/
-└─ ComfyUI-Manager/ # Optional
-└─ comfy-loader/ # Optional React Loader UI
+An optional `HF_TOKEN` can be supplied for gated Hugging Face assets. The
+Windows installer sends it to curl through standard input so it is not printed
+or placed in the curl process command line.
 
+## Quick start on Windows
 
-
----
-
-## 🖥️ Requirements
-
-| Requirement | Notes |
-|------------|-------|
-| **Python 3.10 recommended** | (3.11 ok • **avoid 3.12** for now) |
-| Git | Required |
-| Node.js + npm | Only for React loader |
-| ffmpeg | Required for video workflows |
-| NVIDIA GPU (optional) | For CUDA acceleration |
-| `HF_TOKEN` (optional) | Required for gated Wan model repos |
-
----
-
-## 🚀 Quick Start — Windows (PowerShell)
+Open an external PowerShell terminal in the repository directory:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\install.ps1 -Cuda cu128 -Models 5b -WithManager
+```
 
-# From folder where wan2_cli.py is located:
-.\install.ps1 -Cuda cu121 -Models all -WithManager -Start -PyVersion 3.10
+The default lock policy is non-destructive. If an editor, type checker, or
+ComfyUI process is using `ComfyUI\.venv`, the installer lists only the scoped
+blockers and exits before changing Git or packages. To authorize stopping those
+scoped process trees and rebuilding the environment:
 
-or: 
+```powershell
+.\install.ps1 -Cuda cu128 -Models 5b -WithManager -LockedVenvAction Stop
+```
 
-.\install.ps1 -Cuda cu128 -Models all -WithManager -Start -PyVersion 3.10
+Use `-ReuseVenv` for an incremental package update only when the existing venv
+is healthy:
 
-<your-directory>/
-│ README.md
-│ wan2_cli.py # Main CLI
-│ install.ps1 # Windows installer wrapper
-│ install.sh # macOS/Linux installer wrapper
-│
-└─ ComfyUI/ # Auto-created on install
-├─ .venv/ # Virtual environment
-├─ main.py
-├─ requirements.txt
-└─ models/
-├─ diffusion_models/
-├─ vae/
-└─ text_encoders/
-└─ custom_nodes/
-└─ ComfyUI-Manager/ # Optional
-└─ comfy-loader/ # Optional React Loader UI
+```powershell
+.\install.ps1 -Cuda cu128 -Models 5b -WithManager -ReuseVenv
+```
 
-This creates:
+## Quick start on Linux or macOS
 
-ComfyUI/
-ComfyUI/.venv/
-models/
-
-Start ComfyUI later:
-.\ComfyUI\.venv\Scripts\python.exe .\ComfyUI\main.py --port 8188 --listen
-
-Or via the CLI:
-py -3.10 .\wan2_cli.py start --path . --port 8188 --listen-all
-
-
-🚀 Quick Start — macOS / Linux
+```bash
 chmod +x install.sh
-./install.sh
+CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh
+```
 
-Example overrides:
-CUDA=cpu MODELS=all START=false ./install.sh
-REUSE_VENV=true ./install.sh
-PORT=9000 START=true WITH_MANAGER=true ./install.sh
+For macOS or a machine without an NVIDIA GPU, select the CPU backend:
 
-✅ Verify Install
+```bash
+CUDA=cpu MODELS=5b START=false ./install.sh
+```
+
+Validate Unix command construction without cloning, installing, or downloading:
+
+```bash
+./install.sh --cuda=cu128 --models=5b --start=false --dry-run=true
+```
+
+Generated environment snapshots are not installed implicitly. A reviewed extra
+requirements file must be explicitly supplied with `EXTRA_REQUIREMENTS` or
+`--extra-requirements`.
+
+## Start ComfyUI
+
+The launcher binds to `127.0.0.1` by default:
+
+```powershell
+.\ComfyUI\.venv\Scripts\python.exe .\wan2_cli.py start --path . --port 8188
+```
+
+On Linux or macOS:
+
+```bash
+./ComfyUI/.venv/bin/python ./wan2_cli.py start --path . --port 8188
+```
+
+Then open `http://127.0.0.1:8188` and verify the backend with:
+
+```bash
 curl http://127.0.0.1:8188/system_stats
+```
 
+Binding to every interface exposes ComfyUI to the local network:
 
-Open UI:
+```powershell
+.\ComfyUI\.venv\Scripts\python.exe .\wan2_cli.py start --path . --port 8188 --listen-all
+```
 
-http://127.0.0.1:8188
+Do not expose ComfyUI directly to the public internet. Use host firewall rules,
+an authenticated reverse proxy, and TLS for any intentionally remote setup.
 
-⚛️ React Loader UI (Optional)
-cd comfy-loader
-npm install
-npm run dev
+## Installer options
 
-🎮 Parameter Reference (CLI)
-Bash Variable	PowerShell Arg	Description
-CUDA	-Cuda	cu128, cu125, cu124, cu121, cu118, cpu
-MODELS	-Models	5b, 14b, i2v, all
-WITH_MANAGER	-WithManager	Install ComfyUI-Manager
-START	-Start	Start after setup
-PORT	-Port	Default: 8188
-LISTEN_ALL	-ListenAll	Bind to 0.0.0.0
-(Windows only)	-PyVersion	Set Python version (e.g., 3.10)
-🔥 RTX High-End GPU Users (4090 / 5090 / A6000)
-.\ComfyUI\.venv\Scripts\python.exe wan2_cli_RTX.py start --path . --port 8188
+### Windows PowerShell
 
+| Option | Values | Default | Purpose |
+| --- | --- | --- | --- |
+| `-Cuda` | `cu128`, `cu121`, `cu118`, `cpu` | `cu128` | PyTorch backend |
+| `-Models` | `5b`, `14b`, `i2v`, `all` | `5b` | Wan model set |
+| `-WithManager` | switch | off | Install/update ComfyUI Manager |
+| `-Start` | switch | off | Start after successful installation |
+| `-Port` | `1`–`65535` | `8188` | ComfyUI port |
+| `-ListenAll` | switch | off | Bind to `0.0.0.0` |
+| `-PyVersion` | launcher version | `3.10` | Windows Python launcher selection |
+| `-ReuseVenv` | switch | off | Preserve the existing venv |
+| `-LockedVenvAction` | `Fail`, `Stop` | `Fail` | Lock-handling policy |
 
-or:
+### Bash
 
-.\ComfyUI\.venv\Scripts\activate
-python wan2_cli.py start --path . --port 8188
+The Bash installer accepts matching environment variables and `--name=value`
+arguments for CUDA, models, Manager, start, port, network binding, venv reuse,
+dry run, path, and optional reviewed requirements.
 
-Example Usage
-If you have backup wheels
-.\install.ps1 -Cuda cu121 -Models all -WithManager -Start -Wheelhouse "E:\python-projects\custom-wan\wheel_backup"
+## Model selections
 
+- `5b`: Wan 2.2 TI2V 5B plus the matching VAE and text encoder
+- `14b`: Wan 2.2 T2V high-noise and low-noise 14B models
+- `i2v`: Wan 2.2 I2V high-noise and low-noise 14B models
+- `all`: all selections above
 
-This will only install from your offline .whl collection.
+Existing model files larger than the installer sanity threshold are retained.
+Interrupted Windows downloads use `.part` files and curl resume/retry controls.
 
-If no wheelhouse specified
-.\install.ps1 -Cuda cu121 -Models all -WithManager -Start
+## Repository layout
 
+```text
+custom-wan/
+├── install.ps1                 # Windows installer
+├── install.sh                  # Linux/macOS wrapper
+├── wan2_cli.py                 # Local ComfyUI launcher
+├── wan2_cli_RTX.py             # Cross-platform installer implementation
+├── scripts/Installer.Venv.psm1 # Scoped Windows lock/removal controls
+├── tests/                      # Local installer integration tests
+├── docs/                       # Operational documentation
+├── examples/                   # Example ComfyUI workflows
+└── ComfyUI/                    # Local checkout; ignored by root Git
+```
 
-It will install online normally.
+## Local validation
 
+Run the locked-venv integration test under PowerShell 7 and Windows PowerShell
+5.1:
 
-🏁 Done
+```powershell
+npm test
+```
 
-You now have a clean, structured, consistent Wan 2.2 + ComfyUI environment,
-ready for cinematic video generation.
+Additional local gates used for this repository include:
 
+```powershell
+ruff check --exclude ComfyUI --exclude hf_cache .
+python -m py_compile wan2_cli.py wan2_cli_RTX.py
+```
 
+```bash
+bash -n install.sh installme.sh generateNewSShKey.sh
+./install.sh --cuda=cu128 --models=5b --start=false --dry-run=true
+```
 
-## Structure 
+The PowerShell integration test creates a disposable venv, reproduces Windows'
+native executable lock, proves the `Fail` policy is non-destructive, proves the
+explicit `Stop` policy removes the scoped process tree, and verifies deletion
+guards. It never modifies the real ComfyUI environment.
 
-├── models\                    ← shared, all models stored here
-│
-├── ComfyUI_AUDIO\            ← audio env root
-│   ├── ComfyUI\              ← ComfyUI code
-│   │   ├── .venv\            ← audio venv
-│   │   ├── models -> ..\..\models (symlink)
-│   │   └── main.py
-│
-└── ComfyUI_VIDEO\            ← video env root
-    ├── ComfyUI\              ← ComfyUI code
-    │   ├── .venv\            ← video venv
-    │   ├── models -> ..\..\models (symlink)
-    │   └── main.py
+## Security and privacy notes
 
+- Prompts and generated media remain in the local ComfyUI deployment.
+- `.venv`, ComfyUI, model caches, logs, editor state, and local agent state are
+  excluded from root version control.
+- Process termination is opt-in and limited by normalized executable paths,
+  process identity, and a known supervisor ancestry check.
+- Virtual-environment deletion is limited to the expected ComfyUI parent and
+  rejects roots, unexpected names, and reparse points.
+- `pip check` is a required Windows installation gate.
+- Treat ComfyUI custom nodes as third-party code and review them before use.
 
+## Troubleshooting
 
+### `Access to ...\.venv\Scripts\python.exe is denied`
 
-# Models used 
+This is normally a Windows executable-image lock, not an ACL problem. Rerun with
+the default `-LockedVenvAction Fail` to see the scoped process list. Close those
+processes, or explicitly allow scoped termination:
 
+```powershell
+.\install.ps1 -Cuda cu128 -Models 5b -LockedVenvAction Stop
+```
 
-+-- models
-|   +-- animatediff_models
-|   |   AnimateLCM_sd15_t2v.ckpt
-|   |   mm_sd_v15.ckpt
-|   |   mm_sd_v15_v2.safetensors
-|   |   mm_sdxl_v10_beta.ckpt
-|   +-- animatediff_motion_lora
-|   |   v2_lora_TiltUp.ckpt
-|   +-- audio_encoders
-|   |   wav2vec2_large_english_fp16.safetensors
-|   |   whisper_large_v3_fp16.safetensors
-|   |   +-- arabic
-|   |   |   model.safetensors
-|   +-- checkpoints
-|   |   ace_step_v1_3.5b.safetensors
-|   |   animeden_v3.safetensors
-|   |   blazingDrive_V07d.safetensors
-|   |   darkSushiMixMix_colorful.safetensors
-|   |   dreamshaper_8.safetensors
-|   |   DreamShaper8_LCM.safetensors
-|   |   epicrealism_naturalSinRC1VAE.safetensors
-|   |   OpenDalleV1.1.safetensors
-|   |   OpenPoseXL2.safetensors
-|   |   papercutcraft-v1.ckpt
-|   |   realcartoon3d_v18.safetensors
-|   |   realcartoonPixar_v11.safetensors
-|   |   Realistic_Vision_V5.1.safetensors
-|   |   revAnimated_v122.safetensors
-|   |   sd_xl_base_1.0_0.9vae.safetensors
-|   |   sd3.5_large_fp8_scaled.safetensors
-|   |   songbloom_full_150s.safetensors
-|   |   songbloom_full_150s_dpo.safetensors
-|   |   stable_zero123.ckpt
-|   |   stable-audio-open-1.0.safetensors
-|   |   ThinkDiffusionXL.safetensors
-|   |   Toonify_v2.safetensors
-|   |   v1-5-pruned-emaonly-fp16.safetensors
-|   |   wan2.2_fun_control_5B_bf16.safetensors
-|   |   Wan2_2-Animate-14B_fp8_e4m3fn_scaled_KJ.safetensors
-|   |   +-- flux
-|   |   |   flux1CompactCLIPAnd_Flux1DevFp16.safetensors
-|   |   |   flux1-dev-fp8.safetensors
-|   |   +-- hunyuan_dit_comfyui
-|   |   |   hunyuan_dit_1.2.safetensors
-|   |   +-- LTXV
-|   |   |   ltx-video-2b-v0.9.5.safetensors
-|   |   |   ltx-video-2b-v0.9.safetensors
-|   |   +-- SVD
-|   |   |   svd_xt.safetensors
-|   +-- clip
-|   |   clip_l.safetensors
-|   |   EVA02_CLIP_L_336_psz14_s6B.pt
-|   |   t5-base.safetensors
-|   |   t5xxl_fp8_e4m3fn.safetensors
-|   |   umt5_xxl_fp8_e4m3fn_scaled.safetensors
-|   |   +-- siglip-so400m-patch14-384
-|   |   |   model.safetensors
-|   +-- clip_interrogator
-|   |   ViT-L-14_openai_artists.safetensors
-|   |   ViT-L-14_openai_flavors.safetensors
-|   |   ViT-L-14_openai_mediums.safetensors
-|   |   ViT-L-14_openai_movements.safetensors
-|   |   ViT-L-14_openai_negative.safetensors
-|   |   ViT-L-14_openai_trendings.safetensors
-|   |   +-- models--timm--vit_large_patch14_clip_224.openai
-|   |   |   +-- snapshots
-|   |   |   |   +-- 18d0535469bb561bf468d76c1d73aa35156c922b
-|   |   |   |   |   open_clip_model.safetensors
-|   +-- clip_vision
-|   |   clip_vision_h.safetensors
-|   |   ClipVision.safetensors
-|   |   CLIP-ViT-bigG-14-laion2B-39B-b160k.safetensors
-|   |   CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors
-|   |   clip-vit-large-patch14.safetensors
-|   |   clip-vit-large-patch14-336.bin
-|   +-- controlnet
-|   |   control_v11p_sd15_openpose_fp16.safetensors
-|   |   control_v1p_sd15_qrcode_monster.safetensors
-|   |   controlnet_checkpoint.ckpt
-|   |   +-- 1.5
-|   |   |   control_v11p_sd15_lineart_fp16.safetensors
-|   |   +-- flux
-|   |   |   diffusion_pytorch_model.safetensors
-|   +-- depthanything
-|   |   depth_anything_v2_vitl_fp32.safetensors
-|   +-- diffusion_models
-|   |   humo_17B_fp8_e4m3fn.safetensors
-|   |   sd15_t2v_beta.ckpt
-|   |   stable_zero123.ckpt
-|   |   wan2.1_fun_control_1.3B_bf16.safetensors
-|   |   wan2.1_vace_1.3B_fp16.safetensors
-|   |   wan2.1_vace_14B_fp16.safetensors
-|   |   wan2.2_fun_inpaint_high_noise_14B_fp8_scaled.safetensors
-|   |   wan2.2_fun_inpaint_low_noise_14B_fp8_scaled.safetensors
-|   |   wan2.2_s2v_14B_bf16.safetensors
-|   |   wan2.2_s2v_14B_fp8_scaled.safetensors
-|   |   +-- flux
-|   |   |   flux1-dev.safetensors
-|   |   +-- hunyuan_video
-|   |   |   hunyuan_video_image_to_video_720p_bf16.safetensors
-|   |   |   hunyuan_video_t2v_720p_bf16.safetensors
-|   |   |   hunyuan_video_vae_bf16.safetensors
-|   |   +-- split_files
-|   |   |   +-- diffusion_models
-|   |   |   |   wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors
-|   |   |   |   wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors
-|   |   |   |   wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors
-|   |   |   |   wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors
-|   |   |   |   wan2.2_ti2v_5B_fp16.safetensors
-|   |   +-- Wan2.1
-|   |   |   wan2.1_t2v_1.3B_fp16.safetensors
-|   |   +-- Wan2.2
-|   |   |   wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors
-|   |   |   wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors
-|   |   |   wan2.2_ti2v_5B_fp16.safetensors
-|   +-- florence2
-|   |   +-- florence2_large
-|   |   |   model.safetensors
-|   |   +-- large-PromptGen-v1.5
-|   |   |   model.safetensors
-|   +-- gligen
-|   |   +-- SD1.5
-|   |   |   gligen_sd14_textbox_pruned_fp16.safetensors
-|   +-- ipadapter
-|   |   ip-adapter_sd15.safetensors
-|   |   ip-adapter_sd15_light.safetensors
-|   |   ip-adapter_sd15_light_v11.bin
-|   |   ip-adapter_sd15_vit-G.safetensors
-|   |   ip-adapter-full-face_sd15.safetensors
-|   |   ip-adapter-plus_sd15.safetensors
-|   |   ip-adapter-plus-face_sd15.safetensors
-|   +-- liveportrait
-|   |   appearance_feature_extractor.safetensors
-|   |   motion_extractor.safetensors
-|   |   spade_generator.safetensors
-|   |   stitching_retargeting_module.safetensors
-|   |   warping_module.safetensors
-|   +-- LLM
-|   |   +-- florence2_large
-|   |   |   model.safetensors
-|   |   |   pytorch_model.bin
-|   |   +-- Florence-2-base
-|   |   |   model.safetensors
-|   |   |   pytorch_model.bin
-|   +-- loras
-|   |   4oCaricature_early.safetensors
-|   |   add_detail.safetensors
-|   |   blindbox_v1_mix.safetensors
-|   |   c4r1c4rt00n_V1.safetensors
-|   |   Caricatures_V2-000007.safetensors
-|   |   epiNoiseoffset_v2.safetensors
-|   |   Ghibli_v6.safetensors
-|   |   Goofballs - WAN-21-22.safetensors
-|   |   high_noise_model.safetensors
-|   |   JNX_Funny_Caricature.safetensors
-|   |   lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors
-|   |   low_noise_model.safetensors
-|   |   Paper_Cut_Art_for_Pony_XL_-_by_Ethanar.safetensors
-|   |   PAseer-SD15-LCM%20Quick.safetensors
-|   |   PortraitMasterV1.2.safetensors
-|   |   samstep_lora.safetensors
-|   |   Urabewe_Caricature_-_Flux.safetensors
-|   |   v3_sd15_adapter.ckpt
-|   |   wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors
-|   |   wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors
-|   |   wan2.2_t2v_lightx2v_4steps_lora_v1.1_high_noise.safetensors
-|   |   wan2.2_t2v_lightx2v_4steps_lora_v1.1_low_noise.safetensors
-|   |   Wan21_CausVid_14B_T2V_lora_rank32.safetensors
-|   |   Wan21_CausVid_bidirect2_T2V_1_3B_lora_rank32.safetensors
-|   |   WanAnimate_relight_lora_fp16.safetensors
-|   |   +-- detail-tweaker-lora
-|   |   |   add_detail.safetensors
-|   |   +-- flux
-|   |   |   alimama-creative-FLUX.1-Turbo-Alpha.safetensors
-|   |   |   +-- style
-|   |   |   |   DollCute.safetensors
-|   |   +-- SD1.5
-|   |   |   +-- lcm
-|   |   |   |   pytorch_lora_weights.safetensors
-|   |   +-- SDXL
-|   |   |   +-- lcm
-|   |   |   |   pytorch_lora_weights.safetensors
-|   |   +-- segmind-vega
-|   |   |   pytorch_lora_weights.safetensors
-|   |   +-- SSD-1B
-|   |   |   +-- lcm
-|   |   |   |   pytorch_lora_weights.safetensors
-|   |   +-- Wan2.1-control-loras
-|   |   |   +-- 1.3b
-|   |   |   |   +-- depth
-|   |   |   |   |   wan2.1-1.3b-control-lora-depth-v0.1_comfy.safetensors
-|   |   |   |   +-- tile
-|   |   |   |   |   wan2.1-1.3b-control-lora-tile-v0.2_comfy.safetensors
-|   |   |   |   |   wan2.1-1.3b-control-lora-tile-v1.0_comfy.safetensors
-|   |   |   |   |   wan2.1-1.3b-control-lora-tile-v1.1_comfy.safetensors
-|   +-- MagicAnimate
-|   |   +-- appearance_encoder
-|   |   |   diffusion_pytorch_model.safetensors
-|   |   +-- control_v11p_sd15_openpose
-|   |   |   diffusion_pytorch_model.safetensors
-|   |   +-- densepose_controlnet
-|   |   |   diffusion_pytorch_model.safetensors
-|   |   +-- sd-vae-ft-mse
-|   |   |   diffusion_pytorch_model.safetensors
-|   |   +-- stable-diffusion-v1-5
-|   |   |   +-- text_encoder
-|   |   |   |   model.safetensors
-|   |   |   +-- unet
-|   |   |   |   diffusion_pytorch_model.bin
-|   |   +-- temporal_attention
-|   |   |   temporal_attention.ckpt
-|   +-- pulid
-|   |   pulid_flux_v0.9.0.safetensors
-|   +-- sam2
-|   |   sam2_hiera_base_plus.safetensors
-|   +-- sonic
-|   |   yoloface_v5m.pt
-|   |   +-- checkpoints
-|   |   |   svd_xt_1_1.safetensors
-|   |   +-- whisper-tiny
-|   |   |   model.safetensors
-|   |   |   pytorch_model.bin
-|   +-- sonic2
-|   |   +-- checkpoints
-|   |   |   svd_xt_1_1.safetensors
-|   |   +-- whisper-tiny
-|   |   |   model.safetensors
-|   |   |   pytorch_model.bin
-|   +-- stt
-|   |   +-- whisper
-|   |   |   large-v3.pt
-|   |   |   large-v3-turbo.pt
-|   |   |   tiny.en.pt
-|   +-- tangoflux
-|   |   tangoflux.safetensors
-|   |   vae.safetensors
-|   +-- text_encoders
-|   |   llava_llama3_fp16.safetensors
-|   |   llava_llama3_fp8_scaled.safetensors
-|   |   qwen_2.5_vl_fp16.safetensors
-|   |   umt5_xxl_fp16.safetensors
-|   |   umt5_xxl_fp8_e4m3fn_scaled.safetensors
-|   |   +-- flux
-|   |   |   model.safetensors
-|   |   +-- google-flan-t5-large
-|   |   |   model.safetensors
-|   |   +-- split_files
-|   |   |   +-- text_encoders
-|   |   |   |   umt5_xxl_fp8_e4m3fn_scaled.safetensors
-|   |   +-- t5
-|   |   |   t5xxl_fp16.safetensors
-|   +-- tts
-|   |   +-- ACE-Step-v1-3.5B
-|   |   |   +-- ace_step_transformer
-|   |   |   |   diffusion_pytorch_model.safetensors
-|   |   |   +-- music_dcae_f8c8
-|   |   |   |   diffusion_pytorch_model.safetensors
-|   |   |   +-- music_vocoder
-|   |   |   |   diffusion_pytorch_model.safetensors
-|   |   |   +-- umt5-base
-|   |   |   |   model.safetensors
-|   +-- ultralytics
-|   |   face_yolov8n.pt
-|   |   +-- bbox
-|   |   |   face_yolov8m.pt
-|   |   |   hand_yolov8s.pt
-|   |   +-- segm
-|   |   |   person_yolov8m-seg.pt
-|   +-- unet
-|   |   flux1-dev-fp8.safetensors
-|   |   flux1-krea-dev_float8_e4m3fn_learned_svd.safetensors
-|   |   flux1-schnell.safetensors
-|   |   omnigen2_fp16.safetensors
-|   |   wan_2.1_vae.safetensors
-|   |   wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors
-|   |   wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors
-|   |   Wan2_2-Animate-14B_fp8_e4m3fn_scaled_KJ.safetensors
-|   +-- vae
-|   |   ae.safetensors
-|   |   hunyuan_video_vae_bf16.safetensors
-|   |   vae-ft-mse-840000-ema-pruned.ckpt
-|   |   vae-ft-mse-840000-ema-pruned.safetensors
-|   |   wan_2.1_vae.safetensors
-|   |   +-- flux
-|   |   |   ae.safetensors
-|   |   |   diffusion_pytorch_model.safetensors
-|   |   +-- SD1.5
-|   |   |   +-- openai_consistency_decoder
-|   |   |   |   decoder.pt
-|   |   +-- split_files
-|   |   |   +-- vae
-|   |   |   |   wan_2.1_vae.safetensors
-|   |   |   |   wan2.2_vae.safetensors
-|   +-- VHS
-|   |   aidma-RUN-Motion%20Lora.safetensors
-|   +-- whisper
-|   |   +-- whisper-large-v3-turbo
-|   |   |   model.safetensors
-|   |   +-- whisper-tiny
-|   |   |   model.safetensors
+If an earlier recursive deletion partially removed the environment, do not use
+`-ReuseVenv`; rebuild it.
+
+### Large PyTorch download fails
+
+Rerun with `-ReuseVenv` after the new venv and pip have been created. Network
+installs use bounded command retries, pip connection retries, resume attempts,
+and a longer socket timeout.
+
+### CUDA is unavailable
+
+Confirm that the NVIDIA driver supports the selected PyTorch CUDA build, then
+run:
+
+```powershell
+.\ComfyUI\.venv\Scripts\python.exe -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available())"
+```
+
+For more detail, see [Windows installer operations](docs/windows-installer.md)
+and [Linux/macOS installer operations](docs/unix-installer.md).
+
+## License
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.

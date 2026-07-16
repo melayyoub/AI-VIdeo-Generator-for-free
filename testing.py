@@ -1,3 +1,4 @@
-import torch; 
-print(torch.version.cuda); 
+import torch
+
+print(torch.version.cuda)
 print(torch.cuda.is_available())

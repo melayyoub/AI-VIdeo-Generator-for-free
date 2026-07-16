@@ -1,9 +1,36 @@
+"""Download a Hugging Face model snapshot to a configurable local directory."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
 from huggingface_hub import snapshot_download
 
-snapshot_download(
-    repo_id="Qwen/Qwen3-VL-2B-Instruct",
-    local_dir=r"E:\python-projects\custom-wan\ComfyUI\models\LLM\Qwen-VL",
-    local_dir_use_symlinks=False
-)
 
-print("Download complete")
+def parse_args() -> argparse.Namespace:
+    default_destination = (
+        Path(__file__).resolve().parent / "ComfyUI" / "models" / "LLM" / "Qwen-VL"
+    )
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-id", default="Qwen/Qwen3-VL-2B-Instruct")
+    parser.add_argument("--destination", type=Path, default=default_destination)
+    parser.add_argument(
+        "--revision", help="Optional branch, tag, or commit to download"
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    destination = args.destination.expanduser().resolve()
+    snapshot_download(
+        repo_id=args.repo_id,
+        local_dir=destination,
+        revision=args.revision,
+    )
+    print(f"Download complete: {destination}")
+
+
+if __name__ == "__main__":
+    main()

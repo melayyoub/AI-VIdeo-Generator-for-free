@@ -1,4 +1,4 @@
-﻿# Sam Ayoub — Wan 2.2 + ComfyUI installer (Windows PowerShell)
+# Wan 2.2 + ComfyUI installer for Windows PowerShell.
 # Compatible with the current wan2_cli.py, which exposes only the `start` command.
 
 [CmdletBinding()]
@@ -16,11 +16,20 @@ param(
   [string] $BasePath = $PSScriptRoot,
   [string] $PyVersion = '3.10',
   [string] $HfToken = $env:HF_TOKEN,
-  [switch] $ReuseVenv
+  [switch] $ReuseVenv,
+
+  [ValidateSet('Stop','Fail')]
+  [string] $LockedVenvAction = 'Fail'
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+$installerVenvModule = Join-Path $PSScriptRoot 'scripts\Installer.Venv.psm1'
+if (-not (Test-Path -LiteralPath $installerVenvModule)) {
+  throw "Installer support module is missing: $installerVenvModule"
+}
+Import-Module $installerVenvModule -Force
 
 function Invoke-Native {
   [CmdletBinding()]
@@ -81,11 +90,23 @@ function Get-HuggingFaceFile {
   )
 
   if ($env:HF_TOKEN) {
-    $curlArgs += @('-H', "Authorization: Bearer $($env:HF_TOKEN)")
-  }
+    if ($env:HF_TOKEN -match '[\r\n]') {
+      throw 'HF_TOKEN contains an invalid newline character.'
+    }
 
-  $curlArgs += $url
-  Invoke-Native -FilePath 'curl.exe' -ArgumentList $curlArgs
+    # curl accepts headers from stdin via @-. This keeps the bearer token out
+    # of the process command line and out of Invoke-Native's command log.
+    Write-Host '> curl.exe [Authorization header supplied via stdin]' -ForegroundColor DarkGray
+    "Authorization: Bearer $($env:HF_TOKEN)" | & curl.exe @curlArgs '-H' '@-' $url
+    $curlExitCode = $LASTEXITCODE
+    if ($curlExitCode -ne 0) {
+      throw "Model download failed with curl exit code $curlExitCode."
+    }
+  }
+  else {
+    $curlArgs += $url
+    Invoke-Native -FilePath 'curl.exe' -ArgumentList $curlArgs
+  }
 
   if (-not (Test-Path -LiteralPath $partial)) {
     throw "Model download completed without creating the expected file: $partial"
@@ -100,8 +121,8 @@ function Get-HuggingFaceFile {
   Write-Host "[models] Saved: $Destination" -ForegroundColor Green
 }
 
-Write-Host ("[install.ps1] Base: {0}  CUDA: {1}  MODELS: {2}  Manager: {3}  Start: {4}  Port: {5}  ListenAll: {6}  ReuseVenv: {7}" `
-  -f $BasePath,$Cuda,$Models,$WithManager.IsPresent,$Start.IsPresent,$Port,$ListenAll.IsPresent,$ReuseVenv.IsPresent)
+Write-Host ("[install.ps1] Base: {0}  CUDA: {1}  MODELS: {2}  Manager: {3}  Start: {4}  Port: {5}  ListenAll: {6}  ReuseVenv: {7}  LockedVenvAction: {8}" `
+  -f $BasePath,$Cuda,$Models,$WithManager.IsPresent,$Start.IsPresent,$Port,$ListenAll.IsPresent,$ReuseVenv.IsPresent,$LockedVenvAction)
 
 if (-not (Get-Command py -ErrorAction SilentlyContinue)) {
   throw "Python launcher 'py' was not found. Install 64-bit Python $PyVersion first."
@@ -127,6 +148,43 @@ $mainPy      = Join-Path $comfyPath 'main.py'
 $venvPath    = Join-Path $comfyPath '.venv'
 $venvPython  = Join-Path $venvPath 'Scripts\python.exe'
 $cliPath     = Join-Path $PSScriptRoot 'wan2_cli.py'
+$runWanPath  = Join-Path $PSScriptRoot 'ComfyUI-Windows\run_wan.ps1'
+
+# Refuse or stop scoped users of the environment before Git, pip, or filesystem
+# mutations. This also prevents the run_wan.ps1 watchdog from racing deletion.
+if (Test-Path -LiteralPath $venvPath) {
+  Resolve-VirtualEnvironmentLock `
+    -Path $venvPath `
+    -SupervisorScriptPath $runWanPath `
+    -LockedVenvAction $LockedVenvAction
+}
+
+function Invoke-NativeWithRetry {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)] [string] $FilePath,
+    [Parameter()] [string[]] $ArgumentList = @(),
+    [Parameter()] [ValidateRange(1, 10)] [int] $MaxAttempts = 3,
+    [Parameter()] [ValidateRange(1, 300)] [int] $InitialDelaySeconds = 5
+  )
+
+  for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+    try {
+      Invoke-Native -FilePath $FilePath -ArgumentList $ArgumentList
+      return
+    }
+    catch {
+      if ($attempt -eq $MaxAttempts) {
+        throw
+      }
+
+      $delay = $InitialDelaySeconds * [Math]::Pow(2, $attempt - 1)
+      Write-Warning ("Command attempt {0}/{1} failed. Retrying in {2} seconds: {3}" -f `
+        $attempt, $MaxAttempts, $delay, $_.Exception.Message)
+      Start-Sleep -Seconds $delay
+    }
+  }
+}
 
 # -----------------------------------------------------------------------------
 # Install or update ComfyUI directly. Do not call `wan2_cli.py install` because
@@ -213,7 +271,11 @@ else {
 # -----------------------------------------------------------------------------
 if ((Test-Path -LiteralPath $venvPath) -and -not $ReuseVenv) {
   Write-Host '[install.ps1] Removing the existing virtual environment...' -ForegroundColor Yellow
-  Remove-Item -LiteralPath $venvPath -Recurse -Force
+  Remove-VirtualEnvironment `
+    -Path $venvPath `
+    -AllowedParentPath $comfyPath `
+    -SupervisorScriptPath $runWanPath `
+    -LockedVenvAction $LockedVenvAction
 }
 
 if (-not (Test-Path -LiteralPath $venvPython)) {
@@ -221,7 +283,19 @@ if (-not (Test-Path -LiteralPath $venvPython)) {
   Invoke-Native -FilePath 'py' -ArgumentList @("-$PyVersion", '-m', 'venv', $venvPath)
 }
 
-Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools', 'wheel', 'build')
+# Recheck immediately before health checks and package mutation. Editors may
+# start a language server while the Git update or venv creation is in progress.
+Resolve-VirtualEnvironmentLock `
+  -Path $venvPath `
+  -SupervisorScriptPath $runWanPath `
+  -LockedVenvAction $LockedVenvAction
+
+$venvCheckCode = 'import pathlib, sys; expected = pathlib.Path(sys.argv[1]).resolve(); actual = pathlib.Path(sys.prefix).resolve(); assert actual == expected, f"Unexpected sys.prefix: {actual} != {expected}"'
+Invoke-Native -FilePath $venvPython -ArgumentList @('-c', $venvCheckCode, $venvPath)
+Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', '--version')
+
+Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'install', '--upgrade', 'pip', 'setuptools<82', 'wheel', 'build')
+$pipNetworkOptions = @('--retries', '10', '--resume-retries', '10', '--timeout', '120')
 
 # -----------------------------------------------------------------------------
 # Install PyTorch for the requested compute backend.
@@ -234,17 +308,17 @@ $torchIndex = switch ($Cuda) {
 }
 
 Write-Host "[install.ps1] Installing PyTorch build: $Cuda" -ForegroundColor Cyan
-Invoke-Native -FilePath $venvPython -ArgumentList @(
-  '-m', 'pip', 'install', '--upgrade',
-  'torch', 'torchvision', 'torchaudio',
-  '--index-url', $torchIndex
+Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (
+  @('-m', 'pip', 'install', '--upgrade') +
+  $pipNetworkOptions +
+  @('torch', 'torchvision', 'torchaudio', '--index-url', $torchIndex)
 )
 
 $requirements = Join-Path $comfyPath 'requirements.txt'
 if (-not (Test-Path -LiteralPath $requirements)) {
   throw "ComfyUI requirements.txt is missing: $requirements"
 }
-Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'install', '-r', $requirements)
+Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (@('-m', 'pip', 'install') + $pipNetworkOptions + @('-r', $requirements))
 
 # -----------------------------------------------------------------------------
 # Optional ComfyUI Manager.
@@ -272,7 +346,7 @@ if ($WithManager) {
 
   $managerRequirements = Join-Path $managerPath 'requirements.txt'
   if (Test-Path -LiteralPath $managerRequirements) {
-    Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'install', '-r', $managerRequirements)
+    Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (@('-m', 'pip', 'install') + $pipNetworkOptions + @('-r', $managerRequirements))
   }
 }
 
@@ -283,7 +357,7 @@ if ($WithManager) {
 $env:GIT_CLONE_PROTECTION_ACTIVE = 'false'
 
 $corePackages = @(
-  'protobuf',
+  'protobuf>=4.25,<5',
   'onnx',
   'huggingface_hub',
   'regex',
@@ -299,23 +373,41 @@ else {
   $corePackages += 'onnxruntime-gpu'
 }
 
-Invoke-Native -FilePath $venvPython -ArgumentList (@('-m', 'pip', 'install', '--upgrade') + $corePackages)
+Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (@('-m', 'pip', 'install', '--upgrade') + $pipNetworkOptions + $corePackages)
+
+# Older revisions installed the unrelated PyPI package named `dac`, which
+# downgrades Click/Typer and conflicts with current Hugging Face Hub. Remove
+# only that known legacy package before installing the intended audio codec.
+& $venvPython -m pip show dac *> $null
+if ($LASTEXITCODE -eq 0) {
+  Write-Warning "Removing legacy package 'dac'; the intended package is 'descript-audio-codec'."
+  Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'uninstall', '-y', 'dac')
+}
 
 $optionalPackages = @(
   'insightface',
   'audiotoolbox',
-  'dac',
-  'git+https://github.com/descriptinc/audiotools'
+  'descript-audio-codec>=1.0.0',
+  'git+https://github.com/descriptinc/audiotools@348ebf2034ce24e2a91a553e3171cb00c0c71678'
 )
 
 foreach ($package in $optionalPackages) {
   try {
-    Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'install', '--upgrade', $package)
+    Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (@('-m', 'pip', 'install', '--upgrade') + $pipNetworkOptions + @($package))
   }
   catch {
     Write-Warning "Optional package failed and was skipped: $package`n$($_.Exception.Message)"
   }
 }
+
+# Optional audio packages have historically imposed older CLI dependency
+# bounds. Restore the core-compatible versions, then require a clean graph.
+Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (
+  @('-m', 'pip', 'install', '--upgrade') +
+  $pipNetworkOptions +
+  @('click>=8.4.2,<9', 'typer>=0.27,<1')
+)
+Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'check')
 
 # -----------------------------------------------------------------------------
 # Download official ComfyUI-packaged Wan 2.2 model files.
