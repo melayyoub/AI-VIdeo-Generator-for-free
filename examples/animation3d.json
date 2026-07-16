@@ -989,7 +989,7 @@
 					"params":{
 						"filename":"WanVideo2_1_00001_zeepb_1741770492_zvprf_1741770493.mp4",
 						"workflow":"WanVideo2_1_00115.png",
-						"fullpath":"./local-assets/example.mp4",
+						"fullpath":"",
 						"format":"video/h264-mp4",
 						"subfolder":"",
 						"type":"output",

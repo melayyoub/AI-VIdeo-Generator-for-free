@@ -34,19 +34,11 @@ def rocm_available() -> bool:
 
 def resolve_checkout_path(configured: str, root: Path) -> Path:
     if not configured:
-        return root / "ComfyUI"
+        return (root / "ComfyUI").resolve()
     path = Path(configured).expanduser()
     if path.is_absolute():
         return path.resolve()
-    candidates = [
-        root.parent.parent / path,
-        root / path,
-        Path.cwd() / path,
-    ]
-    for candidate in candidates:
-        if (candidate / "main.py").exists():
-            return candidate.resolve()
-    return candidates[0].resolve()
+    return (root / path).resolve()
 
 
 def main() -> None:

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "wan": {
+    "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+    "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+    "artifacts": [
+      {
+        "groups": ["shared"],
+        "destination": "text_encoders",
+        "path": "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors"
+      },
+      {
+        "groups": ["5b"],
+        "destination": "vae",
+        "path": "split_files/vae/wan2.2_vae.safetensors"
+      },
+      {
+        "groups": ["5b"],
+        "destination": "diffusion_models",
+        "path": "split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors"
+      },
+      {
+        "groups": ["14b", "i2v"],
+        "destination": "vae",
+        "path": "split_files/vae/wan_2.1_vae.safetensors"
+      },
+      {
+        "groups": ["14b"],
+        "destination": "diffusion_models",
+        "path": "split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors"
+      },
+      {
+        "groups": ["14b"],
+        "destination": "diffusion_models",
+        "path": "split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors"
+      },
+      {
+        "groups": ["i2v"],
+        "destination": "diffusion_models",
+        "path": "split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors"
+      },
+      {
+        "groups": ["i2v"],
+        "destination": "diffusion_models",
+        "path": "split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors"
+      }
+    ]
+  }
+}

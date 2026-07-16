@@ -4570,7 +4570,7 @@
             "type": "output",
             "format": "video/h264-mp4",
             "filename": "WanVideo21_Phantom_00004.mp4",
-            "fullpath": "/workspace/ComfyUI/output/WanVideo21_Phantom_00004.mp4",
+            "fullpath": "",
             "workflow": "WanVideo21_Phantom_00004.png",
             "subfolder": "",
             "frame_rate": 16
@@ -4691,7 +4691,7 @@
             "type": "output",
             "format": "video/h264-mp4",
             "filename": "Compare_Phantom_00004.mp4",
-            "fullpath": "/workspace/ComfyUI/output/Compare_Phantom_00004.mp4",
+            "fullpath": "",
             "workflow": "Compare_Phantom_00004.png",
             "subfolder": "",
             "frame_rate": 16

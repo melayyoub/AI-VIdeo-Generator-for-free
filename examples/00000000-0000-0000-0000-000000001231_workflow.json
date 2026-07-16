@@ -475,7 +475,7 @@
             "type": "output",
             "format": "video/h264-mp4",
             "filename": "WanVideoWrapper_I2V_00028.mp4",
-            "fullpath": "/workspace/ComfyUI/output/WanVideoWrapper_I2V_00028.mp4",
+            "fullpath": "",
             "workflow": "WanVideoWrapper_I2V_00028.png",
             "subfolder": "",
             "frame_rate": 24
@@ -876,7 +876,7 @@
             "type": "output",
             "format": "video/h264-mp4",
             "filename": "WanVideoWrapper_I2V_00027.mp4",
-            "fullpath": "/workspace/ComfyUI/output/WanVideoWrapper_I2V_00027.mp4",
+            "fullpath": "",
             "workflow": "WanVideoWrapper_I2V_00027.png",
             "subfolder": "",
             "frame_rate": 24

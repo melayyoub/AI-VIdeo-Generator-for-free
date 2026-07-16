@@ -1,3 +1,5 @@
+# Example model inventory only. This is not a required installation manifest.
+# Select models dynamically and verify each model's source, revision, and license.
 ﻿
 +-- models
 |   +-- animatediff_models

@@ -13,7 +13,14 @@ from pathlib import Path
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from wan2_cli_args import MAX_PORT, MIN_PORT, port_number  # noqa: E402
+from wan2_cli import resolve_checkout_path  # noqa: E402
+from wan2_cli_args import (  # noqa: E402
+    MAX_PORT,
+    MIN_PORT,
+    model_repository,
+    model_revision,
+    port_number,
+)
 
 
 class PortNumberTests(unittest.TestCase):
@@ -28,6 +35,46 @@ class PortNumberTests(unittest.TestCase):
                     argparse.ArgumentTypeError, "1 through 65535"
                 ):
                     port_number(value)
+
+
+class CheckoutPathTests(unittest.TestCase):
+    def test_default_checkout_is_scoped_to_project_root(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self.assertEqual(resolve_checkout_path("", root), root / "ComfyUI")
+
+    def test_relative_override_is_scoped_to_project_root(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self.assertEqual(
+                resolve_checkout_path("checkouts/custom", root),
+                root / "checkouts" / "custom",
+            )
+
+    def test_absolute_override_is_preserved(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            checkout = Path(temporary_directory).resolve()
+            self.assertEqual(resolve_checkout_path(str(checkout), Path.cwd()), checkout)
+
+
+class ModelSourceValidationTests(unittest.TestCase):
+    def test_accepts_portable_repository_and_revision_values(self) -> None:
+        self.assertEqual(model_repository("owner/model-name"), "owner/model-name")
+        self.assertEqual(model_revision("refs/reviewed-v1"), "refs/reviewed-v1")
+
+    def test_rejects_url_or_code_shaped_model_values(self) -> None:
+        for value in (
+            "https://example.invalid/model",
+            "owner/model/extra",
+            "owner model",
+        ):
+            with self.subTest(repository=value):
+                with self.assertRaises(argparse.ArgumentTypeError):
+                    model_repository(value)
+        for value in ("../main", "main'''", "/main", "main/"):
+            with self.subTest(revision=value):
+                with self.assertRaises(argparse.ArgumentTypeError):
+                    model_revision(value)
 
 
 class LauncherPortTests(unittest.TestCase):

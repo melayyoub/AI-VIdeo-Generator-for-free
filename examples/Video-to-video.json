@@ -646,7 +646,7 @@
 					"params":{
 						"filename":"pl-custom_00002_xiqnm_1746798906.mp4",
 						"workflow":"pl-custom_00002.png",
-						"fullpath":"/data/ComfyUI/personal/dc555219c23018b8fa8b4774a3e25d14/output/pl-custom_00002.mp4",
+						"fullpath":"",
 						"format":"video/h264-mp4",
 						"subfolder":"",
 						"type":"output",
@@ -731,7 +731,7 @@
 					"params":{
 						"filename":"pl-custom_00001_yeyok_1746798894.mp4",
 						"workflow":"pl-custom_00001.png",
-						"fullpath":"/data/ComfyUI/personal/dc555219c23018b8fa8b4774a3e25d14/output/pl-custom_00001.mp4",
+						"fullpath":"",
 						"format":"video/h264-mp4",
 						"subfolder":"",
 						"type":"output",

@@ -10,9 +10,9 @@
   "scripts": {
     "check": "npm test && pwsh -NoProfile -File tests/validate.ps1",
     "test": "pwsh -NoProfile -File tests/run.ps1",
-    "wnew": "pwsh -NoProfile -File installMe.ps1 && pwsh -NoProfile -File install.ps1 -Cuda cu128 -Models 5b -WithManager -Start",
-    "wstart": ".\\ComfyUI\\.venv\\Scripts\\python.exe wan2_cli.py start --path . --port 8188",
-    "lstart": "./ComfyUI/.venv/bin/python wan2_cli.py start --path . --port 8188"
+    "wnew": "pwsh -NoProfile -File install.ps1 -Cuda cu128 -Models 5b -WithManager -Start",
+    "wstart": ".\\ComfyUI\\.venv\\Scripts\\python.exe wan2_cli.py start --path .",
+    "lstart": "./ComfyUI/.venv/bin/python wan2_cli.py start --path ."
   },
   "keywords": [
     "comfyui",

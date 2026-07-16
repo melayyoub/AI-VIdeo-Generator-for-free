@@ -1,18 +1,18 @@
-# A) check for existing keys
-ls -la ~/.ssh
+#!/usr/bin/env bash
+set -euo pipefail
 
-# B) make one (ed25519) if needed
-ssh-keygen -t ed25519 -C "youremail@example.com"
-# press Enter to accept defaults (~/.ssh/id_ed25519)
+key_path="${CUSTOM_WAN_SSH_KEY_PATH:-${HOME}/.ssh/id_ed25519}"
+comment="${CUSTOM_WAN_SSH_KEY_COMMENT:-custom-wan}"
 
-# C) start agent & add key
+if [[ -e "${key_path}" || -e "${key_path}.pub" ]]; then
+  printf 'Refusing to overwrite an existing SSH key: %s\n' "${key_path}" >&2
+  exit 1
+fi
+
+mkdir -p -- "$(dirname -- "${key_path}")"
+ssh-keygen -t ed25519 -C "${comment}" -f "${key_path}"
 eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
+ssh-add "${key_path}"
 
-# D) add the public key to GitHub
-cat ~/.ssh/id_ed25519.pub
-# copy the output → GitHub > Settings > SSH and GPG keys > New SSH key
-
-# E) test
-ssh -T git@github.com
-# should say: "Hi <username>! You've successfully authenticated..."
+printf '%s\n' 'Add this public key to your Git hosting account:'
+cat -- "${key_path}.pub"

@@ -164,10 +164,10 @@
             "type": "output",
             "format": "video/h264-mp4",
             "frame_rate": 25,
-            "url": "https://liblibai-tmp-image.liblib.cloud/sd-images/f748e0fab77058f1ec35440fa2f329c1cceac11c3765dd84cf974da0e26d7303.mp4",
+            "url": "",
             "coverUrl": null,
             "workflow": "AnimateDiff_00016.png",
-            "fullpath": "./local-assets/example.mp4"
+            "fullpath": ""
           }
         }
       },
@@ -431,7 +431,7 @@
             "select_every_nth": 2,
             "value": "video/eca755ce1b6946a886182665ed2f528e/63d81c024227ba7776958802936b223bb2631fbdd4c725478db20f530ac25dfe.mp4",
             "name": "原视频.mp4",
-            "url": "https://liblibai-tmp-image.liblib.cloud/video/eca755ce1b6946a886182665ed2f528e/63d81c024227ba7776958802936b223bb2631fbdd4c725478db20f530ac25dfe.mp4"
+            "url": ""
           }
         }
       },
@@ -441,7 +441,7 @@
           "name": "原视频.mp4",
           "filename": "原视频.mp4",
           "format": "video/mp4",
-          "url": "https://liblibai-tmp-image.liblib.cloud/video/eca755ce1b6946a886182665ed2f528e/63d81c024227ba7776958802936b223bb2631fbdd4c725478db20f530ac25dfe.mp4"
+          "url": ""
         }
       }
     },
@@ -491,7 +491,7 @@
         "新人.png": {
           "value": "img/eca755ce1b6946a886182665ed2f528e/042aa82c7de9dcd367170683d7cdb2bd320feff6c26d9007e06a983ab09c3ea6.png",
           "name": "新人.png",
-          "url": "https://liblibai-tmp-image.liblib.cloud/img/eca755ce1b6946a886182665ed2f528e/042aa82c7de9dcd367170683d7cdb2bd320feff6c26d9007e06a983ab09c3ea6.png",
+          "url": "",
           "width": 1024,
           "height": 1536
         }
@@ -577,9 +577,7 @@
       4
     ],
     "ue_links": [],
-    "workspace_info": {
-      "id": "dzVd1PnJ-xzkpcB2wgs_B"
-    }
+    "workspace_info": {}
   },
   "version": 0.4,
   "widget_idx_map": {},

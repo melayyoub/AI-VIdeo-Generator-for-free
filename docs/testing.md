@@ -20,8 +20,10 @@ This runs `npm test` followed by `tests/validate.ps1`. The current suite checks:
   scoped `Stop`, and guarded `.venv` deletion behavior;
 - PowerShell parsing for maintained scripts;
 - Python parsing without writing bytecode;
-- example workflow JSON parsing;
-- tracked text for personal or machine-specific values;
+- example workflow JSON parsing and semantic export-metadata sanitization;
+- tracked filenames and source text for personal or machine-specific values;
+- rejection of tracked binary shortcuts, token-bearing media URLs, transient
+  preview hosts, workspace identifiers, and absolute preview paths;
 - `ruff` checks outside generated/runtime trees;
 - Bash syntax and the network-free Unix installer dry run;
 - offline npm lockfile consistency.
@@ -54,6 +56,14 @@ Run validation without the integration suite:
 
 ```powershell
 pwsh -NoProfile -File tests/validate.ps1
+```
+
+Check workflow exports without changing them, or sanitize a newly exported
+workflow set before review:
+
+```powershell
+python scripts/sanitize_workflows.py
+python scripts/sanitize_workflows.py --write
 ```
 
 Validate the Unix command plan without network or installation changes:

@@ -57,3 +57,16 @@ directory name.
 ```powershell
 npm test
 ```
+
+## Portable shortcut
+
+Do not commit a Windows `.lnk` file. Shortcut binaries can retain the creator's
+profile, browser state, icon path, and other local details. Generate the
+shortcut on the destination machine instead:
+
+```powershell
+.\ComfyUI-Windows\New-ComfyUIShortcut.ps1 -Port 8188 -OpenBrowser
+```
+
+`-ProjectPath` and `-ShortcutPath` are optional and resolved at runtime. The
+generated shortcut is ignored by Git.

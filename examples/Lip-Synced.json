@@ -145,7 +145,7 @@
           "params": {
             "filename": "aijuxi_00003-audio_pklpr_1739703615_ghmgy_1739703617.mp4",
             "workflow": "aijuxi_00012.png",
-            "fullpath": "./local-assets/example.mp4",
+            "fullpath": "",
             "format": "video/h264-mp4",
             "subfolder": "Sonic",
             "type": "output",
@@ -320,7 +320,7 @@
         "45b437eef65d3b4c3daf2140979f4c80eb022e4309da2e180e5efa84c07629d0.png": {
           "value": "img/32e8879effb0428da72b6b7bd11be50f/45b437eef65d3b4c3daf2140979f4c80eb022e4309da2e180e5efa84c07629d0.png",
           "name": "45b437eef65d3b4c3daf2140979f4c80eb022e4309da2e180e5efa84c07629d0.png",
-          "url": "https://liblibai-tmp-image.liblib.cloud/img/32e8879effb0428da72b6b7bd11be50f/45b437eef65d3b4c3daf2140979f4c80eb022e4309da2e180e5efa84c07629d0.png",
+          "url": "",
           "width": 1080,
           "height": 1920
         }

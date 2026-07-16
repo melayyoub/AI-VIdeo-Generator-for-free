@@ -12,6 +12,7 @@ Layout (ALWAYS under <base>/ComfyUI):
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import platform
 import shutil
@@ -22,34 +23,22 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Optional, List
 
-from wan2_cli_args import port_number
+from wan2_cli_args import model_repository, model_revision, port_number
 
 APP_NAME = "wan2_cli"
-DEFAULT_DIR = Path.cwd()  # default to current folder as base
+DEFAULT_DIR = Path(os.getenv("CUSTOM_WAN_PROJECT_PATH", Path.cwd()))
 COMFY_DIR = "ComfyUI"  # enforced subfolder for repo
 VENV_DIR = ".venv"
 DEFAULT_PORT = 8188
 
-WAN_REPO = "Comfy-Org/Wan_2.2_ComfyUI_Repackaged"
-
-DIFFUSION_FILES = {
-    "5b": ["split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors"],
-    "14b": [
-        "split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
-        "split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
-    ],
-    "i2v": [
-        "split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
-        "split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
-    ],
-}
-VAE_FILES = [
-    "split_files/vae/wan_2.1_vae.safetensors",
-    "split_files/vae/wan2.2_vae.safetensors",
-]
-TEXT_ENCODERS = [
-    "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
-]
+MODEL_MANIFEST_PATH = Path(__file__).resolve().parent / "config" / "models.json"
+MODEL_MANIFEST = json.loads(MODEL_MANIFEST_PATH.read_text(encoding="utf-8"))
+if MODEL_MANIFEST.get("schema_version") != 1:
+    raise RuntimeError("Unsupported model manifest schema version")
+WAN_CONFIG = MODEL_MANIFEST["wan"]
+WAN_REPO = WAN_CONFIG["repository"]
+WAN_REVISION = WAN_CONFIG["revision"]
+WAN_ARTIFACTS = WAN_CONFIG["artifacts"]
 
 
 # ------------------------------ helpers ---------------------------------------
@@ -320,7 +309,12 @@ def hf_login(venv: Path, token: Optional[str], dry: bool = False) -> None:
 
 
 def hf_download(
-    venv: Path, repo_id: str, files: list[str], dest: Path, dry: bool = False
+    venv: Path,
+    repo_id: str,
+    revision: str,
+    files: list[str],
+    dest: Path,
+    dry: bool = False,
 ) -> None:
     pybin = py_exec(venv_bin=venv / ("Scripts" if is_windows() else "bin"))
     code = f"""
@@ -329,43 +323,56 @@ from huggingface_hub import hf_hub_download
 dest = r'''{dest}'''
 pathlib.Path(dest).mkdir(parents=True, exist_ok=True)
 repo = r'''{repo_id}'''
+revision = r'''{revision}'''
 files = {files!r}
 tok = os.getenv('HF_TOKEN')
 for f in files:
-    path = hf_hub_download(repo_id=repo, filename=f, local_dir=dest,
+    path = hf_hub_download(repo_id=repo, revision=revision, filename=f, local_dir=dest,
                            local_dir_use_symlinks=False, token=tok)
     print(path)
 """
     run([pybin, "-c", code], dry=dry)
 
 
-def download_models(venv: Path, base: Path, which: str, dry: bool = False) -> None:
+def download_models(
+    venv: Path,
+    base: Path,
+    which: str,
+    repo_id: str,
+    revision: str,
+    dry: bool = False,
+) -> None:
     comfy = comfy_root(base)
     models_root = comfy / "models"
     dm = models_root / "diffusion_models"
     vae = models_root / "vae"
     te = models_root / "text_encoders"
 
-    if which == "5b":
-        selected = DIFFUSION_FILES["5b"]
-    elif which == "14b":
-        selected = DIFFUSION_FILES["14b"]
-    elif which == "i2v":
-        selected = DIFFUSION_FILES["i2v"]
-    elif which == "all":
-        selected = (
-            DIFFUSION_FILES["5b"] + DIFFUSION_FILES["14b"] + DIFFUSION_FILES["i2v"]
-        )
-    else:
-        raise ValueError("--models must be one of 5b|14b|i2v|all")
+    selected_groups = {"5b", "14b", "i2v"} if which == "all" else {which}
+    selected_by_destination: dict[str, list[str]] = {
+        "diffusion_models": [],
+        "vae": [],
+        "text_encoders": [],
+    }
+    for artifact in WAN_ARTIFACTS:
+        groups = set(artifact["groups"])
+        if "shared" not in groups and groups.isdisjoint(selected_groups):
+            continue
+        destination = artifact["destination"]
+        if destination not in selected_by_destination:
+            raise ValueError(f"Unsupported model destination: {destination}")
+        selected_by_destination[destination].append(artifact["path"])
 
     install_hf_cli(venv, dry=dry)
     token = os.environ.get("HF_TOKEN")
     hf_login(venv, token=token, dry=dry)
 
-    hf_download(venv, WAN_REPO, selected, dm, dry=dry)
-    hf_download(venv, WAN_REPO, VAE_FILES, vae, dry=dry)
-    hf_download(venv, WAN_REPO, TEXT_ENCODERS, te, dry=dry)
+    destinations = {"diffusion_models": dm, "vae": vae, "text_encoders": te}
+    for destination, files in selected_by_destination.items():
+        if files:
+            hf_download(
+                venv, repo_id, revision, files, destinations[destination], dry=dry
+            )
 
 
 # -------------------------------- React loader --------------------------------
@@ -496,6 +503,18 @@ def main() -> None:
         "--hf-token", default=None, help="Hugging Face token (optional)"
     )
     p_install.add_argument(
+        "--model-repository",
+        type=model_repository,
+        default=os.getenv("CUSTOM_WAN_MODEL_REPOSITORY", WAN_REPO),
+        help="Hugging Face model repository (owner/repository)",
+    )
+    p_install.add_argument(
+        "--model-revision",
+        type=model_revision,
+        default=os.getenv("CUSTOM_WAN_MODEL_REVISION", WAN_REVISION),
+        help="Hugging Face branch, tag, or immutable commit",
+    )
+    p_install.add_argument(
         "--start", action="store_true", help="Start ComfyUI when done"
     )
     p_install.add_argument(
@@ -526,13 +545,27 @@ def main() -> None:
     p_models.add_argument(
         "--hf-token", default=None, help="Hugging Face token (optional)"
     )
+    p_models.add_argument(
+        "--model-repository",
+        type=model_repository,
+        default=os.getenv("CUSTOM_WAN_MODEL_REPOSITORY", WAN_REPO),
+        help="Hugging Face model repository (owner/repository)",
+    )
+    p_models.add_argument(
+        "--model-revision",
+        type=model_revision,
+        default=os.getenv("CUSTOM_WAN_MODEL_REVISION", WAN_REVISION),
+        help="Hugging Face branch, tag, or immutable commit",
+    )
 
     p_react = sub.add_parser(
         "react", parents=[common], help="Create a React loader app beside ComfyUI."
     )
     p_react.add_argument("--name", default="comfy-loader", help="App folder name")
     p_react.add_argument(
-        "--url", default=f"http://127.0.0.1:{DEFAULT_PORT}", help="Comfy base URL"
+        "--url",
+        default=os.getenv("CUSTOM_WAN_COMFYUI_URL", f"http://127.0.0.1:{DEFAULT_PORT}"),
+        help="Comfy base URL",
     )
 
     p_start = sub.add_parser(
@@ -584,7 +617,14 @@ def main() -> None:
 
         # 4) Models (optional)
         if args.models:
-            download_models(venv, base, args.models, dry=dry)
+            download_models(
+                venv,
+                base,
+                args.models,
+                args.model_repository,
+                args.model_revision,
+                dry=dry,
+            )
 
         # 5) Done / maybe start
         act = (
@@ -598,7 +638,14 @@ def main() -> None:
 
     elif args.cmd == "models":
         venv = ensure_venv(base, py_ver=None, dry=dry)
-        download_models(venv, base, args.models, dry=dry)
+        download_models(
+            venv,
+            base,
+            args.models,
+            args.model_repository,
+            args.model_revision,
+            dry=dry,
+        )
         log("Models downloaded.")
 
     elif args.cmd == "react":

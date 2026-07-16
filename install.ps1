@@ -17,6 +17,8 @@ param(
   [string] $BasePath = $PSScriptRoot,
   [string] $PyVersion = '3.10',
   [string] $HfToken = $env:HF_TOKEN,
+  [string] $ModelRepository = $env:CUSTOM_WAN_MODEL_REPOSITORY,
+  [string] $ModelRevision = $env:CUSTOM_WAN_MODEL_REVISION,
   [switch] $ReuseVenv,
 
   [ValidateSet('Stop','Fail')]
@@ -25,6 +27,28 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+$modelManifestPath = Join-Path $PSScriptRoot 'config\models.json'
+if (-not (Test-Path -LiteralPath $modelManifestPath -PathType Leaf)) {
+  throw "Model manifest is missing: $modelManifestPath"
+}
+$modelManifest = Get-Content -LiteralPath $modelManifestPath -Raw | ConvertFrom-Json
+if ($modelManifest.schema_version -ne 1) {
+  throw 'Unsupported model manifest schema version.'
+}
+if ([string]::IsNullOrWhiteSpace($ModelRepository)) {
+  $ModelRepository = [string] $modelManifest.wan.repository
+}
+if ([string]::IsNullOrWhiteSpace($ModelRevision)) {
+  $ModelRevision = [string] $modelManifest.wan.revision
+}
+
+if ($ModelRepository -notmatch '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$') {
+  throw 'ModelRepository must use the owner/repository form.'
+}
+if ($ModelRevision -notmatch '^[A-Za-z0-9._/-]+$' -or $ModelRevision.Contains('..')) {
+  throw 'ModelRevision must be a branch, tag, or commit without traversal segments.'
+}
 
 $installerVenvModule = Join-Path $PSScriptRoot 'scripts\Installer.Venv.psm1'
 if (-not (Test-Path -LiteralPath $installerVenvModule)) {
@@ -73,7 +97,9 @@ function Get-HuggingFaceFile {
   $destinationDir = Split-Path -Parent $Destination
   Ensure-Directory $destinationDir
 
-  $repo = 'https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main'
+  $encodedRepository = (($ModelRepository -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+  $encodedRevision = (($ModelRevision -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+  $repo = "https://huggingface.co/${encodedRepository}/resolve/${encodedRevision}"
   $encodedPath = (($RelativePath -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
   $url = "${repo}/${encodedPath}?download=true"
   $partial = "$Destination.part"
@@ -414,52 +440,26 @@ Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'check')
 # Download official ComfyUI-packaged Wan 2.2 model files.
 # `all` includes 5B TI2V, 14B T2V, and 14B I2V.
 # -----------------------------------------------------------------------------
-$textEncoderDir = Join-Path $comfyPath 'models\text_encoders'
-$vaeDir         = Join-Path $comfyPath 'models\vae'
-$diffusionDir   = Join-Path $comfyPath 'models\diffusion_models'
-
-Ensure-Directory $textEncoderDir
-Ensure-Directory $vaeDir
-Ensure-Directory $diffusionDir
-
-Get-HuggingFaceFile `
-  -RelativePath 'split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors' `
-  -Destination (Join-Path $textEncoderDir 'umt5_xxl_fp8_e4m3fn_scaled.safetensors')
-
-if ($Models -in @('5b', 'all')) {
+$selectedModelGroups = if ($Models -eq 'all') { @('5b', '14b', 'i2v') } else { @($Models) }
+$allowedDestinations = @('diffusion_models', 'text_encoders', 'vae')
+foreach ($artifact in $modelManifest.wan.artifacts) {
+  $artifactGroups = @($artifact.groups | ForEach-Object { [string] $_ })
+  if ('shared' -notin $artifactGroups -and -not @($artifactGroups | Where-Object { $_ -in $selectedModelGroups })) {
+    continue
+  }
+  $destinationGroup = [string] $artifact.destination
+  if ($destinationGroup -notin $allowedDestinations) {
+    throw "Unsupported model destination in manifest: $destinationGroup"
+  }
+  $relativePath = [string] $artifact.path
+  if ($relativePath -notmatch '^split_files/[A-Za-z0-9._/-]+$' -or $relativePath.Contains('..')) {
+    throw "Unsafe model path in manifest: $relativePath"
+  }
+  $destinationDirectory = Join-Path $comfyPath "models\$destinationGroup"
+  Ensure-Directory $destinationDirectory
   Get-HuggingFaceFile `
-    -RelativePath 'split_files/vae/wan2.2_vae.safetensors' `
-    -Destination (Join-Path $vaeDir 'wan2.2_vae.safetensors')
-
-  Get-HuggingFaceFile `
-    -RelativePath 'split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors' `
-    -Destination (Join-Path $diffusionDir 'wan2.2_ti2v_5B_fp16.safetensors')
-}
-
-if ($Models -in @('14b', 'i2v', 'all')) {
-  Get-HuggingFaceFile `
-    -RelativePath 'split_files/vae/wan_2.1_vae.safetensors' `
-    -Destination (Join-Path $vaeDir 'wan_2.1_vae.safetensors')
-}
-
-if ($Models -in @('14b', 'all')) {
-  Get-HuggingFaceFile `
-    -RelativePath 'split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors' `
-    -Destination (Join-Path $diffusionDir 'wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors')
-
-  Get-HuggingFaceFile `
-    -RelativePath 'split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors' `
-    -Destination (Join-Path $diffusionDir 'wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors')
-}
-
-if ($Models -in @('i2v', 'all')) {
-  Get-HuggingFaceFile `
-    -RelativePath 'split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors' `
-    -Destination (Join-Path $diffusionDir 'wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors')
-
-  Get-HuggingFaceFile `
-    -RelativePath 'split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors' `
-    -Destination (Join-Path $diffusionDir 'wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors')
+    -RelativePath $relativePath `
+    -Destination (Join-Path $destinationDirectory (Split-Path -Leaf $relativePath))
 }
 
 # -----------------------------------------------------------------------------

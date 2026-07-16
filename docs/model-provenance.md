@@ -12,6 +12,16 @@ use or redistribution, read the current model card, repository files, and terms
 at the upstream source. Terms can differ by artifact and can change independently
 of this project.
 
+The delivery source and revision are runtime configuration rather than local
+machine state. Use `CUSTOM_WAN_MODEL_REPOSITORY` and
+`CUSTOM_WAN_MODEL_REVISION`, or the corresponding installer/CLI arguments, to
+select an approved repository and immutable commit without editing source.
+
+The same rule applies to workflow exports. Examples with unknown redistribution
+terms, unverifiable creator attribution, embedded account metadata, or
+third-party temporary assets are excluded rather than republished without
+permission or attribution.
+
 ## Configured artifacts
 
 | Selection | Diffusion model files |
@@ -21,17 +31,18 @@ of this project.
 | `i2v` | `wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors`, `wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors` |
 | `all` | all diffusion model files above |
 
-The configured shared files are
-`umt5_xxl_fp8_e4m3fn_scaled.safetensors`, `wan2.2_vae.safetensors`, and
-`wan_2.1_vae.safetensors`. Platform paths currently differ: the Windows
-installer downloads the VAE required by the selected group, while the Python
-installer downloads both configured VAE files for any model selection. Both
-place artifacts under the local `ComfyUI/models/` tree.
+The versioned source of truth is `config/models.json`. The configured shared
+text encoder is `umt5_xxl_fp8_e4m3fn_scaled.safetensors`; the manifest maps
+`wan2.2_vae.safetensors` to `5b` and `wan_2.1_vae.safetensors` to the `14b` and
+`i2v` groups. The PowerShell and Python installers consume the same repository,
+revision, artifact, selection, and destination mapping and place files under
+the local `ComfyUI/models/` tree.
 
 ## Current verification limits
 
-- Downloads resolve through the upstream repository's `main` reference rather
-  than a project-pinned immutable revision.
+- Default downloads resolve through the immutable upstream revision recorded in
+  `config/models.json`. An operator override may intentionally select another
+  branch, tag, or commit.
 - This project does not maintain expected cryptographic hashes or signatures
   for the model artifacts.
 - The Windows downloader treats an existing file larger than its sanity

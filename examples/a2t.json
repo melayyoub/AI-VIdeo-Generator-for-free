@@ -268,7 +268,7 @@
             "format": "video/h264-mp4",
             "frame_rate": 29.916657716334864,
             "workflow": "AnimateDiff_00005.png",
-            "fullpath": "/workspace/ComfyUI/output/AnimateDiff_00005-audio.mp4"
+            "fullpath": ""
           }
         }
       }

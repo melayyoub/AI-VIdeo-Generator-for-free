@@ -1,19 +1,25 @@
-# A) check for existing keys
-Get-ChildItem $HOME\.ssh
+[CmdletBinding()]
+param(
+    [string] $KeyPath = (Join-Path $HOME '.ssh\id_ed25519'),
+    [string] $Comment = $(if ($env:CUSTOM_WAN_SSH_KEY_COMMENT) { $env:CUSTOM_WAN_SSH_KEY_COMMENT } else { 'custom-wan' })
+)
 
-# B) generate key
-ssh-keygen -t ed25519 -C "youremail@example.com" -f $HOME\.ssh\id_ed25519
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
-# C) ensure ssh-agent is running and auto-starts
-Get-Service ssh-agent | Set-Service -StartupType Automatic
-Start-Service ssh-agent
+$keyFullPath = [IO.Path]::GetFullPath($KeyPath)
+if (Test-Path -LiteralPath $keyFullPath) {
+    throw "Refusing to overwrite an existing SSH key: $keyFullPath"
+}
+New-Item -ItemType Directory -Path (Split-Path -Parent $keyFullPath) -Force | Out-Null
 
-# D) add the key
-ssh-add $HOME\.ssh\id_ed25519
+& ssh-keygen -t ed25519 -C $Comment -f $keyFullPath
+if ($LASTEXITCODE -ne 0) { throw 'ssh-keygen failed.' }
 
-# E) add the public key to GitHub
-Get-Content $HOME\.ssh\id_ed25519.pub
-# copy → GitHub > Settings > SSH and GPG keys > New SSH key
+$agent = Get-Service ssh-agent -ErrorAction Stop
+if ($agent.Status -ne 'Running') { Start-Service ssh-agent }
+& ssh-add $keyFullPath
+if ($LASTEXITCODE -ne 0) { throw 'ssh-add failed.' }
 
-# F) test
-ssh -T git@github.com
+Write-Output 'Add this public key to your Git hosting account:'
+Get-Content -LiteralPath "$keyFullPath.pub"

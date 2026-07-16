@@ -1,11 +1,34 @@
-# --- Activate venv ---
-# $venv = ".\.venv\Scripts\Activate.ps1"
-# if (Test-Path $venv) { & $venv } else { Write-Host "Venv not found."; exit }
+[CmdletBinding()]
+param(
+    [string] $ProjectPath = $PSScriptRoot
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+$projectRoot = [IO.Path]::GetFullPath($ProjectPath)
+$isWindowsPlatform = $PSVersionTable.PSEdition -eq 'Desktop' -or $env:OS -eq 'Windows_NT'
+$python = if ($isWindowsPlatform) {
+    Join-Path $projectRoot 'ComfyUI\.venv\Scripts\python.exe'
+}
+else {
+    Join-Path $projectRoot 'ComfyUI/.venv/bin/python'
+}
+if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
+    throw "Virtual-environment Python was not found: $python"
+}
+
+function Invoke-Pip {
+    & $python -m pip @args
+    if ($LASTEXITCODE -ne 0) {
+        throw "pip failed with exit code $LASTEXITCODE."
+    }
+}
 
 Write-Host ""
 Write-Host "[1/5] Fixing core compatibility versions..." -ForegroundColor Cyan
 
-pip install --no-cache-dir --force-reinstall `
+Invoke-Pip install --no-cache-dir --force-reinstall `
  numpy==1.26.4 `
  pydantic==2.9.2 `
  protobuf==3.20.3 `
@@ -14,7 +37,7 @@ pip install --no-cache-dir --force-reinstall `
 Write-Host ""
 Write-Host "[2/5] Installing Fish-Speech required dependencies..." -ForegroundColor Cyan
 
-pip install --no-cache-dir --force-reinstall `
+Invoke-Pip install --no-cache-dir --force-reinstall `
  datasets==2.18.0 `
  modelscope==1.17.1 `
  einx[torch]==0.2.2 `
@@ -27,7 +50,7 @@ pip install --no-cache-dir --force-reinstall `
 
 Write-Host ""
 Write-Host "[3/5] Installing Fish-Speech..." -ForegroundColor Cyan
-pip install --no-cache-dir --force-reinstall fish-speech==0.1.0 --no-deps
+Invoke-Pip install --no-cache-dir --force-reinstall fish-speech==0.1.0 --no-deps
 
 Write-Host ""
 # Write-Host "[4/5] Installing SenseVoice (Arabic TTS)..." -ForegroundColor Cyan
@@ -35,7 +58,7 @@ Write-Host ""
 
 Write-Host ""
 Write-Host "[5/5] Cleaning Pip Cache..." -ForegroundColor Cyan
-pip cache purge
+Invoke-Pip cache purge
 
 Write-Host ""
 Write-Host "DONE - Restart ComfyUI now." -ForegroundColor Green

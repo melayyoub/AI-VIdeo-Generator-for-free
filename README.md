@@ -119,6 +119,17 @@ Binding to every interface exposes ComfyUI to the local network:
 Do not expose ComfyUI directly to the public internet. Use host firewall rules,
 an authenticated reverse proxy, and TLS for any intentionally remote setup.
 
+All launcher locations and network settings can be supplied dynamically with
+`--path`, `--host`, `--port`, `CUSTOM_WAN_COMFYUI_CHECKOUT`,
+`CUSTOM_WAN_COMFYUI_HOST`, and `CUSTOM_WAN_COMFYUI_PORT`.
+
+Windows shortcuts are generated locally and are never committed because a
+binary `.lnk` can retain machine-specific paths and browser state:
+
+```powershell
+.\ComfyUI-Windows\New-ComfyUIShortcut.ps1 -Port 8188 -OpenBrowser
+```
+
 ## Installer options
 
 ### Windows PowerShell
@@ -132,6 +143,8 @@ an authenticated reverse proxy, and TLS for any intentionally remote setup.
 | `-Port` | `1`–`65535` | `8188` | ComfyUI port |
 | `-ListenAll` | switch | off | Bind to `0.0.0.0` |
 | `-PyVersion` | launcher version | `3.10` | Windows Python launcher selection |
+| `-ModelRepository` | `owner/repository` | reviewed Wan source | Model delivery source |
+| `-ModelRevision` | branch, tag, commit | manifest pin | Model source revision override |
 | `-ReuseVenv` | switch | off | Preserve the existing venv |
 | `-LockedVenvAction` | `Fail`, `Stop` | `Fail` | Lock-handling policy |
 
@@ -139,7 +152,8 @@ an authenticated reverse proxy, and TLS for any intentionally remote setup.
 
 The Bash installer accepts matching environment variables and `--name=value`
 arguments for CUDA, models, Manager, start, port, network binding, venv reuse,
-dry run, path, and optional reviewed requirements.
+dry run, path, and optional reviewed requirements. Model source overrides use
+`CUSTOM_WAN_MODEL_REPOSITORY` and `CUSTOM_WAN_MODEL_REVISION`.
 
 ## Model selections
 
@@ -151,6 +165,14 @@ dry run, path, and optional reviewed requirements.
 Existing model files larger than the installer sanity threshold are retained.
 Interrupted Windows downloads use `.part` files and curl resume/retry controls.
 
+## Workflow examples
+
+The `examples/` directory contains portable workflow configuration only. Input
+media, output previews, workspace identifiers, temporary URLs, and model files
+are not bundled. Select your own licensed inputs and models after importing a
+workflow. See [`examples/README.md`](examples/README.md) for contribution and
+sanitization requirements.
+
 ## Repository layout
 
 ```text
@@ -159,7 +181,9 @@ custom-wan/
 ├── install.sh                  # Linux/macOS wrapper
 ├── wan2_cli.py                 # Local ComfyUI launcher
 ├── wan2_cli_RTX.py             # Cross-platform installer implementation
+├── config/models.json          # Versioned model source and artifact mapping
 ├── scripts/Installer.Venv.psm1 # Scoped Windows lock/removal controls
+├── scripts/sanitize_workflows.py # Portable workflow privacy gate
 ├── tests/                      # Local installer integration tests
 ├── docs/                       # Operational documentation
 ├── examples/                   # Example ComfyUI workflows
@@ -197,6 +221,8 @@ guards. It never modifies the real ComfyUI environment.
 - Prompts and generated media remain in the local ComfyUI deployment.
 - `.venv`, ComfyUI, model caches, logs, editor state, and local agent state are
   excluded from root version control.
+- Binary shortcuts, secret environment files, temporary media URLs, exported
+  workspace identifiers, and absolute preview paths are rejected or sanitized.
 - Process termination is opt-in and limited by normalized executable paths,
   process identity, and a known supervisor ancestry check.
 - Virtual-environment deletion is limited to the expected ComfyUI parent and
