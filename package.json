@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Local ComfyUI and Wan 2.2 bootstrap installer and launcher.",
+  "homepage": "https://comfyui.reallexi.io/",
   "directories": {
     "example": "examples"
   },

@@ -10,6 +10,10 @@ This repository is designed for creators and developers who want a repeatable
 local AI video setup without sending prompts, source images, or generated media
 to an application server operated by this project.
 
+**Project website:** [comfyui.reallexi.io](https://comfyui.reallexi.io/) provides
+the full installation guide, architecture and publication diagrams, security
+boundaries, model provenance notes, troubleshooting, and contributor workflow.
+
 ## Highlights
 
 - Windows PowerShell and Bash installation paths
@@ -232,6 +236,17 @@ run:
 
 For more detail, see [Windows installer operations](docs/windows-installer.md)
 and [Linux/macOS installer operations](docs/unix-installer.md).
+
+## Community and maintenance
+
+- [Contributing guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Support policy](SUPPORT.md)
+- [Code of conduct](CODE_OF_CONDUCT.md)
+- [Architecture](docs/architecture.md)
+- [Testing](docs/testing.md)
+- [Release process](docs/releases.md)
+- [Model provenance and licensing](docs/model-provenance.md)
 
 ## License
 
