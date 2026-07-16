@@ -150,7 +150,59 @@ if (-not (Test-Path -LiteralPath $mainPy)) {
 }
 elseif (Test-Path -LiteralPath (Join-Path $comfyPath '.git')) {
   Write-Host '[install.ps1] Updating ComfyUI...' -ForegroundColor Cyan
-  Invoke-Native -FilePath 'git' -ArgumentList @('-C', $comfyPath, 'pull', '--ff-only')
+
+  # A normal git pull refuses to overwrite locally modified ComfyUI core files.
+  # Preserve tracked local edits in a named stash, update ComfyUI, and leave the
+  # stash intact for manual review. Untracked/ignored custom nodes and models are
+  # not stashed or removed.
+  $trackedStatus = @(
+    & git -C $comfyPath status --porcelain --untracked-files=no
+  )
+  if ($LASTEXITCODE -ne 0) {
+    throw 'Unable to inspect the ComfyUI Git working tree.'
+  }
+
+  $autoStashMessage = $null
+  if ($trackedStatus.Count -gt 0) {
+    $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    $autoStashMessage = "custom-wan-installer-before-update-$stamp"
+
+    Write-Warning 'Tracked local ComfyUI changes were found. They will be preserved in Git stash before updating.'
+    $trackedStatus | ForEach-Object { Write-Host ("  {0}" -f $_) -ForegroundColor Yellow }
+
+    Invoke-Native -FilePath 'git' -ArgumentList @(
+      '-C', $comfyPath,
+      'stash', 'push',
+      '--message', $autoStashMessage
+    )
+  }
+
+  try {
+    Invoke-Native -FilePath 'git' -ArgumentList @('-C', $comfyPath, 'pull', '--ff-only')
+  }
+  catch {
+    # If updating itself fails, restore the just-created stash when possible so
+    # the working installation is returned to its previous state.
+    if ($autoStashMessage) {
+      Write-Warning 'ComfyUI update failed. Attempting to restore the preserved local changes...'
+      & git -C $comfyPath stash pop
+      if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Automatic stash restoration also failed. The changes remain available in git stash: $autoStashMessage"
+      }
+    }
+    throw
+  }
+
+  if ($autoStashMessage) {
+    $stashRecord = @(
+      & git -C $comfyPath stash list --max-count=1 '--format=%gd %s'
+    )
+    if ($LASTEXITCODE -eq 0 -and $stashRecord.Count -gt 0) {
+      Write-Warning ("ComfyUI was updated. Your prior core-file edits remain preserved as: {0}" -f $stashRecord[0])
+      Write-Host "Review later: git -C `"$comfyPath`" stash show -p 'stash@{0}'" -ForegroundColor Yellow
+      Write-Host "Restore later: git -C `"$comfyPath`" stash apply 'stash@{0}'" -ForegroundColor Yellow
+    }
+  }
 }
 else {
   Write-Host '[install.ps1] Existing non-Git ComfyUI installation detected; update skipped.' -ForegroundColor Yellow
