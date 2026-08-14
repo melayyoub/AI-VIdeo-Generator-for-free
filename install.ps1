@@ -7,7 +7,7 @@ param(
   [ValidateSet('cu128','cu121','cu118','directml','cpu')]
   [string] $Cuda = 'cu128',
 
-  [ValidateSet('5b','14b','i2v','ltx','all')]
+  [ValidateSet('5b','14b','i2v','ltx','ltx2','all')]
   [string] $Models = '5b',
 
   [switch] $WithManager,
@@ -130,21 +130,31 @@ function Ensure-Directory {
   }
 }
 
+function Test-FileSha256 {
+  param(
+    [Parameter(Mandatory = $true)] [string] $Path,
+    [Parameter(Mandatory = $true)] [string] $Expected
+  )
+  $actual = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+  return $actual -eq $Expected.ToLowerInvariant()
+}
+
 function Get-HuggingFaceFile {
   [CmdletBinding()]
   param(
     [Parameter(Mandatory = $true)] [string] $Repository,
     [Parameter(Mandatory = $true)] [string] $Revision,
     [Parameter(Mandatory = $true)] [string] $RelativePath,
-    [Parameter(Mandatory = $true)] [string] $Destination
+    [Parameter(Mandatory = $true)] [string] $Destination,
+    [Parameter(Mandatory = $true)] [string] $Sha256
   )
 
   if (Test-Path -LiteralPath $Destination) {
-    $existing = Get-Item -LiteralPath $Destination
-    if ($existing.Length -gt 1MB) {
-      Write-Host "[models] Existing file kept: $Destination" -ForegroundColor Green
+    if (Test-FileSha256 -Path $Destination -Expected $Sha256) {
+      Write-Host "[models] Existing file verified and kept: $Destination" -ForegroundColor Green
       return
     }
+    Write-Warning "Existing file failed sha256 verification and will be re-downloaded: $Destination"
     Remove-Item -LiteralPath $Destination -Force
   }
 
@@ -198,8 +208,13 @@ function Get-HuggingFaceFile {
     throw "Downloaded model file is unexpectedly small: $partial"
   }
 
+  if (-not (Test-FileSha256 -Path $partial -Expected $Sha256)) {
+    Remove-Item -LiteralPath $partial -Force
+    throw "Downloaded model file failed sha256 verification: $Destination"
+  }
+
   Move-Item -LiteralPath $partial -Destination $Destination -Force
-  Write-Host "[models] Saved: $Destination" -ForegroundColor Green
+  Write-Host "[models] Saved and sha256 verified: $Destination" -ForegroundColor Green
 }
 
 Write-Host ("[install.ps1] Base: {0}  CUDA: {1}  MODELS: {2}  Manager: {3}  SkipNodes: {4}  Start: {5}  Port: {6}  ListenAll: {7}  ReuseVenv: {8}  LockedVenvAction: {9}" `
@@ -549,8 +564,8 @@ Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'check')
 # text encoders). `all` includes 5B TI2V, 14B T2V, 14B I2V, and LTX-Video.
 # The -ModelRepository/-ModelRevision overrides apply to the Wan family only.
 # -----------------------------------------------------------------------------
-$selectedModelGroups = if ($Models -eq 'all') { @('5b', '14b', 'i2v', 'ltx') } else { @($Models) }
-$allowedDestinations = @('checkpoints', 'diffusion_models', 'text_encoders', 'vae')
+$selectedModelGroups = if ($Models -eq 'all') { @('5b', '14b', 'i2v', 'ltx', 'ltx2') } else { @($Models) }
+$allowedDestinations = @('checkpoints', 'diffusion_models', 'text_encoders', 'vae', 'loras', 'latent_upscale_models')
 $modelFamilies = @($modelManifest.PSObject.Properties | Where-Object Name -ne 'schema_version')
 foreach ($modelFamily in $modelFamilies) {
   $familyRepository = [string] $modelFamily.Value.repository
@@ -579,13 +594,18 @@ foreach ($modelFamily in $modelFamilies) {
     if ($relativePath -notmatch '^[A-Za-z0-9][A-Za-z0-9._/-]*$' -or $relativePath.Contains('..')) {
       throw "Unsafe model path in manifest: $relativePath"
     }
+    $artifactSha256 = [string] $artifact.sha256
+    if ($artifactSha256 -notmatch '^[0-9a-f]{64}$') {
+      throw "Model artifact is missing a valid sha256 in the manifest: $relativePath"
+    }
     $destinationDirectory = Join-Path $comfyPath "models\$destinationGroup"
     Ensure-Directory $destinationDirectory
     Get-HuggingFaceFile `
       -Repository $familyRepository `
       -Revision $familyRevision `
       -RelativePath $relativePath `
-      -Destination (Join-Path $destinationDirectory (Split-Path -Leaf $relativePath))
+      -Destination (Join-Path $destinationDirectory (Split-Path -Leaf $relativePath)) `
+      -Sha256 $artifactSha256
   }
 }
 

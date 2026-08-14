@@ -238,6 +238,8 @@ def ensure_model_dirs(base: Path, dry: bool = False) -> None:
         comfy / "models" / "diffusion_models",
         comfy / "models" / "vae",
         comfy / "models" / "text_encoders",
+        comfy / "models" / "loras",
+        comfy / "models" / "latent_upscale_models",
         comfy / "custom_nodes",
     ]:
         if not p.exists():
@@ -359,7 +361,7 @@ def hf_download(
 ) -> None:
     pybin = py_exec(venv_bin=venv / ("Scripts" if is_windows() else "bin"))
     code = f"""
-import os, pathlib
+import hashlib, os, pathlib
 from huggingface_hub import hf_hub_download
 dest = r'''{dest}'''
 pathlib.Path(dest).mkdir(parents=True, exist_ok=True)
@@ -367,10 +369,16 @@ repo = r'''{repo_id}'''
 revision = r'''{revision}'''
 files = {files!r}
 tok = os.getenv('HF_TOKEN')
-for f in files:
+for f, expected_sha256 in files:
     path = hf_hub_download(repo_id=repo, revision=revision, filename=f, local_dir=dest,
                            token=tok)
-    print(path)
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(chunk)
+    if digest.hexdigest() != expected_sha256:
+        raise SystemExit(f'sha256 mismatch for {{f}}: {{digest.hexdigest()}}')
+    print(path, 'sha256 verified')
 """
     run([pybin, "-c", code], dry=dry)
 
@@ -380,6 +388,8 @@ ALLOWED_MODEL_DESTINATIONS = {
     "diffusion_models",
     "vae",
     "text_encoders",
+    "loras",
+    "latent_upscale_models",
 }
 
 
@@ -397,7 +407,7 @@ def download_models(
     other families always use their pinned manifest source.
     """
     models_root = comfy_root(base) / "models"
-    selected_groups = {"5b", "14b", "i2v", "ltx"} if which == "all" else {which}
+    selected_groups = {"5b", "14b", "i2v", "ltx", "ltx2"} if which == "all" else {which}
 
     install_hf_cli(venv, dry=dry)
     hf_login(venv, token=os.environ.get("HF_TOKEN"), dry=dry)
@@ -410,7 +420,7 @@ def download_models(
         if family_name == "wan":
             repository, revision = wan_repository, wan_revision
 
-        selected_by_destination: dict[str, list[str]] = {}
+        selected_by_destination: dict[str, list[tuple[str, str]]] = {}
         for artifact in family["artifacts"]:
             if set(artifact["groups"]).isdisjoint(selected_groups):
                 continue
@@ -420,7 +430,10 @@ def download_models(
             path = str(artifact["path"])
             if ".." in path or path.startswith("/"):
                 raise ValueError(f"Unsafe model path in manifest: {path}")
-            selected_by_destination.setdefault(destination, []).append(path)
+            sha256 = str(artifact.get("sha256", ""))
+            if len(sha256) != 64 or any(c not in "0123456789abcdef" for c in sha256):
+                raise ValueError(f"Model artifact is missing a valid sha256: {path}")
+            selected_by_destination.setdefault(destination, []).append((path, sha256))
 
         for destination, files in selected_by_destination.items():
             hf_download(
@@ -554,7 +567,7 @@ def main() -> None:
     )
     p_install.add_argument(
         "--models",
-        choices=["5b", "14b", "i2v", "ltx", "all"],
+        choices=["5b", "14b", "i2v", "ltx", "ltx2", "all"],
         default=None,
         help="Model set (Wan 2.2 groups, LTX-Video, or all)",
     )
@@ -599,7 +612,7 @@ def main() -> None:
         "models", parents=[common], help="Download/refresh Wan 2.2 models (uses venv)."
     )
     p_models.add_argument(
-        "--models", choices=["5b", "14b", "i2v", "ltx", "all"], required=True
+        "--models", choices=["5b", "14b", "i2v", "ltx", "ltx2", "all"], required=True
     )
     p_models.add_argument(
         "--hf-token", default=None, help="Hugging Face token (optional)"

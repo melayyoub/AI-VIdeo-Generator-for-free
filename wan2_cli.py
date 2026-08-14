@@ -14,6 +14,15 @@ from pathlib import Path
 from wan2_cli_args import port_number
 
 
+def env_setting(name: str, default: str = "") -> str:
+    """Read OVS_<name>, with the legacy CUSTOM_WAN_<name> as fallback."""
+    for prefix in ("OVS_", "CUSTOM_WAN_"):
+        value = os.getenv(prefix + name, "")
+        if value:
+            return value
+    return default
+
+
 def cuda_available() -> bool:
     try:
         import torch
@@ -89,7 +98,7 @@ def pick_directml_device(python_path: Path) -> int:
     a blank name for the implicit default. CUSTOM_WAN_DIRECTML_DEVICE
     overrides the selection.
     """
-    override = os.getenv("CUSTOM_WAN_DIRECTML_DEVICE", "").strip()
+    override = env_setting("DIRECTML_DEVICE").strip()
     if override:
         return int(override)
     code = (
@@ -155,7 +164,7 @@ def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
             python_path, ["torch", "torchvision", "torch-directml"]
         )
     else:
-        cuda_build = os.getenv("CUSTOM_WAN_TORCH_CUDA", "").strip() or "cu128"
+        cuda_build = env_setting("TORCH_CUDA").strip() or "cu128"
         run_checked(
             [
                 *pip,
@@ -221,26 +230,25 @@ def main() -> None:
     parser.add_argument("command", choices=["start"])
     parser.add_argument("--path", default=str(Path(__file__).resolve().parent))
     parser.add_argument(
-        "--host", default=os.getenv("CUSTOM_WAN_COMFYUI_HOST", "127.0.0.1")
+        "--host", default=env_setting("COMFYUI_HOST", "127.0.0.1")
     )
     parser.add_argument(
         "--port",
         type=port_number,
-        default=os.getenv("CUSTOM_WAN_COMFYUI_PORT", "8188"),
+        default=env_setting("COMFYUI_PORT", "8188"),
         help="TCP port (1-65535; default: 8188)",
     )
     parser.add_argument("--listen-all", action="store_true")
     parser.add_argument(
         "--device",
         choices=["auto", "cpu", "gpu", "rocm", "directml"],
-        default=os.getenv("CUSTOM_WAN_COMFYUI_DEVICE", "auto").strip().lower()
-        or "auto",
+        default=env_setting("COMFYUI_DEVICE", "auto").strip().lower() or "auto",
     )
     args = parser.parse_args()
 
     root = Path(args.path).expanduser().resolve()
     configured_checkout = (
-        os.getenv("CUSTOM_WAN_COMFYUI_CHECKOUT", "").strip()
+        env_setting("COMFYUI_CHECKOUT").strip()
         or os.getenv("CUSTOM_WAN_DOCKER_COMFYUI_CHECKOUT", "").strip()
     )
     comfyui_dir = resolve_checkout_path(configured_checkout, root)
@@ -302,7 +310,7 @@ def main() -> None:
     elif args.host:
         command.extend(["--listen", str(args.host)])
     command.extend(device_arguments)
-    extra_args = os.getenv("CUSTOM_WAN_COMFYUI_ARGS", "").strip()
+    extra_args = env_setting("COMFYUI_ARGS").strip()
     if extra_args:
         command.extend(shlex.split(extra_args))
     elif rocm_ready:

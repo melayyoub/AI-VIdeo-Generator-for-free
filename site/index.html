@@ -346,7 +346,7 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       <table>
         <tr><th>Option</th><th>Values</th><th>Default</th><th>Purpose</th></tr>
         <tr><td><code>-Cuda</code></td><td><code>cu128</code>, <code>cu121</code>, <code>cu118</code>, <code>directml</code>, <code>cpu</code></td><td><code>cu128</code></td><td>PyTorch backend (<code>directml</code> = AMD/Intel GPUs on Windows)</td></tr>
-        <tr><td><code>-Models</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, <code>ltx</code>, <code>all</code></td><td><code>5b</code></td><td>Model selection</td></tr>
+        <tr><td><code>-Models</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, <code>ltx</code>, <code>ltx2</code>, <code>all</code></td><td><code>5b</code></td><td>Model selection</td></tr>
         <tr><td><code>-WithManager</code></td><td>switch</td><td>off</td><td>Install/update ComfyUI Manager</td></tr>
         <tr><td><code>-SkipNodes</code></td><td>switch</td><td>off</td><td>Skip the curated custom-node stack</td></tr>
         <tr><td><code>-Start</code></td><td>switch</td><td>off</td><td>Start ComfyUI after a successful install</td></tr>
@@ -399,13 +399,18 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
   <div class="wrap">
     <h2>Model selections and provenance</h2>
     <p>
-      Every model file resolves through an immutable revision pinned in the
-      versioned manifest <code>config/models.json</code>: Wan 2.2 artifacts
-      from <code>Comfy-Org/Wan_2.2_ComfyUI_Repackaged</code>, the LTX-Video
-      checkpoint from <code>Lightricks/LTX-Video</code>, and the LTX text
-      encoder from <code>comfyanonymous/flux_text_encoders</code>. Both
-      installers consume the same manifest, so Windows and Unix installs stay
-      byte-for-byte consistent.
+      Every model file resolves through an immutable commit <em>and a sha256
+      checksum</em> pinned in the versioned manifest
+      <code>config/models.json</code>: Wan 2.2 artifacts from
+      <code>Comfy-Org/Wan_2.2_ComfyUI_Repackaged</code>, the legacy LTX-Video
+      0.9.x checkpoint from <code>Lightricks/LTX-Video</code> with its
+      <code>comfyanonymous/flux_text_encoders</code> encoder, and the current
+      LTX-2.3 stack from <code>Lightricks/LTX-2.3-fp8</code>,
+      <code>Lightricks/LTX-2.3</code>, <code>Comfy-Org/ltx-2.3</code>, and
+      <code>Comfy-Org/ltx-2</code>. Both installers verify each download
+      against its manifest hash (and re-verify existing files), so Windows and
+      Unix installs stay byte-for-byte consistent and a truncated download can
+      never sit silently in the tree.
     </p>
     <div class="tablewrap">
       <table>
@@ -428,9 +433,15 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
         </tr>
         <tr>
           <td><code>ltx</code></td>
-          <td><code>ltxv-2b-0.9.8-distilled.safetensors</code> (checkpoint)</td>
+          <td><code>ltxv-2b-0.9.8-distilled.safetensors</code> (checkpoint, legacy 0.9.x)</td>
           <td>bundled in checkpoint</td>
           <td><code>t5xxl_fp8_e4m3fn_scaled.safetensors</code></td>
+        </tr>
+        <tr>
+          <td><code>ltx2</code></td>
+          <td><code>ltx-2.3-22b-dev-fp8.safetensors</code> (checkpoint)<br><code>ltx_2.3_22b_distilled_1.1_lora…bf16.safetensors</code> (LoRA)<br><code>ltx-2.3-spatial-upscaler-x2-1.1.safetensors</code> (latent upscaler)</td>
+          <td>bundled in checkpoint</td>
+          <td><code>gemma_3_12B_it_fp4_mixed.safetensors</code></td>
         </tr>
         <tr><td><code>all</code></td><td colspan="3">Every artifact above</td></tr>
       </table>
@@ -467,7 +478,7 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
     <div class="tablewrap">
       <table>
         <tr><th>Node</th><th>Upstream</th><th>Purpose</th></tr>
-        <tr><td><code>ComfyUI-LTXVideo</code></td><td>Lightricks</td><td>LTX-Video text-to-video and image-to-video nodes</td></tr>
+        <tr><td><code>ComfyUI-LTXVideo</code></td><td>Lightricks</td><td>LTX-Video 0.9.x nodes — optional for LTX-2, whose pipeline ships in ComfyUI core</td></tr>
         <tr><td><code>ComfyUI-VideoHelperSuite</code></td><td>Kosinkadink</td><td>Video load, combine, and export helpers used by most video workflows</td></tr>
         <tr><td><code>ComfyUI-KJNodes</code></td><td>kijai</td><td>Utility nodes commonly required by Wan and LTX example workflows</td></tr>
       </table>
@@ -665,12 +676,20 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
     <pre><code>.\ComfyUI\.venv\Scripts\python.exe -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available())"</code></pre>
     <h3>Memory errors: os error 1455 or hostbuf_file_reader_read</h3>
     <p>
-      Both mean Windows ran out of physical or commit memory while staging
-      model weights. Free RAM first (WSL/Docker and editor windows are common
-      consumers), prefer fp8/fp4 text-encoder variants over fp16, and as a
-      fallback launch with
-      <code>CUSTOM_WAN_COMFYUI_ARGS="--disable-pinned-memory"</code> so weight
-      transfers can spill to the page file instead of failing.
+      Both usually mean Windows ran out of physical or commit memory while
+      staging model weights. Escalate in order: free RAM first (WSL/Docker and
+      editor windows are common consumers) and prefer fp8/fp4 text-encoder
+      variants over fp16; then launch with
+      <code>--disable-pinned-memory</code> (via
+      <code>CUSTOM_WAN_COMFYUI_ARGS</code>) so transfers spill to the page
+      file; then add <code>--disable-dynamic-vram</code> — dynamic VRAM
+      streaming (comfy-aimdo) has had issues with quantized video models
+      independent of free RAM and is actively patched, so keep ComfyUI and
+      comfy-aimdo updated; on multi-GPU machines add
+      <code>--cuda-device 0</code>. A different error, <em>"buffer length …
+      must be a multiple of element size"</em>, means a model file is
+      truncated — re-run the installer, which sha256-verifies and replaces
+      corrupt files.
     </p>
     <h3>The AMD GPU is not being used</h3>
     <p>

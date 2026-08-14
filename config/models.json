@@ -7,42 +7,50 @@
       {
         "groups": ["5b", "14b", "i2v"],
         "destination": "text_encoders",
-        "path": "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors"
+        "path": "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+        "sha256": "c3355d30191f1f066b26d93fba017ae9809dce6c627dda5f6a66eaa651204f68"
       },
       {
         "groups": ["5b"],
         "destination": "vae",
-        "path": "split_files/vae/wan2.2_vae.safetensors"
+        "path": "split_files/vae/wan2.2_vae.safetensors",
+        "sha256": "e40321bd36b9709991dae2530eb4ac303dd168276980d3e9bc4b6e2b75fed156"
       },
       {
         "groups": ["5b"],
         "destination": "diffusion_models",
-        "path": "split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors"
+        "path": "split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors",
+        "sha256": "456f901338bd9eadbded3828b819109a9b68e8a525ca5cf8d0049a69fcfeca1e"
       },
       {
         "groups": ["14b", "i2v"],
         "destination": "vae",
-        "path": "split_files/vae/wan_2.1_vae.safetensors"
+        "path": "split_files/vae/wan_2.1_vae.safetensors",
+        "sha256": "2fc39d31359a4b0a64f55876d8ff7fa8d780956ae2cb13463b0223e15148976b"
       },
       {
         "groups": ["14b"],
         "destination": "diffusion_models",
-        "path": "split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors"
+        "path": "split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
+        "sha256": "cad711ae211c8b23455ec68cd6a190a33a3d874234a77eb57266d73f8f0e6c9f"
       },
       {
         "groups": ["14b"],
         "destination": "diffusion_models",
-        "path": "split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors"
+        "path": "split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
+        "sha256": "e71b96d7c82e638694c5e7fb98fac4bfb0e4ddc5fbbb4b1df40da8f0f1278a97"
       },
       {
         "groups": ["i2v"],
         "destination": "diffusion_models",
-        "path": "split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors"
+        "path": "split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
+        "sha256": "6122e79d55e0f235698d11d657f3b196c5273c830da00b2b013c5a048d5e6a42"
       },
       {
         "groups": ["i2v"],
         "destination": "diffusion_models",
-        "path": "split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors"
+        "path": "split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
+        "sha256": "5471a457b6ac404202a5fbe6c11595a3d5641fc766b00f38763f72303fffc21e"
       }
     ]
   },
@@ -53,7 +61,8 @@
       {
         "groups": ["ltx"],
         "destination": "checkpoints",
-        "path": "ltxv-2b-0.9.8-distilled.safetensors"
+        "path": "ltxv-2b-0.9.8-distilled.safetensors",
+        "sha256": "76aa8c4786af752fa6f951947129d5290c3c6c0b2fadcadea6b5e114ae2cad8f"
       }
     ]
   },
@@ -64,7 +73,56 @@
       {
         "groups": ["ltx"],
         "destination": "text_encoders",
-        "path": "t5xxl_fp8_e4m3fn_scaled.safetensors"
+        "path": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "sha256": "a498f0485dc9536735258018417c3fd7758dc3bccc0a645feaa472b34955557a"
+      }
+    ]
+  },
+  "ltx2_checkpoint": {
+    "repository": "Lightricks/LTX-2.3-fp8",
+    "revision": "1d756cd27fa11c0896c4dfee093cd1bf36c7f7a1",
+    "artifacts": [
+      {
+        "groups": ["ltx2"],
+        "destination": "checkpoints",
+        "path": "ltx-2.3-22b-dev-fp8.safetensors",
+        "sha256": "28606c5b5a06ce56f896d4dfcb20f212739e07a68fbe48e53638188449d26450"
+      }
+    ]
+  },
+  "ltx2_lora": {
+    "repository": "Comfy-Org/ltx-2.3",
+    "revision": "e14c0e7f46a1d68384214a3c6e6b309a382016dd",
+    "artifacts": [
+      {
+        "groups": ["ltx2"],
+        "destination": "loras",
+        "path": "split_files/loras/ltx_2.3_22b_distilled_1.1_lora_dynamic_fro09_avg_rank_111_bf16.safetensors",
+        "sha256": "31e0c0195fb841bf31af78e8b60858f489e87ddcea4a5239abc80943da65e3ac"
+      }
+    ]
+  },
+  "ltx2_text_encoder": {
+    "repository": "Comfy-Org/ltx-2",
+    "revision": "bd5f9c87fcb0360ae7112f9784562670894d9492",
+    "artifacts": [
+      {
+        "groups": ["ltx2"],
+        "destination": "text_encoders",
+        "path": "split_files/text_encoders/gemma_3_12B_it_fp4_mixed.safetensors",
+        "sha256": "aaca463d11e6d8d2a4bdb0d6299214c15ef78a3f73e0ef8113d5a9d0219b3f6d"
+      }
+    ]
+  },
+  "ltx2_upscaler": {
+    "repository": "Lightricks/LTX-2.3",
+    "revision": "6f3520585aa27248020550da2f453aa0c572398c",
+    "artifacts": [
+      {
+        "groups": ["ltx2"],
+        "destination": "latent_upscale_models",
+        "path": "ltx-2.3-spatial-upscaler-x2-1.1.safetensors",
+        "sha256": "5f416311fa8172b65af67530758964708d29a317b830d689a51143b7f91913ed"
       }
     ]
   }

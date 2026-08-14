@@ -168,21 +168,40 @@ npm run wstart:amd    # force the AMD GPU (DirectML)
 npm run wstart:cpu    # force CPU
 ```
 
-### Memory errors on Windows
+### Memory and model-loading errors on Windows
 
 `OSError 1455` ("the paging file is too small") and
-`hostbuf_file_reader_read failed` both mean Windows ran out of physical or
+`hostbuf_file_reader_read failed` usually mean Windows ran out of physical or
 commit memory while staging model weights — large text encoders are staged
 through system RAM, and pinned transfer buffers must fit in physical RAM.
-Free memory first (WSL/Docker and editor windows are common consumers), pick
-a smaller text-encoder variant (fp8/fp4 instead of fp16) when the workflow
-allows it, and as a fallback launch with
-`CUSTOM_WAN_COMFYUI_ARGS="--disable-pinned-memory"` so weight transfers can
-spill to the page file instead of failing.
+Escalate in this order:
+
+1. Free memory first (WSL/Docker and editor windows are common consumers)
+   and pick a smaller text-encoder variant (fp8/fp4 instead of fp16) when the
+   workflow allows it.
+2. `CUSTOM_WAN_COMFYUI_ARGS="--disable-pinned-memory"` — weight transfers
+   spill to the page file instead of failing.
+3. `CUSTOM_WAN_COMFYUI_ARGS="--disable-pinned-memory --disable-dynamic-vram"`
+   — dynamic VRAM streaming (comfy-aimdo) has had issues with quantized video
+   models independent of free RAM; it is actively patched, so also keep
+   ComfyUI and `comfy-aimdo` updated.
+4. On multi-GPU machines add `--cuda-device 0` (or the index of the intended
+   card) so streaming targets one device.
+
+A different error, `buffer length ... must be a multiple of element size`,
+is not a memory problem: it means a model file on disk is truncated or
+corrupt. Re-download it — installer-managed models are sha256-verified, so a
+re-run of the installer replaces any file that fails verification.
 
 All launcher locations and network settings can be supplied dynamically with
 `--path`, `--host`, `--port`, `CUSTOM_WAN_COMFYUI_CHECKOUT`,
 `CUSTOM_WAN_COMFYUI_HOST`, and `CUSTOM_WAN_COMFYUI_PORT`.
+
+`ovs.py` is the OpenVideo Studio alias for the launcher — `python ovs.py
+start --path .` is identical to invoking `wan2_cli.py`, which stays supported.
+Every launcher environment variable also accepts an `OVS_` prefix
+(`OVS_COMFYUI_DEVICE`, `OVS_COMFYUI_PORT`, `OVS_DIRECTML_DEVICE`,
+`OVS_TORCH_CUDA`, …); the legacy `CUSTOM_WAN_*` names remain the fallback.
 
 Windows shortcuts are generated locally and are never committed because a
 binary `.lnk` can retain machine-specific paths and browser state:
@@ -198,7 +217,7 @@ binary `.lnk` can retain machine-specific paths and browser state:
 | Option | Values | Default | Purpose |
 | --- | --- | --- | --- |
 | `-Cuda` | `cu128`, `cu121`, `cu118`, `directml`, `cpu` | `cu128` | PyTorch backend (`directml` = AMD/Intel GPUs on Windows) |
-| `-Models` | `5b`, `14b`, `i2v`, `ltx`, `all` | `5b` | Model set |
+| `-Models` | `5b`, `14b`, `i2v`, `ltx`, `ltx2`, `all` | `5b` | Model set |
 | `-WithManager` | switch | off | Install/update ComfyUI Manager |
 | `-SkipNodes` | switch | off | Skip the curated custom-node stack |
 | `-Start` | switch | off | Start after successful installation |
@@ -224,13 +243,21 @@ requirements. Model source overrides use `CUSTOM_WAN_MODEL_REPOSITORY` and
 - `14b`: Wan 2.2 T2V high-noise and low-noise 14B models
 - `i2v`: Wan 2.2 I2V high-noise and low-noise 14B models
 - `ltx`: LTX-Video 2B 0.9.8 distilled checkpoint plus the T5-XXL text encoder
+  (the legacy 0.9.x line)
+- `ltx2`: the current LTX-2.3 stack — 22B dev fp8 checkpoint, distilled 1.1
+  LoRA, Gemma-3 12B fp4 text encoder, and the x2 spatial upscaler (~40 GB
+  total; runs on the pipeline built into ComfyUI core)
 - `all`: all selections above
 
-Wan artifacts come from `Comfy-Org/Wan_2.2_ComfyUI_Repackaged`, the LTX
-checkpoint from `Lightricks/LTX-Video`, and the LTX text encoder from
-`comfyanonymous/flux_text_encoders` — each pinned to an immutable revision in
-`config/models.json`. The `-ModelRepository`/`-ModelRevision` overrides apply
-to the Wan family only.
+Wan artifacts come from `Comfy-Org/Wan_2.2_ComfyUI_Repackaged`; the LTX 0.9.x
+checkpoint from `Lightricks/LTX-Video` with its text encoder from
+`comfyanonymous/flux_text_encoders`; and the LTX-2.3 stack from
+`Lightricks/LTX-2.3-fp8`, `Lightricks/LTX-2.3`, `Comfy-Org/ltx-2.3`, and
+`Comfy-Org/ltx-2`. Every artifact is pinned to an immutable commit **and a
+sha256 checksum** in `config/models.json`; both installers verify the hash
+after download (and re-verify existing files), so a truncated or tampered
+model can never sit silently in the tree. The
+`-ModelRepository`/`-ModelRevision` overrides apply to the Wan family only.
 
 Existing model files larger than the installer sanity threshold are retained.
 Interrupted Windows downloads use `.part` files and curl resume/retry controls.
@@ -243,7 +270,7 @@ Both installers install the curated video node stack from
 
 | Node | Purpose |
 | --- | --- |
-| `ComfyUI-LTXVideo` | LTX-Video text-to-video and image-to-video nodes |
+| `ComfyUI-LTXVideo` | LTX-Video 0.9.x text-to-video and image-to-video nodes (optional for LTX-2: ComfyUI core ships the whole LTX-2 pipeline) |
 | `ComfyUI-VideoHelperSuite` | Video load, combine, and export helpers |
 | `ComfyUI-KJNodes` | Utility nodes required by Wan and LTX workflows |
 
@@ -269,6 +296,7 @@ openvideo-studio/
 ├── install.ps1                 # Windows installer
 ├── install.sh                  # Linux/macOS wrapper
 ├── wan2_cli.py                 # Local ComfyUI launcher
+├── ovs.py                      # OpenVideo Studio alias for the launcher
 ├── wan2_installer.py           # Cross-platform installer implementation
 ├── config/models.json          # Versioned model source and artifact mapping
 ├── config/nodes.json           # Curated custom-node stack at pinned commits

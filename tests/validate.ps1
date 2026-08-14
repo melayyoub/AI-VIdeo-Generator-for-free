@@ -66,7 +66,7 @@ $modelManifest = Get-Content -Raw -LiteralPath $modelManifestPath | ConvertFrom-
 if ($modelManifest.schema_version -ne 1 -or @($modelManifest.wan.artifacts).Count -eq 0) {
   throw 'Model manifest schema or artifacts are invalid.'
 }
-$allowedManifestDestinations = @('checkpoints', 'diffusion_models', 'text_encoders', 'vae')
+$allowedManifestDestinations = @('checkpoints', 'diffusion_models', 'text_encoders', 'vae', 'loras', 'latent_upscale_models')
 foreach ($manifestFamily in @($modelManifest.PSObject.Properties | Where-Object Name -ne 'schema_version')) {
   if ([string] $manifestFamily.Value.repository -notmatch '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$') {
     throw "Model family '$($manifestFamily.Name)' repository is invalid."
@@ -87,6 +87,9 @@ foreach ($manifestFamily in @($modelManifest.PSObject.Properties | Where-Object 
     $manifestArtifactPath = [string] $manifestArtifact.path
     if ($manifestArtifactPath -notmatch '^[A-Za-z0-9][A-Za-z0-9._/-]*$' -or $manifestArtifactPath.Contains('..')) {
       throw "Model family '$($manifestFamily.Name)' has an unsafe artifact path: $manifestArtifactPath"
+    }
+    if ([string] $manifestArtifact.sha256 -notmatch '^[0-9a-f]{64}$') {
+      throw "Model family '$($manifestFamily.Name)' artifact lacks a valid sha256: $manifestArtifactPath"
     }
   }
 }
