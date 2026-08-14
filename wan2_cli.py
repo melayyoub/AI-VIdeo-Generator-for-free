@@ -129,7 +129,10 @@ def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
     constraints_path.write_text("\n".join(pins) + "\n", encoding="utf-8")
     constrained_pip = [*pip, "-c", str(constraints_path)]
     if backend == "directml":
-        run_checked([*constrained_pip, "torchaudio"])
+        # Pin torchaudio to the torch version explicitly: a bare "torchaudio"
+        # is "already satisfied" by a stale mismatched install and stays put.
+        torch_pin = next(pin for pin in pins if pin.startswith("torch=="))
+        run_checked([*constrained_pip, "torchaudio" + torch_pin.removeprefix("torch")])
         pins = installed_versions(
             python_path, ["torch", "torchvision", "torchaudio", "torch-directml"]
         )
