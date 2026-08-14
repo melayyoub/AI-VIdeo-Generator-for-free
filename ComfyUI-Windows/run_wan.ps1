@@ -3,6 +3,8 @@ param(
     [string] $ProjectPath = (Split-Path -Parent $PSScriptRoot),
     [ValidateRange(1, 65535)]
     [int] $Port = 8188,
+    [ValidateSet('auto', 'cpu', 'gpu', 'rocm', 'directml')]
+    [string] $Device = 'auto',
     [switch] $OpenBrowser,
     [ValidateRange(1, 300)]
     [int] $RestartDelaySeconds = 3
@@ -38,14 +40,20 @@ try {
     while ($true) {
         Write-Host "`n[$(Get-Date -Format o)] Starting..."
 
-        $arguments = @(
+        $argumentList = @(
             ('"{0}"' -f $launcher),
             'start',
             '--path',
             ('"{0}"' -f $projectRoot),
             '--port',
             $Port
-        ) -join ' '
+        )
+        # Forward -Device only when it was supplied so the launcher's
+        # CUSTOM_WAN_COMFYUI_DEVICE environment default still applies otherwise.
+        if ($PSBoundParameters.ContainsKey('Device')) {
+            $argumentList += @('--device', $Device)
+        }
+        $arguments = $argumentList -join ' '
 
         try {
             $wanProcess = Start-Process `

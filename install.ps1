@@ -3,7 +3,8 @@
 
 [CmdletBinding()]
 param(
-  [ValidateSet('cu128','cu121','cu118','cpu')]
+  # 'directml' targets AMD (and Intel) GPUs on Windows through torch-directml.
+  [ValidateSet('cu128','cu121','cu118','directml','cpu')]
   [string] $Cuda = 'cu128',
 
   [ValidateSet('5b','14b','i2v','ltx','all')]
@@ -28,6 +29,47 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# -----------------------------------------------------------------------------
+# Compute backend selection. An explicit -Cuda value always wins. Otherwise the
+# installed display adapters decide: with both NVIDIA and AMD present the user
+# chooses interactively, and an AMD-only machine defaults to DirectML.
+# -----------------------------------------------------------------------------
+if (-not $PSBoundParameters.ContainsKey('Cuda')) {
+  $videoAdapterNames = @()
+  try {
+    $videoAdapterNames = @(
+      Get-CimInstance -ClassName Win32_VideoController -ErrorAction Stop |
+        ForEach-Object Name |
+        Where-Object { $_ }
+    )
+  }
+  catch {
+    Write-Warning ("GPU detection failed; keeping the default backend '{0}'. {1}" -f $Cuda, $_.Exception.Message)
+  }
+
+  $nvidiaAdapters = @($videoAdapterNames | Where-Object { $_ -match 'NVIDIA|GeForce|Quadro' })
+  $amdAdapters = @($videoAdapterNames | Where-Object { $_ -match 'AMD|Radeon' })
+
+  if ($nvidiaAdapters.Count -gt 0 -and $amdAdapters.Count -gt 0) {
+    Write-Host '[install.ps1] Both NVIDIA and AMD GPUs were detected:' -ForegroundColor Yellow
+    $videoAdapterNames | ForEach-Object { Write-Host ("  - {0}" -f $_) }
+    if ([Console]::IsInputRedirected) {
+      Write-Host ("[install.ps1] Non-interactive session; keeping the default backend '{0}'. Pass -Cuda directml to use the AMD GPU." -f $Cuda) -ForegroundColor Yellow
+    }
+    else {
+      $gpuAnswer = Read-Host 'Which GPU should ComfyUI use? [N] NVIDIA CUDA (default) / [A] AMD DirectML'
+      if ($gpuAnswer -match '^\s*(a|amd)') {
+        $Cuda = 'directml'
+      }
+      Write-Host ("[install.ps1] Selected backend: {0}" -f $Cuda) -ForegroundColor Cyan
+    }
+  }
+  elseif ($amdAdapters.Count -gt 0 -and $nvidiaAdapters.Count -eq 0) {
+    Write-Host '[install.ps1] An AMD GPU was detected without NVIDIA; using the DirectML backend.' -ForegroundColor Yellow
+    $Cuda = 'directml'
+  }
+}
 
 $modelManifestPath = Join-Path $PSScriptRoot 'config\models.json'
 if (-not (Test-Path -LiteralPath $modelManifestPath -PathType Leaf)) {
@@ -339,19 +381,31 @@ $pipNetworkOptions = @('--retries', '10', '--resume-retries', '10', '--timeout',
 # -----------------------------------------------------------------------------
 # Install PyTorch for the requested compute backend.
 # -----------------------------------------------------------------------------
-$torchIndex = switch ($Cuda) {
-  'cu128' { 'https://download.pytorch.org/whl/cu128' }
-  'cu121' { 'https://download.pytorch.org/whl/cu121' }
-  'cu118' { 'https://download.pytorch.org/whl/cu118' }
-  'cpu'   { 'https://download.pytorch.org/whl/cpu' }
+if ($Cuda -eq 'directml') {
+  Write-Host '[install.ps1] Installing PyTorch with the DirectML backend (AMD/Intel GPUs on Windows)...' -ForegroundColor Cyan
+  # torch-directml pins the torch build it supports; pip resolves matching
+  # torchvision/torchaudio versions against that pin.
+  Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (
+    @('-m', 'pip', 'install', '--upgrade') +
+    $pipNetworkOptions +
+    @('torch-directml', 'torchvision', 'torchaudio')
+  )
 }
+else {
+  $torchIndex = switch ($Cuda) {
+    'cu128' { 'https://download.pytorch.org/whl/cu128' }
+    'cu121' { 'https://download.pytorch.org/whl/cu121' }
+    'cu118' { 'https://download.pytorch.org/whl/cu118' }
+    'cpu'   { 'https://download.pytorch.org/whl/cpu' }
+  }
 
-Write-Host "[install.ps1] Installing PyTorch build: $Cuda" -ForegroundColor Cyan
-Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (
-  @('-m', 'pip', 'install', '--upgrade') +
-  $pipNetworkOptions +
-  @('torch', 'torchvision', 'torchaudio', '--index-url', $torchIndex)
-)
+  Write-Host "[install.ps1] Installing PyTorch build: $Cuda" -ForegroundColor Cyan
+  Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (
+    @('-m', 'pip', 'install', '--upgrade') +
+    $pipNetworkOptions +
+    @('torch', 'torchvision', 'torchaudio', '--index-url', $torchIndex)
+  )
+}
 
 $requirements = Join-Path $comfyPath 'requirements.txt'
 if (-not (Test-Path -LiteralPath $requirements)) {
@@ -447,6 +501,9 @@ $corePackages = @(
 if ($Cuda -eq 'cpu') {
   $corePackages += 'onnxruntime'
 }
+elseif ($Cuda -eq 'directml') {
+  $corePackages += 'onnxruntime-directml'
+}
 else {
   $corePackages += 'onnxruntime-gpu'
 }
@@ -536,7 +593,23 @@ foreach ($modelFamily in $modelFamilies) {
 # Verify Python/PyTorch. CUDA verification is reported clearly but does not hide
 # the installed torch build information.
 # -----------------------------------------------------------------------------
-$verifyCode = @'
+$verifyCode = if ($Cuda -eq 'directml') {
+@'
+import sys
+import torch
+print('Python:', sys.version.split()[0])
+print('Torch:', torch.__version__)
+try:
+    import torch_directml
+    print('DirectML available:', torch_directml.is_available())
+    if torch_directml.is_available():
+        print('GPU:', torch_directml.device_name(0))
+except Exception as exc:
+    print('DirectML unavailable:', exc)
+'@
+}
+else {
+@'
 import sys
 import torch
 print('Python:', sys.version.split()[0])
@@ -546,6 +619,7 @@ print('CUDA available:', torch.cuda.is_available())
 if torch.cuda.is_available():
     print('GPU:', torch.cuda.get_device_name(0))
 '@
+}
 
 Invoke-Native -FilePath $venvPython -ArgumentList @('-c', $verifyCode)
 
@@ -562,9 +636,13 @@ Write-Host ''
 # Start only after installation is complete. Global CLI flags are placed before
 # the positional `start` command to match the current argparse usage.
 # -----------------------------------------------------------------------------
-if ($Start) {
-  $device = if ($Cuda -eq 'cpu') { 'cpu' } else { 'gpu' }
+$device = switch ($Cuda) {
+  'cpu'      { 'cpu' }
+  'directml' { 'directml' }
+  default    { 'gpu' }
+}
 
+if ($Start) {
   if (Test-Path -LiteralPath $cliPath) {
     # Run the launcher inside the same venv where CUDA-enabled PyTorch was installed.
     # Using the global `py` launcher can load a CPU-only torch installation.
@@ -589,11 +667,14 @@ if ($Start) {
     if ($Cuda -eq 'cpu') {
       $mainArgs += '--cpu'
     }
+    elseif ($Cuda -eq 'directml') {
+      $mainArgs += '--directml'
+    }
 
     Invoke-Native -FilePath $venvPython -ArgumentList $mainArgs
   }
 }
 else {
   Write-Host 'Start later with:' -ForegroundColor Cyan
-  Write-Host ("  & `"{0}`" `"{1}`" --port {2}" -f $venvPython, $mainPy, $Port)
+  Write-Host ("  & `"{0}`" `"{1}`" start --path `"{2}`" --port {3} --device {4}" -f $venvPython, $cliPath, $BasePath, $Port, $device)
 }

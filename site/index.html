@@ -186,6 +186,7 @@ footer p { max-width: none; }
       <span class="pill">LTX-Video</span>
       <span class="pill">Curated nodes</span>
       <span class="pill">CUDA 12.8 / 12.1 / 11.8</span>
+      <span class="pill">AMD DirectML</span>
       <span class="pill">CPU fallback</span>
       <span class="pill">MIT licensed</span>
     </div>
@@ -226,7 +227,7 @@ footer p { max-width: none; }
         <tr><td>Git</td><td>Required for ComfyUI and Manager clone/update</td></tr>
         <tr><td>curl</td><td>Required by the Windows model downloader (bundled with Windows 10/11)</td></tr>
         <tr><td>ffmpeg</td><td>Required for normal video workflows</td></tr>
-        <tr><td>GPU</td><td>NVIDIA CUDA GPU recommended; CPU supported but slow; ROCm and DirectML selectable at launch</td></tr>
+        <tr><td>GPU</td><td>NVIDIA CUDA GPU recommended; AMD GPUs supported on Windows via DirectML (selectable at install and launch); CPU supported but slow</td></tr>
         <tr><td>Disk</td><td>Substantial free space for PyTorch, ComfyUI, models, and outputs</td></tr>
       </table>
     </div>
@@ -250,6 +251,16 @@ footer p { max-width: none; }
     <p>
       Use <code>-ReuseVenv</code> for an incremental package update only when
       the existing environment is healthy.
+    </p>
+
+    <h3>AMD GPUs on Windows (DirectML)</h3>
+    <pre><code>.\install.ps1 -Cuda directml -Models 5b -WithManager</code></pre>
+    <p>
+      When <code>-Cuda</code> is omitted, the installer inspects the display
+      adapters: a machine with both NVIDIA and AMD GPUs asks interactively which
+      one to use, and an AMD-only machine selects DirectML automatically. The
+      DirectML backend installs <code>torch-directml</code> and
+      <code>onnxruntime-directml</code> instead of the CUDA builds.
     </p>
 
     <h3>Linux</h3>
@@ -289,7 +300,15 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       loopback binding and automatic device selection. Device resolution order
       in <code>auto</code> mode: CUDA (or ROCm builds of torch) → DirectML (if
       <code>torch_directml</code> is importable) → CPU. ROCm installs
-      additionally get <code>--use-pytorch-cross-attention</code>.
+      additionally get <code>--use-pytorch-cross-attention</code>. Requesting
+      <code>--device directml</code> in an environment without
+      <code>torch_directml</code> installs the DirectML packages on demand
+      before starting; note this replaces a CUDA torch build in that
+      environment, and switching back to CUDA requires re-running the
+      installer. On Windows, npm shortcuts select the device directly:
+      <code>npm run wstart:cuda</code>, <code>npm run wstart:amd</code>, and
+      <code>npm run wstart:cpu</code> (<code>npm run wstart</code> keeps
+      auto-detection).
     </p>
     <div class="tablewrap">
       <table>
@@ -320,7 +339,7 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
     <div class="tablewrap">
       <table>
         <tr><th>Option</th><th>Values</th><th>Default</th><th>Purpose</th></tr>
-        <tr><td><code>-Cuda</code></td><td><code>cu128</code>, <code>cu121</code>, <code>cu118</code>, <code>cpu</code></td><td><code>cu128</code></td><td>PyTorch backend index</td></tr>
+        <tr><td><code>-Cuda</code></td><td><code>cu128</code>, <code>cu121</code>, <code>cu118</code>, <code>directml</code>, <code>cpu</code></td><td><code>cu128</code></td><td>PyTorch backend (<code>directml</code> = AMD/Intel GPUs on Windows)</td></tr>
         <tr><td><code>-Models</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, <code>ltx</code>, <code>all</code></td><td><code>5b</code></td><td>Model selection</td></tr>
         <tr><td><code>-WithManager</code></td><td>switch</td><td>off</td><td>Install/update ComfyUI Manager</td></tr>
         <tr><td><code>-SkipNodes</code></td><td>switch</td><td>off</td><td>Skip the curated custom-node stack</td></tr>

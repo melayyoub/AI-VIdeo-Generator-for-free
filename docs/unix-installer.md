@@ -1,7 +1,9 @@
 # Linux and macOS installer operations
 
 `install.sh` validates its CUDA backend, model set, booleans, and port before it
-delegates to the cross-platform Python installer.
+delegates to the cross-platform Python installer. The `directml` backend for
+AMD GPUs is Windows-only (`install.ps1`); on Linux, AMD requires a ROCm build
+of PyTorch, which this installer does not currently automate.
 
 The curated custom-node stack from `config/nodes.json` (LTX-Video,
 VideoHelperSuite, KJNodes at pinned commits) installs by default; pass

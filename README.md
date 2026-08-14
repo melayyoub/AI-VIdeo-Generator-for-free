@@ -43,7 +43,7 @@ A self-contained deep-detail reference page is also published from `site/` at
 | Git | Required for ComfyUI and Manager updates |
 | curl | Required by the Windows model downloader |
 | ffmpeg | Required for normal video workflows |
-| GPU | NVIDIA CUDA GPU recommended; CPU is supported but slow |
+| GPU | NVIDIA CUDA GPU recommended; AMD GPUs are supported on Windows via DirectML; CPU is supported but slow |
 | Disk | Allow substantial space for PyTorch, ComfyUI, models, and outputs |
 
 An optional `HF_TOKEN` can be supplied for gated Hugging Face assets. The
@@ -74,6 +74,25 @@ is healthy:
 ```powershell
 .\install.ps1 -Cuda cu128 -Models 5b -WithManager -ReuseVenv
 ```
+
+### AMD GPUs on Windows
+
+When `-Cuda` is omitted, the installer inspects the display adapters. A machine
+with only an AMD GPU automatically uses the DirectML backend, and a machine
+with both NVIDIA and AMD GPUs asks interactively which one to use. To choose
+explicitly:
+
+```powershell
+.\install.ps1 -Cuda directml -Models 5b -WithManager
+```
+
+The DirectML backend installs `torch-directml` and `onnxruntime-directml`
+instead of the CUDA builds, and the launcher then starts ComfyUI with
+`--directml`. Starting with `--device directml` (or `npm run wstart:amd`) in an
+environment that lacks `torch-directml` installs the DirectML packages on
+demand before launching. CUDA and DirectML cannot share one virtual
+environment: the on-demand install replaces a CUDA torch build, and switching
+back to CUDA requires re-running the installer.
 
 ## Quick start on Linux or macOS
 
@@ -127,6 +146,18 @@ Binding to every interface exposes ComfyUI to the local network:
 Do not expose ComfyUI directly to the public internet. Use host firewall rules,
 an authenticated reverse proxy, and TLS for any intentionally remote setup.
 
+The compute device defaults to `auto` (CUDA when available, then DirectML,
+then CPU) and can be forced with `--device gpu|directml|rocm|cpu` or the
+`CUSTOM_WAN_COMFYUI_DEVICE` environment variable. npm shortcuts are available
+on Windows:
+
+```powershell
+npm run wstart        # auto-detect
+npm run wstart:cuda   # force the NVIDIA GPU
+npm run wstart:amd    # force the AMD GPU (DirectML)
+npm run wstart:cpu    # force CPU
+```
+
 All launcher locations and network settings can be supplied dynamically with
 `--path`, `--host`, `--port`, `CUSTOM_WAN_COMFYUI_CHECKOUT`,
 `CUSTOM_WAN_COMFYUI_HOST`, and `CUSTOM_WAN_COMFYUI_PORT`.
@@ -144,7 +175,7 @@ binary `.lnk` can retain machine-specific paths and browser state:
 
 | Option | Values | Default | Purpose |
 | --- | --- | --- | --- |
-| `-Cuda` | `cu128`, `cu121`, `cu118`, `cpu` | `cu128` | PyTorch backend |
+| `-Cuda` | `cu128`, `cu121`, `cu118`, `directml`, `cpu` | `cu128` | PyTorch backend (`directml` = AMD/Intel GPUs on Windows) |
 | `-Models` | `5b`, `14b`, `i2v`, `ltx`, `all` | `5b` | Model set |
 | `-WithManager` | switch | off | Install/update ComfyUI Manager |
 | `-SkipNodes` | switch | off | Skip the curated custom-node stack |

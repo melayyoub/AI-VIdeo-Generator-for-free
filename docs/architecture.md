@@ -80,6 +80,11 @@ guidance and architecture decisions belong in `docs/`.
 - The current installer follows upstream branches or repository paths in
   several places. A successful TLS download is not the same as an immutable,
   checksum-verified artifact.
+- The launcher self-provisions the DirectML backend: requesting
+  `--device directml` without `torch_directml` present installs
+  `torch-directml`, `torchvision`, `torchaudio`, and `onnxruntime-directml`
+  from PyPI at launch time. This is a package-index supply-chain event outside
+  the installer flow.
 - `HF_TOKEN`, when present, is a user-provided credential used for model-host
   access. It must never be committed or pasted into an Issue.
 - Loopback binding limits ordinary remote access; it is not authentication.

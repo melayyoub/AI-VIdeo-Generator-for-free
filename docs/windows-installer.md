@@ -18,6 +18,27 @@ The installer recreates `ComfyUI\.venv` by default. Use `-ReuseVenv` only when
 the existing environment is known to be healthy and only package updates are
 required.
 
+## Compute backend and GPU selection
+
+`-Cuda` accepts `cu128`, `cu121`, `cu118`, `directml`, and `cpu`. The
+`directml` backend targets AMD (and Intel) GPUs on Windows: it installs
+`torch-directml` and `onnxruntime-directml` instead of the CUDA builds, and the
+launcher starts ComfyUI with `--directml`.
+
+When `-Cuda` is omitted, the installer inspects the display adapters:
+
+- both NVIDIA and AMD present: the installer asks interactively which GPU to
+  use (in a non-interactive session it keeps the CUDA default and prints how to
+  select AMD explicitly);
+- only AMD present: the DirectML backend is selected automatically;
+- otherwise: the CUDA default applies.
+
+An explicit `-Cuda` value always wins and skips detection. CUDA and DirectML
+cannot share one virtual environment; rerun the installer to switch backends.
+At launch time, `wan2_cli.py start --device directml` (or
+`npm run wstart:amd`) self-provisions the DirectML packages if they are
+missing, which replaces a CUDA torch build in that environment.
+
 ## Locked virtual environments
 
 Windows does not allow a running executable or loaded native module to be

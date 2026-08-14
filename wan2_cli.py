@@ -96,6 +96,39 @@ def main() -> None:
         raise SystemExit(
             f"{args.device} was requested, but torch.cuda.is_available() is false."
         )
+    if args.device == "directml" and not directml_ready:
+        # Self-provision the AMD backend on demand. torch-directml pins its own
+        # torch build, so this replaces a CUDA torch install in the same venv.
+        print(
+            "[wan2_cli] torch-directml is missing; installing the DirectML "
+            "backend into this environment..."
+        )
+        install_command = [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--upgrade",
+            "--retries",
+            "10",
+            "--timeout",
+            "120",
+            "torch-directml",
+            "torchvision",
+            "torchaudio",
+            "onnxruntime-directml",
+        ]
+        if subprocess.call(install_command) != 0:
+            raise SystemExit(
+                "directml was requested, but installing torch-directml failed. "
+                "Re-run install.ps1 with -Cuda directml to set up the AMD backend."
+            )
+        if subprocess.call([sys.executable, "-c", "import torch_directml"]) != 0:
+            raise SystemExit(
+                "directml was requested, but torch-directml did not import after "
+                "installation. Re-run install.ps1 with -Cuda directml."
+            )
+        directml_ready = True
     if args.device in {"gpu", "rocm"} or (args.device == "auto" and gpu_ready):
         pass
     elif args.device == "directml" or (args.device == "auto" and directml_ready):
