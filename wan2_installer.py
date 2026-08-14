@@ -43,7 +43,6 @@ if MODEL_MANIFEST.get("schema_version") != 1:
 WAN_CONFIG = MODEL_MANIFEST["wan"]
 WAN_REPO = WAN_CONFIG["repository"]
 WAN_REVISION = WAN_CONFIG["revision"]
-WAN_ARTIFACTS = WAN_CONFIG["artifacts"]
 
 NODE_MANIFEST = json.loads((CONFIG_DIR / "nodes.json").read_text(encoding="utf-8"))
 if NODE_MANIFEST.get("schema_version") != 1:
@@ -235,6 +234,7 @@ def install_torch(venv: Path, cuda: str, dry: bool = False) -> None:
 def ensure_model_dirs(base: Path, dry: bool = False) -> None:
     comfy = comfy_root(base)
     for p in [
+        comfy / "models" / "checkpoints",
         comfy / "models" / "diffusion_models",
         comfy / "models" / "vae",
         comfy / "models" / "text_encoders",
@@ -375,44 +375,56 @@ for f in files:
     run([pybin, "-c", code], dry=dry)
 
 
+ALLOWED_MODEL_DESTINATIONS = {
+    "checkpoints",
+    "diffusion_models",
+    "vae",
+    "text_encoders",
+}
+
+
 def download_models(
     venv: Path,
     base: Path,
     which: str,
-    repo_id: str,
-    revision: str,
+    wan_repository: str,
+    wan_revision: str,
     dry: bool = False,
 ) -> None:
-    comfy = comfy_root(base)
-    models_root = comfy / "models"
-    dm = models_root / "diffusion_models"
-    vae = models_root / "vae"
-    te = models_root / "text_encoders"
-
-    selected_groups = {"5b", "14b", "i2v"} if which == "all" else {which}
-    selected_by_destination: dict[str, list[str]] = {
-        "diffusion_models": [],
-        "vae": [],
-        "text_encoders": [],
-    }
-    for artifact in WAN_ARTIFACTS:
-        groups = set(artifact["groups"])
-        if "shared" not in groups and groups.isdisjoint(selected_groups):
-            continue
-        destination = artifact["destination"]
-        if destination not in selected_by_destination:
-            raise ValueError(f"Unsupported model destination: {destination}")
-        selected_by_destination[destination].append(artifact["path"])
+    """
+    Download every manifest artifact matching the selection across all model
+    families. The repository/revision overrides apply to the Wan family only;
+    other families always use their pinned manifest source.
+    """
+    models_root = comfy_root(base) / "models"
+    selected_groups = {"5b", "14b", "i2v", "ltx"} if which == "all" else {which}
 
     install_hf_cli(venv, dry=dry)
-    token = os.environ.get("HF_TOKEN")
-    hf_login(venv, token=token, dry=dry)
+    hf_login(venv, token=os.environ.get("HF_TOKEN"), dry=dry)
 
-    destinations = {"diffusion_models": dm, "vae": vae, "text_encoders": te}
-    for destination, files in selected_by_destination.items():
-        if files:
+    for family_name, family in MODEL_MANIFEST.items():
+        if family_name == "schema_version":
+            continue
+        repository = str(family["repository"])
+        revision = str(family["revision"])
+        if family_name == "wan":
+            repository, revision = wan_repository, wan_revision
+
+        selected_by_destination: dict[str, list[str]] = {}
+        for artifact in family["artifacts"]:
+            if set(artifact["groups"]).isdisjoint(selected_groups):
+                continue
+            destination = str(artifact["destination"])
+            if destination not in ALLOWED_MODEL_DESTINATIONS:
+                raise ValueError(f"Unsupported model destination: {destination}")
+            path = str(artifact["path"])
+            if ".." in path or path.startswith("/"):
+                raise ValueError(f"Unsafe model path in manifest: {path}")
+            selected_by_destination.setdefault(destination, []).append(path)
+
+        for destination, files in selected_by_destination.items():
             hf_download(
-                venv, repo_id, revision, files, destinations[destination], dry=dry
+                venv, repository, revision, files, models_root / destination, dry=dry
             )
 
 
@@ -542,9 +554,9 @@ def main() -> None:
     )
     p_install.add_argument(
         "--models",
-        choices=["5b", "14b", "i2v", "all"],
+        choices=["5b", "14b", "i2v", "ltx", "all"],
         default=None,
-        help="Wan 2.2 model set",
+        help="Model set (Wan 2.2 groups, LTX-Video, or all)",
     )
     p_install.add_argument(
         "--hf-token", default=None, help="Hugging Face token (optional)"
@@ -587,7 +599,7 @@ def main() -> None:
         "models", parents=[common], help="Download/refresh Wan 2.2 models (uses venv)."
     )
     p_models.add_argument(
-        "--models", choices=["5b", "14b", "i2v", "all"], required=True
+        "--models", choices=["5b", "14b", "i2v", "ltx", "all"], required=True
     )
     p_models.add_argument(
         "--hf-token", default=None, help="Hugging Face token (optional)"

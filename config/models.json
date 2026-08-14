@@ -5,7 +5,7 @@
     "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
     "artifacts": [
       {
-        "groups": ["shared"],
+        "groups": ["5b", "14b", "i2v"],
         "destination": "text_encoders",
         "path": "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors"
       },
@@ -43,6 +43,28 @@
         "groups": ["i2v"],
         "destination": "diffusion_models",
         "path": "split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors"
+      }
+    ]
+  },
+  "ltx": {
+    "repository": "Lightricks/LTX-Video",
+    "revision": "8984fa25007f376c1a299016d0957a37a2f797bb",
+    "artifacts": [
+      {
+        "groups": ["ltx"],
+        "destination": "checkpoints",
+        "path": "ltxv-2b-0.9.8-distilled.safetensors"
+      }
+    ]
+  },
+  "t5": {
+    "repository": "comfyanonymous/flux_text_encoders",
+    "revision": "6af2a98e3f615bdfa612fbd85da93d1ed5f69ef5",
+    "artifacts": [
+      {
+        "groups": ["ltx"],
+        "destination": "text_encoders",
+        "path": "t5xxl_fp8_e4m3fn_scaled.safetensors"
       }
     ]
   }

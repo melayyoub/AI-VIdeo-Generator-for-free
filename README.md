@@ -145,7 +145,7 @@ binary `.lnk` can retain machine-specific paths and browser state:
 | Option | Values | Default | Purpose |
 | --- | --- | --- | --- |
 | `-Cuda` | `cu128`, `cu121`, `cu118`, `cpu` | `cu128` | PyTorch backend |
-| `-Models` | `5b`, `14b`, `i2v`, `all` | `5b` | Wan model set |
+| `-Models` | `5b`, `14b`, `i2v`, `ltx`, `all` | `5b` | Model set |
 | `-WithManager` | switch | off | Install/update ComfyUI Manager |
 | `-SkipNodes` | switch | off | Skip the curated custom-node stack |
 | `-Start` | switch | off | Start after successful installation |
@@ -170,7 +170,14 @@ requirements. Model source overrides use `CUSTOM_WAN_MODEL_REPOSITORY` and
 - `5b`: Wan 2.2 TI2V 5B plus the matching VAE and text encoder
 - `14b`: Wan 2.2 T2V high-noise and low-noise 14B models
 - `i2v`: Wan 2.2 I2V high-noise and low-noise 14B models
+- `ltx`: LTX-Video 2B 0.9.8 distilled checkpoint plus the T5-XXL text encoder
 - `all`: all selections above
+
+Wan artifacts come from `Comfy-Org/Wan_2.2_ComfyUI_Repackaged`, the LTX
+checkpoint from `Lightricks/LTX-Video`, and the LTX text encoder from
+`comfyanonymous/flux_text_encoders` — each pinned to an immutable revision in
+`config/models.json`. The `-ModelRepository`/`-ModelRevision` overrides apply
+to the Wan family only.
 
 Existing model files larger than the installer sanity threshold are retained.
 Interrupted Windows downloads use `.part` files and curl resume/retry controls.
@@ -190,9 +197,9 @@ Both installers install the curated video node stack from
 Each node is cloned from its upstream GitHub repository and checked out at the
 pinned commit recorded in the manifest; its `requirements.txt` is installed
 into the project virtual environment. Update the pins through a reviewed pull
-request, the same way model revisions are updated. LTX model checkpoints are
-not bundled; fetch them from the upstream LTX-Video releases or through
-ComfyUI Manager and review their licenses first.
+request, the same way model revisions are updated. Pair the LTX nodes with the
+`ltx` (or `all`) model selection to download the pinned LTX-Video checkpoint
+and text encoder.
 
 ## Workflow examples
 

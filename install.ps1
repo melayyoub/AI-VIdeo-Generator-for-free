@@ -6,7 +6,7 @@ param(
   [ValidateSet('cu128','cu121','cu118','cpu')]
   [string] $Cuda = 'cu128',
 
-  [ValidateSet('5b','14b','i2v','all')]
+  [ValidateSet('5b','14b','i2v','ltx','all')]
   [string] $Models = '5b',
 
   [switch] $WithManager,
@@ -91,6 +91,8 @@ function Ensure-Directory {
 function Get-HuggingFaceFile {
   [CmdletBinding()]
   param(
+    [Parameter(Mandatory = $true)] [string] $Repository,
+    [Parameter(Mandatory = $true)] [string] $Revision,
     [Parameter(Mandatory = $true)] [string] $RelativePath,
     [Parameter(Mandatory = $true)] [string] $Destination
   )
@@ -107,8 +109,8 @@ function Get-HuggingFaceFile {
   $destinationDir = Split-Path -Parent $Destination
   Ensure-Directory $destinationDir
 
-  $encodedRepository = (($ModelRepository -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
-  $encodedRevision = (($ModelRevision -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+  $encodedRepository = (($Repository -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+  $encodedRevision = (($Revision -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
   $repo = "https://huggingface.co/${encodedRepository}/resolve/${encodedRevision}"
   $encodedPath = (($RelativePath -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
   $url = "${repo}/${encodedPath}?download=true"
@@ -486,29 +488,48 @@ Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (
 Invoke-Native -FilePath $venvPython -ArgumentList @('-m', 'pip', 'check')
 
 # -----------------------------------------------------------------------------
-# Download official ComfyUI-packaged Wan 2.2 model files.
-# `all` includes 5B TI2V, 14B T2V, and 14B I2V.
+# Download the selected model files across every manifest family (Wan, LTX,
+# text encoders). `all` includes 5B TI2V, 14B T2V, 14B I2V, and LTX-Video.
+# The -ModelRepository/-ModelRevision overrides apply to the Wan family only.
 # -----------------------------------------------------------------------------
-$selectedModelGroups = if ($Models -eq 'all') { @('5b', '14b', 'i2v') } else { @($Models) }
-$allowedDestinations = @('diffusion_models', 'text_encoders', 'vae')
-foreach ($artifact in $modelManifest.wan.artifacts) {
-  $artifactGroups = @($artifact.groups | ForEach-Object { [string] $_ })
-  if ('shared' -notin $artifactGroups -and -not @($artifactGroups | Where-Object { $_ -in $selectedModelGroups })) {
-    continue
+$selectedModelGroups = if ($Models -eq 'all') { @('5b', '14b', 'i2v', 'ltx') } else { @($Models) }
+$allowedDestinations = @('checkpoints', 'diffusion_models', 'text_encoders', 'vae')
+$modelFamilies = @($modelManifest.PSObject.Properties | Where-Object Name -ne 'schema_version')
+foreach ($modelFamily in $modelFamilies) {
+  $familyRepository = [string] $modelFamily.Value.repository
+  $familyRevision = [string] $modelFamily.Value.revision
+  if ($modelFamily.Name -eq 'wan') {
+    $familyRepository = $ModelRepository
+    $familyRevision = $ModelRevision
   }
-  $destinationGroup = [string] $artifact.destination
-  if ($destinationGroup -notin $allowedDestinations) {
-    throw "Unsupported model destination in manifest: $destinationGroup"
+  if ($familyRepository -notmatch '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$') {
+    throw "Model family '$($modelFamily.Name)' repository must use the owner/repository form."
   }
-  $relativePath = [string] $artifact.path
-  if ($relativePath -notmatch '^split_files/[A-Za-z0-9._/-]+$' -or $relativePath.Contains('..')) {
-    throw "Unsafe model path in manifest: $relativePath"
+  if ($familyRevision -notmatch '^[A-Za-z0-9._/-]+$' -or $familyRevision.Contains('..')) {
+    throw "Model family '$($modelFamily.Name)' revision must be a branch, tag, or commit without traversal segments."
   }
-  $destinationDirectory = Join-Path $comfyPath "models\$destinationGroup"
-  Ensure-Directory $destinationDirectory
-  Get-HuggingFaceFile `
-    -RelativePath $relativePath `
-    -Destination (Join-Path $destinationDirectory (Split-Path -Leaf $relativePath))
+
+  foreach ($artifact in $modelFamily.Value.artifacts) {
+    $artifactGroups = @($artifact.groups | ForEach-Object { [string] $_ })
+    if (-not @($artifactGroups | Where-Object { $_ -in $selectedModelGroups })) {
+      continue
+    }
+    $destinationGroup = [string] $artifact.destination
+    if ($destinationGroup -notin $allowedDestinations) {
+      throw "Unsupported model destination in manifest: $destinationGroup"
+    }
+    $relativePath = [string] $artifact.path
+    if ($relativePath -notmatch '^[A-Za-z0-9][A-Za-z0-9._/-]*$' -or $relativePath.Contains('..')) {
+      throw "Unsafe model path in manifest: $relativePath"
+    }
+    $destinationDirectory = Join-Path $comfyPath "models\$destinationGroup"
+    Ensure-Directory $destinationDirectory
+    Get-HuggingFaceFile `
+      -Repository $familyRepository `
+      -Revision $familyRevision `
+      -RelativePath $relativePath `
+      -Destination (Join-Path $destinationDirectory (Split-Path -Leaf $relativePath))
+  }
 }
 
 # -----------------------------------------------------------------------------

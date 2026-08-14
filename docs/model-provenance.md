@@ -1,9 +1,12 @@
 # Model provenance and licensing
 
-The installer downloads model files from the Hugging Face repository
-`Comfy-Org/Wan_2.2_ComfyUI_Repackaged`. This identifies the configured delivery
-source; it is not a claim that this community project created, owns, audited, or
-endorses the models.
+The installer downloads model files from three Hugging Face repositories:
+`Comfy-Org/Wan_2.2_ComfyUI_Repackaged` (Wan 2.2 artifacts),
+`Lightricks/LTX-Video` (the LTX-Video checkpoint), and
+`comfyanonymous/flux_text_encoders` (the T5-XXL encoder used by LTX
+workflows). These identify the configured delivery sources; they are not a
+claim that this community project created, owns, audited, or endorses the
+models.
 
 The repository's MIT license applies to project-authored source code and
 documentation. It does not grant a license to downloaded model weights,
@@ -12,10 +15,13 @@ use or redistribution, read the current model card, repository files, and terms
 at the upstream source. Terms can differ by artifact and can change independently
 of this project.
 
-The delivery source and revision are runtime configuration rather than local
+The delivery sources and revisions are runtime configuration rather than local
 machine state. Use `CUSTOM_WAN_MODEL_REPOSITORY` and
 `CUSTOM_WAN_MODEL_REVISION`, or the corresponding installer/CLI arguments, to
 select an approved repository and immutable commit without editing source.
+These overrides apply to the Wan family only; the LTX and text-encoder
+families always resolve through their pinned manifest entries, which change
+only through a reviewed pull request.
 
 The same rule applies to workflow exports. Examples with unknown redistribution
 terms, unverifiable creator attribution, embedded account metadata, or
@@ -24,19 +30,22 @@ permission or attribution.
 
 ## Configured artifacts
 
-| Selection | Diffusion model files |
+| Selection | Model files |
 | --- | --- |
 | `5b` | `wan2.2_ti2v_5B_fp16.safetensors` |
 | `14b` | `wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors`, `wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors` |
 | `i2v` | `wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors`, `wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors` |
-| `all` | all diffusion model files above |
+| `ltx` | `ltxv-2b-0.9.8-distilled.safetensors`, `t5xxl_fp8_e4m3fn_scaled.safetensors` |
+| `all` | all model files above |
 
-The versioned source of truth is `config/models.json`. The configured shared
-text encoder is `umt5_xxl_fp8_e4m3fn_scaled.safetensors`; the manifest maps
-`wan2.2_vae.safetensors` to `5b` and `wan_2.1_vae.safetensors` to the `14b` and
-`i2v` groups. The PowerShell and Python installers consume the same repository,
-revision, artifact, selection, and destination mapping and place files under
-the local `ComfyUI/models/` tree.
+The versioned source of truth is `config/models.json`. The Wan text encoder
+`umt5_xxl_fp8_e4m3fn_scaled.safetensors` serves every Wan group; the manifest
+maps `wan2.2_vae.safetensors` to `5b` and `wan_2.1_vae.safetensors` to the
+`14b` and `i2v` groups. The LTX checkpoint bundles its own VAE and lands in
+`checkpoints`; its T5-XXL encoder lands in `text_encoders`. The PowerShell and
+Python installers consume the same repository, revision, artifact, selection,
+and destination mapping and place files under the local `ComfyUI/models/`
+tree.
 
 ## Current verification limits
 

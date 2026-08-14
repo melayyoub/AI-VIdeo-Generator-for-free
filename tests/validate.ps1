@@ -66,7 +66,31 @@ $modelManifest = Get-Content -Raw -LiteralPath $modelManifestPath | ConvertFrom-
 if ($modelManifest.schema_version -ne 1 -or @($modelManifest.wan.artifacts).Count -eq 0) {
   throw 'Model manifest schema or artifacts are invalid.'
 }
-Write-Output 'PASS: parsed the versioned model manifest'
+$allowedManifestDestinations = @('checkpoints', 'diffusion_models', 'text_encoders', 'vae')
+foreach ($manifestFamily in @($modelManifest.PSObject.Properties | Where-Object Name -ne 'schema_version')) {
+  if ([string] $manifestFamily.Value.repository -notmatch '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$') {
+    throw "Model family '$($manifestFamily.Name)' repository is invalid."
+  }
+  if ([string] $manifestFamily.Value.revision -notmatch '^[A-Za-z0-9._/-]+$') {
+    throw "Model family '$($manifestFamily.Name)' revision is invalid."
+  }
+  if (@($manifestFamily.Value.artifacts).Count -eq 0) {
+    throw "Model family '$($manifestFamily.Name)' declares no artifacts."
+  }
+  foreach ($manifestArtifact in $manifestFamily.Value.artifacts) {
+    if (@($manifestArtifact.groups).Count -eq 0) {
+      throw "Model family '$($manifestFamily.Name)' has an artifact without groups."
+    }
+    if ([string] $manifestArtifact.destination -notin $allowedManifestDestinations) {
+      throw "Model family '$($manifestFamily.Name)' uses an unsupported destination: $($manifestArtifact.destination)"
+    }
+    $manifestArtifactPath = [string] $manifestArtifact.path
+    if ($manifestArtifactPath -notmatch '^[A-Za-z0-9][A-Za-z0-9._/-]*$' -or $manifestArtifactPath.Contains('..')) {
+      throw "Model family '$($manifestFamily.Name)' has an unsafe artifact path: $manifestArtifactPath"
+    }
+  }
+}
+Write-Output 'PASS: parsed the versioned model manifest across all families'
 
 $nodeManifestPath = Join-Path $repositoryRoot 'config\nodes.json'
 $nodeManifest = Get-Content -Raw -LiteralPath $nodeManifestPath | ConvertFrom-Json

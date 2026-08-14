@@ -34,7 +34,7 @@ for arg in "$@"; do
 done
 
 case "$CUDA" in cu128|cu121|cu118|cpu) ;; *) echo "ERROR: CUDA must be cu128, cu121, cu118, or cpu."; exit 2;; esac
-case "$MODELS" in 5b|14b|i2v|all) ;; *) echo "ERROR: MODELS must be 5b, 14b, i2v, or all."; exit 2;; esac
+case "$MODELS" in 5b|14b|i2v|ltx|all) ;; *) echo "ERROR: MODELS must be 5b, 14b, i2v, ltx, or all."; exit 2;; esac
 for boolean_name in WITH_MANAGER SKIP_NODES START LISTEN_ALL REUSE_VENV DRY_RUN; do
   boolean_value="${!boolean_name}"
   case "$boolean_value" in true|false) ;; *) echo "ERROR: $boolean_name must be true or false."; exit 2;; esac

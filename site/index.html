@@ -321,7 +321,7 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       <table>
         <tr><th>Option</th><th>Values</th><th>Default</th><th>Purpose</th></tr>
         <tr><td><code>-Cuda</code></td><td><code>cu128</code>, <code>cu121</code>, <code>cu118</code>, <code>cpu</code></td><td><code>cu128</code></td><td>PyTorch backend index</td></tr>
-        <tr><td><code>-Models</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, <code>all</code></td><td><code>5b</code></td><td>Wan model selection</td></tr>
+        <tr><td><code>-Models</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, <code>ltx</code>, <code>all</code></td><td><code>5b</code></td><td>Model selection</td></tr>
         <tr><td><code>-WithManager</code></td><td>switch</td><td>off</td><td>Install/update ComfyUI Manager</td></tr>
         <tr><td><code>-SkipNodes</code></td><td>switch</td><td>off</td><td>Skip the curated custom-node stack</td></tr>
         <tr><td><code>-Start</code></td><td>switch</td><td>off</td><td>Start ComfyUI after a successful install</td></tr>
@@ -346,7 +346,7 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       <table>
         <tr><th>Variable</th><th>Argument</th><th>Default</th><th>Purpose</th></tr>
         <tr><td><code>CUDA</code></td><td><code>--cuda</code></td><td><code>cu121</code></td><td><code>cu128</code>, <code>cu121</code>, <code>cu118</code>, or <code>cpu</code></td></tr>
-        <tr><td><code>MODELS</code></td><td><code>--models</code></td><td><code>5b</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, or <code>all</code></td></tr>
+        <tr><td><code>MODELS</code></td><td><code>--models</code></td><td><code>5b</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, <code>ltx</code>, or <code>all</code></td></tr>
         <tr><td><code>WITH_MANAGER</code></td><td><code>--with-manager</code></td><td><code>true</code></td><td>Install ComfyUI Manager</td></tr>
         <tr><td><code>SKIP_NODES</code></td><td><code>--skip-nodes</code></td><td><code>false</code></td><td>Skip the curated custom-node stack</td></tr>
         <tr><td><code>START</code></td><td><code>--start</code></td><td><code>true</code></td><td>Start ComfyUI when done</td></tr>
@@ -374,12 +374,13 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
   <div class="wrap">
     <h2>Model selections and provenance</h2>
     <p>
-      Model files are official ComfyUI-packaged Wan 2.2 artifacts delivered from
-      the Hugging Face repository
-      <code>Comfy-Org/Wan_2.2_ComfyUI_Repackaged</code>, resolved through an
-      immutable commit pinned in the versioned manifest
-      <code>config/models.json</code>. Both installers consume the same
-      manifest, so Windows and Unix installs stay byte-for-byte consistent.
+      Every model file resolves through an immutable revision pinned in the
+      versioned manifest <code>config/models.json</code>: Wan 2.2 artifacts
+      from <code>Comfy-Org/Wan_2.2_ComfyUI_Repackaged</code>, the LTX-Video
+      checkpoint from <code>Lightricks/LTX-Video</code>, and the LTX text
+      encoder from <code>comfyanonymous/flux_text_encoders</code>. Both
+      installers consume the same manifest, so Windows and Unix installs stay
+      byte-for-byte consistent.
     </p>
     <div class="tablewrap">
       <table>
@@ -400,12 +401,18 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
           <td><code>wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors</code><br><code>wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors</code></td>
           <td><code>wan_2.1_vae.safetensors</code></td>
         </tr>
+        <tr>
+          <td><code>ltx</code></td>
+          <td><code>ltxv-2b-0.9.8-distilled.safetensors</code> (checkpoint)</td>
+          <td>bundled in checkpoint</td>
+          <td><code>t5xxl_fp8_e4m3fn_scaled.safetensors</code></td>
+        </tr>
         <tr><td><code>all</code></td><td colspan="3">Every artifact above</td></tr>
       </table>
     </div>
     <h3>Download behavior</h3>
     <ul>
-      <li>Files land under <code>ComfyUI/models/</code> in <code>diffusion_models</code>, <code>vae</code>, and <code>text_encoders</code> — the only destinations the manifest is allowed to name.</li>
+      <li>Files land under <code>ComfyUI/models/</code> in <code>checkpoints</code>, <code>diffusion_models</code>, <code>vae</code>, and <code>text_encoders</code> — the only destinations the manifest is allowed to name.</li>
       <li>Manifest paths are validated against a strict pattern; traversal segments are rejected before any download starts.</li>
       <li>Existing files above a sanity-size threshold are kept; interrupted downloads resume from <code>.part</code> staging files with bounded retries.</li>
       <li>An optional <code>HF_TOKEN</code> enables gated assets. On Windows it is passed to curl through stdin so it never appears in a process command line or log.</li>
@@ -444,9 +451,9 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       <strong>Pinning policy.</strong> Node revisions are immutable commits,
       updated only through reviewed pull requests — the same discipline applied
       to model revisions. Custom nodes are third-party code executing with your
-      user's permissions; the pin tells you exactly which code that is. LTX
-      model checkpoints are not bundled — fetch them from the upstream
-      LTX-Video releases or via ComfyUI Manager and review their licenses.
+      user's permissions; the pin tells you exactly which code that is. Pair
+      the LTX nodes with the <code>ltx</code> (or <code>all</code>) model
+      selection to download the pinned LTX-Video checkpoint and text encoder.
     </div>
   </div>
 </section>
