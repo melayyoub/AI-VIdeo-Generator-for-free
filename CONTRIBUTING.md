@@ -49,6 +49,22 @@ remain responsible for reviewing the staged diff.
 See [docs/testing.md](docs/testing.md) for individual checks and platform
 expectations.
 
+## Automation boundaries
+
+GitHub Actions in this repository performs page deployment only: the workflow
+in `.github/workflows/pages.yml` publishes the static project page from
+`site/` to GitHub Pages. No tests run in Actions, deliberately — the lock
+integration test needs a real Windows executable lock and both PowerShell
+editions, which hosted runners cannot faithfully guarantee. Every gate
+therefore runs locally, and pull requests must report actual local
+`npm run check` results.
+
+When commands, defaults, model selection, network behavior, or security
+boundaries change, update `site/index.html` together with the README and the
+relevant `docs/` page so the published page stays truthful. The page must stay
+fully self-contained (inline CSS, no external scripts, fonts, or trackers) and
+must pass the same tracked-content privacy sweep as every other file.
+
 ## Review-sensitive changes
 
 Call out these changes explicitly in the pull request:

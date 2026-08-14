@@ -4,6 +4,10 @@ Validation is local-first and must report actual results. A user interface,
 dry run, or mocked command is not evidence that a full network installation or
 GPU generation succeeded.
 
+There is no hosted test pipeline: GitHub Actions only deploys the project page
+from `site/` (`.github/workflows/pages.yml`). Every check below runs on the
+contributor's machine.
+
 ## Full local gate
 
 From the repository root on Windows:

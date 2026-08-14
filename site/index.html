@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wan 2.2 AI Video Generator for ComfyUI</title>
+<meta name="description" content="Local-first installers and launchers for Wan 2.2 text-to-video and image-to-video workflows in ComfyUI on Windows, Linux, and macOS.">
+<style>
+:root {
+  --bg: #f7f8fb;
+  --surface: #ffffff;
+  --surface-2: #eef1f7;
+  --text: #1c2130;
+  --muted: #5a6376;
+  --accent: #4f46e5;
+  --accent-soft: #e5e4fb;
+  --border: #d9dee9;
+  --code-bg: #14182280;
+  --code-fg: #e8ebf4;
+  --code-block-bg: #171b26;
+  --ok: #0f7b52;
+  --warn: #9a5b00;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1219;
+    --surface: #171b26;
+    --surface-2: #1e2330;
+    --text: #e8ebf4;
+    --muted: #9aa3b8;
+    --accent: #8b85f4;
+    --accent-soft: #2b2a4a;
+    --border: #2a3040;
+    --code-bg: #00000066;
+    --code-fg: #e8ebf4;
+    --code-block-bg: #10131c;
+    --ok: #4cc596;
+    --warn: #e2a94f;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+  font-size: 16px;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 62rem; margin: 0 auto; padding: 0 1.25rem; }
+
+nav.top {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+nav.top .wrap {
+  display: flex; align-items: center; gap: 1rem;
+  padding-top: .6rem; padding-bottom: .6rem;
+  overflow-x: auto; white-space: nowrap;
+}
+nav.top .brand { font-weight: 700; color: var(--text); }
+nav.top a.link { color: var(--muted); font-size: .9rem; }
+nav.top a.link:hover { color: var(--accent); text-decoration: none; }
+
+header.hero { padding: 3.5rem 0 2.5rem; }
+header.hero h1 { font-size: clamp(1.7rem, 4vw, 2.6rem); line-height: 1.2; margin: 0 0 .75rem; }
+header.hero p.tag { font-size: 1.1rem; color: var(--muted); max-width: 44rem; margin: 0 0 1.5rem; }
+.pills { display: flex; flex-wrap: wrap; gap: .5rem; }
+.pill {
+  display: inline-block; padding: .3rem .8rem; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent);
+  font-size: .82rem; font-weight: 600;
+}
+.cta { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: .75rem; }
+.btn {
+  display: inline-block; padding: .55rem 1.1rem; border-radius: .5rem;
+  font-weight: 600; font-size: .95rem; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn:hover { text-decoration: none; filter: brightness(1.05); }
+
+section { padding: 2.2rem 0; border-top: 1px solid var(--border); }
+h2 { font-size: 1.45rem; margin: 0 0 1rem; }
+h3 { font-size: 1.1rem; margin: 1.6rem 0 .6rem; }
+p, ul, ol { max-width: 46rem; }
+li { margin: .25rem 0; }
+.muted { color: var(--muted); }
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); max-width: none; }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: .7rem; padding: 1rem 1.1rem;
+}
+.card h3 { margin: 0 0 .4rem; font-size: 1rem; }
+.card p { margin: 0; font-size: .92rem; color: var(--muted); }
+
+code {
+  font-family: ui-monospace, SFMono-Regular, "Cascadia Mono", Consolas, Menlo, monospace;
+  font-size: .86em;
+  background: var(--code-bg); color: inherit;
+  padding: .12em .38em; border-radius: .32em;
+}
+@media (prefers-color-scheme: light) {
+  code { background: var(--surface-2); }
+}
+pre {
+  background: var(--code-block-bg); color: var(--code-fg);
+  border: 1px solid var(--border); border-radius: .6rem;
+  padding: .9rem 1.1rem; overflow-x: auto;
+  max-width: 46rem; line-height: 1.55;
+}
+pre code { background: none; padding: 0; font-size: .84rem; color: inherit; }
+.comment { color: #8a93a8; }
+
+.tablewrap { overflow-x: auto; max-width: 100%; border: 1px solid var(--border); border-radius: .6rem; }
+table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: .9rem; background: var(--surface); }
+th, td { text-align: left; padding: .55rem .8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--surface-2); font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; }
+tr:last-child td { border-bottom: none; }
+
+.flow { display: flex; flex-direction: column; gap: .55rem; max-width: 46rem; counter-reset: step; }
+.step {
+  background: var(--surface); border: 1px solid var(--border); border-radius: .6rem;
+  padding: .7rem .95rem .7rem 3rem; position: relative; font-size: .94rem;
+}
+.step::before {
+  counter-increment: step; content: counter(step);
+  position: absolute; left: .85rem; top: .78rem;
+  width: 1.45rem; height: 1.45rem; border-radius: 50%;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: .8rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.step strong { display: block; }
+.step span { color: var(--muted); font-size: .88rem; }
+
+.diagram { max-width: 46rem; }
+.diagram svg { width: 100%; height: auto; display: block; }
+.callout {
+  border-left: 4px solid var(--accent); background: var(--surface);
+  border-radius: .4rem; padding: .75rem 1rem; max-width: 46rem; font-size: .93rem;
+}
+.callout.warn { border-left-color: var(--warn); }
+.tree { font-size: .84rem; }
+footer { border-top: 1px solid var(--border); padding: 2rem 0 3rem; color: var(--muted); font-size: .88rem; }
+footer p { max-width: none; }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand">Wan 2.2 · ComfyUI</span>
+    <a class="link" href="#quick-start">Quick start</a>
+    <a class="link" href="#launcher">Launcher</a>
+    <a class="link" href="#options">Options</a>
+    <a class="link" href="#models">Models</a>
+    <a class="link" href="#architecture">Architecture</a>
+    <a class="link" href="#security">Security</a>
+    <a class="link" href="#layout">Layout</a>
+    <a class="link" href="#utilities">Utilities</a>
+    <a class="link" href="#validation">Validation</a>
+    <a class="link" href="#troubleshooting">Troubleshooting</a>
+    <a class="link" href="#contributing">Contributing</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Wan 2.2 AI Video Generator for ComfyUI</h1>
+    <p class="tag">
+      Local-first installers and launchers for running Wan 2.2 text-to-video and
+      image-to-video workflows in ComfyUI — a repeatable setup that never sends
+      your prompts, source images, or generated media to a project server.
+    </p>
+    <div class="pills">
+      <span class="pill">Windows</span>
+      <span class="pill">Linux</span>
+      <span class="pill">macOS</span>
+      <span class="pill">CUDA 12.8 / 12.1 / 11.8</span>
+      <span class="pill">CPU fallback</span>
+      <span class="pill">MIT licensed</span>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free">View on GitHub</a>
+      <a class="btn" href="https://comfyui.reallexi.io/">Project website</a>
+    </div>
+  </div>
+</header>
+
+<section id="overview">
+  <div class="wrap">
+    <h2>What it does</h2>
+    <p>
+      The project bootstraps a complete, isolated Wan 2.2 environment around a
+      local ComfyUI checkout. One command clones or updates ComfyUI, builds a
+      dedicated Python virtual environment, installs the PyTorch build that
+      matches your GPU (or CPU), optionally adds ComfyUI&nbsp;Manager, and
+      downloads the official ComfyUI-packaged Wan 2.2 model files from a pinned,
+      reviewed source.
+    </p>
+    <div class="grid">
+      <div class="card"><h3>Local by default</h3><p>The launcher binds to 127.0.0.1. Nothing leaves your machine unless you explicitly bind to all interfaces.</p></div>
+      <div class="card"><h3>Non-destructive</h3><p>If your virtual environment is in use, the installer lists the scoped blockers and stops — process termination is strictly opt-in.</p></div>
+      <div class="card"><h3>Pinned model source</h3><p>Model downloads resolve through an immutable upstream revision recorded in a versioned manifest, with explicit overrides.</p></div>
+      <div class="card"><h3>Resumable downloads</h3><p>Large PyTorch and model downloads use bounded retries, resume support, and partial-file staging.</p></div>
+      <div class="card"><h3>Dry-run first</h3><p>The Unix installer prints its full command plan without cloning, installing, or downloading anything.</p></div>
+      <div class="card"><h3>Privacy-gated repo</h3><p>The validation suite rejects tracked files that contain personal paths, machine names, tokens, or account metadata.</p></div>
+    </div>
+
+    <h3>Requirements</h3>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Component</th><th>Requirement</th></tr>
+        <tr><td>Operating system</td><td>Windows 10/11, current Linux, or macOS</td></tr>
+        <tr><td>Python</td><td>3.10 recommended (3.10+ supported by the test suite)</td></tr>
+        <tr><td>Git</td><td>Required for ComfyUI and Manager clone/update</td></tr>
+        <tr><td>curl</td><td>Required by the Windows model downloader (bundled with Windows 10/11)</td></tr>
+        <tr><td>ffmpeg</td><td>Required for normal video workflows</td></tr>
+        <tr><td>GPU</td><td>NVIDIA CUDA GPU recommended; CPU supported but slow; ROCm and DirectML selectable at launch</td></tr>
+        <tr><td>Disk</td><td>Substantial free space for PyTorch, ComfyUI, models, and outputs</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="quick-start">
+  <div class="wrap">
+    <h2>Quick start</h2>
+
+    <h3>Windows (PowerShell)</h3>
+    <pre><code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\install.ps1 -Cuda cu128 -Models 5b -WithManager</code></pre>
+    <p>
+      The default lock policy is non-destructive: if an editor, type checker, or
+      ComfyUI process is using <code>ComfyUI\.venv</code>, the installer lists
+      only the scoped blockers and exits before changing Git or packages. To
+      authorize stopping those scoped process trees and rebuilding:
+    </p>
+    <pre><code>.\install.ps1 -Cuda cu128 -Models 5b -WithManager -LockedVenvAction Stop</code></pre>
+    <p>
+      Use <code>-ReuseVenv</code> for an incremental package update only when
+      the existing environment is healthy.
+    </p>
+
+    <h3>Linux</h3>
+    <pre><code>chmod +x install.sh
+CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
+
+    <h3>macOS or any machine without an NVIDIA GPU</h3>
+    <pre><code>CUDA=cpu MODELS=5b START=false ./install.sh</code></pre>
+
+    <h3>Validate the plan before installing (network-free)</h3>
+    <pre><code>./install.sh --cuda=cu128 --models=5b --start=false --dry-run=true</code></pre>
+
+    <h3>Start ComfyUI</h3>
+    <pre><code><span class="comment"># Windows</span>
+.\ComfyUI\.venv\Scripts\python.exe .\wan2_cli.py start --path . --port 8188
+
+<span class="comment"># Linux / macOS</span>
+./ComfyUI/.venv/bin/python ./wan2_cli.py start --path . --port 8188</code></pre>
+    <p>
+      Then open <code>http://127.0.0.1:8188</code> and verify the backend:
+    </p>
+    <pre><code>curl http://127.0.0.1:8188/system_stats</code></pre>
+    <div class="callout warn">
+      <strong>Network exposure.</strong> <code>--listen-all</code> binds to
+      0.0.0.0 and exposes ComfyUI to your local network. Never expose ComfyUI
+      directly to the public internet — use host firewall rules, an
+      authenticated reverse proxy, and TLS for any intentionally remote setup.
+    </div>
+  </div>
+</section>
+
+<section id="launcher">
+  <div class="wrap">
+    <h2>Launcher deep dive</h2>
+    <p>
+      <code>wan2_cli.py start</code> runs ComfyUI from the managed checkout with
+      loopback binding and automatic device selection. Device resolution order
+      in <code>auto</code> mode: CUDA (or ROCm builds of torch) → DirectML (if
+      <code>torch_directml</code> is importable) → CPU. ROCm installs
+      additionally get <code>--use-pytorch-cross-attention</code>.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Flag / variable</th><th>Purpose</th></tr>
+        <tr><td><code>--host</code> / <code>CUSTOM_WAN_COMFYUI_HOST</code></td><td>Bind address (default 127.0.0.1)</td></tr>
+        <tr><td><code>--port</code> / <code>CUSTOM_WAN_COMFYUI_PORT</code></td><td>TCP port, validated inclusive 1–65535 (default 8188)</td></tr>
+        <tr><td><code>--listen-all</code></td><td>Bind 0.0.0.0 (crosses the host network boundary)</td></tr>
+        <tr><td><code>--device</code> / <code>CUSTOM_WAN_COMFYUI_DEVICE</code></td><td><code>auto</code>, <code>cpu</code>, <code>gpu</code>, <code>rocm</code>, or <code>directml</code></td></tr>
+        <tr><td><code>--path</code></td><td>Project root containing the <code>ComfyUI/</code> checkout</td></tr>
+        <tr><td><code>CUSTOM_WAN_COMFYUI_CHECKOUT</code></td><td>Override the checkout location (absolute, or relative to the project root)</td></tr>
+        <tr><td><code>CUSTOM_WAN_COMFYUI_ARGS</code></td><td>Extra arguments passed through to ComfyUI's <code>main.py</code></td></tr>
+      </table>
+    </div>
+    <p class="muted" style="margin-top:.8rem">
+      The launcher also scopes Hugging Face caches (<code>HF_HOME</code>,
+      <code>HF_HUB_CACHE</code>, <code>TRANSFORMERS_CACHE</code>) to a local
+      <code>hf_cache/</code> directory under the project root, so model-hub
+      downloads stay inside the project tree.
+    </p>
+  </div>
+</section>
+
+<section id="options">
+  <div class="wrap">
+    <h2>Installer options</h2>
+
+    <h3>Windows — <code>install.ps1</code></h3>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Option</th><th>Values</th><th>Default</th><th>Purpose</th></tr>
+        <tr><td><code>-Cuda</code></td><td><code>cu128</code>, <code>cu121</code>, <code>cu118</code>, <code>cpu</code></td><td><code>cu128</code></td><td>PyTorch backend index</td></tr>
+        <tr><td><code>-Models</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, <code>all</code></td><td><code>5b</code></td><td>Wan model selection</td></tr>
+        <tr><td><code>-WithManager</code></td><td>switch</td><td>off</td><td>Install/update ComfyUI Manager</td></tr>
+        <tr><td><code>-Start</code></td><td>switch</td><td>off</td><td>Start ComfyUI after a successful install</td></tr>
+        <tr><td><code>-Port</code></td><td>1–65535</td><td>8188</td><td>ComfyUI port</td></tr>
+        <tr><td><code>-ListenAll</code></td><td>switch</td><td>off</td><td>Bind to 0.0.0.0</td></tr>
+        <tr><td><code>-PyVersion</code></td><td>launcher version</td><td>3.10</td><td>Windows Python launcher selection</td></tr>
+        <tr><td><code>-HfToken</code></td><td>token</td><td><code>HF_TOKEN</code> env</td><td>Optional gated-model access (sent to curl via stdin, never on the command line)</td></tr>
+        <tr><td><code>-ModelRepository</code></td><td><code>owner/repository</code></td><td>manifest value</td><td>Model delivery source override</td></tr>
+        <tr><td><code>-ModelRevision</code></td><td>branch, tag, commit</td><td>manifest pin</td><td>Model source revision override</td></tr>
+        <tr><td><code>-ReuseVenv</code></td><td>switch</td><td>off</td><td>Keep the existing venv; package updates only</td></tr>
+        <tr><td><code>-LockedVenvAction</code></td><td><code>Fail</code>, <code>Stop</code></td><td><code>Fail</code></td><td>Locked-environment policy (see Security)</td></tr>
+      </table>
+    </div>
+
+    <h3>Linux / macOS — <code>install.sh</code> → <code>wan2_installer.py</code></h3>
+    <p>
+      Every setting is available both as an environment variable and as a
+      <code>--name=value</code> argument. The shell wrapper validates values,
+      then delegates to the cross-platform Python installer.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Variable</th><th>Argument</th><th>Default</th><th>Purpose</th></tr>
+        <tr><td><code>CUDA</code></td><td><code>--cuda</code></td><td><code>cu121</code></td><td><code>cu128</code>, <code>cu121</code>, <code>cu118</code>, or <code>cpu</code></td></tr>
+        <tr><td><code>MODELS</code></td><td><code>--models</code></td><td><code>5b</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, or <code>all</code></td></tr>
+        <tr><td><code>WITH_MANAGER</code></td><td><code>--with-manager</code></td><td><code>true</code></td><td>Install ComfyUI Manager</td></tr>
+        <tr><td><code>START</code></td><td><code>--start</code></td><td><code>true</code></td><td>Start ComfyUI when done</td></tr>
+        <tr><td><code>PORT</code></td><td><code>--port</code></td><td><code>8188</code></td><td>Validated inclusive 1–65535</td></tr>
+        <tr><td><code>LISTEN_ALL</code></td><td><code>--listen-all</code></td><td><code>false</code></td><td>Bind 0.0.0.0</td></tr>
+        <tr><td><code>BASE_PATH</code></td><td><code>--path</code></td><td>repo directory</td><td>Install root; ComfyUI goes in <code>BASE_PATH/ComfyUI</code></td></tr>
+        <tr><td><code>REUSE_VENV</code></td><td><code>--reuse-venv</code></td><td><code>false</code></td><td>Keep the existing venv</td></tr>
+        <tr><td><code>DRY_RUN</code></td><td><code>--dry-run</code></td><td><code>false</code></td><td>Print the command plan; no network or filesystem changes</td></tr>
+        <tr><td><code>EXTRA_REQUIREMENTS</code></td><td><code>--extra-requirements</code></td><td>unset</td><td>Explicit, reviewed extra requirements file (never implicit)</td></tr>
+        <tr><td><code>HF_TOKEN</code></td><td>—</td><td>unset</td><td>Optional gated-model access token</td></tr>
+        <tr><td><code>CUSTOM_WAN_MODEL_REPOSITORY</code></td><td><code>--model-repository</code></td><td>manifest value</td><td>Model source override (<code>owner/repository</code> form enforced)</td></tr>
+        <tr><td><code>CUSTOM_WAN_MODEL_REVISION</code></td><td><code>--model-revision</code></td><td>manifest pin</td><td>Branch, tag, or immutable commit; traversal rejected</td></tr>
+      </table>
+    </div>
+    <p class="muted" style="margin-top:.8rem">
+      <code>wan2_installer.py</code> also exposes <code>models</code> (refresh
+      model files only), <code>start</code>, and <code>react</code> (scaffold an
+      optional status-page frontend) subcommands; every subcommand honors
+      <code>--dry-run</code>.
+    </p>
+  </div>
+</section>
+
+<section id="models">
+  <div class="wrap">
+    <h2>Model selections and provenance</h2>
+    <p>
+      Model files are official ComfyUI-packaged Wan 2.2 artifacts delivered from
+      the Hugging Face repository
+      <code>Comfy-Org/Wan_2.2_ComfyUI_Repackaged</code>, resolved through an
+      immutable commit pinned in the versioned manifest
+      <code>config/models.json</code>. Both installers consume the same
+      manifest, so Windows and Unix installs stay byte-for-byte consistent.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Selection</th><th>Diffusion models</th><th>VAE</th><th>Text encoder</th></tr>
+        <tr>
+          <td><code>5b</code></td>
+          <td><code>wan2.2_ti2v_5B_fp16.safetensors</code></td>
+          <td><code>wan2.2_vae.safetensors</code></td>
+          <td rowspan="3"><code>umt5_xxl_fp8_e4m3fn_scaled.safetensors</code> (shared)</td>
+        </tr>
+        <tr>
+          <td><code>14b</code></td>
+          <td><code>wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors</code><br><code>wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors</code></td>
+          <td><code>wan_2.1_vae.safetensors</code></td>
+        </tr>
+        <tr>
+          <td><code>i2v</code></td>
+          <td><code>wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors</code><br><code>wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors</code></td>
+          <td><code>wan_2.1_vae.safetensors</code></td>
+        </tr>
+        <tr><td><code>all</code></td><td colspan="3">Every artifact above</td></tr>
+      </table>
+    </div>
+    <h3>Download behavior</h3>
+    <ul>
+      <li>Files land under <code>ComfyUI/models/</code> in <code>diffusion_models</code>, <code>vae</code>, and <code>text_encoders</code> — the only destinations the manifest is allowed to name.</li>
+      <li>Manifest paths are validated against a strict pattern; traversal segments are rejected before any download starts.</li>
+      <li>Existing files above a sanity-size threshold are kept; interrupted downloads resume from <code>.part</code> staging files with bounded retries.</li>
+      <li>An optional <code>HF_TOKEN</code> enables gated assets. On Windows it is passed to curl through stdin so it never appears in a process command line or log.</li>
+    </ul>
+    <div class="callout">
+      <strong>Licensing.</strong> The project's MIT license covers its own code
+      and documentation only — it grants no rights to model weights, encoders,
+      VAEs, ComfyUI, or generated media. Review the upstream model card and
+      terms before use or redistribution; the project intentionally records a
+      delivery source, not an endorsement.
+    </div>
+  </div>
+</section>
+
+<section id="architecture">
+  <div class="wrap">
+    <h2>Architecture</h2>
+    <p>
+      The repository is a bootstrap and launch layer around third-party ComfyUI
+      and Wan assets. There is no application backend, account system, media
+      store, telemetry service, or hosted inference API — runtime state lives
+      entirely under your local <code>ComfyUI/</code> tree.
+    </p>
+    <div class="diagram" role="img" aria-label="Flow diagram: install.ps1 on Windows, or install.sh delegating to wan2_installer.py on Unix, prepare the local ComfyUI checkout, virtual environment, and models; wan2_cli.py launches ComfyUI from that tree.">
+      <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <g stroke="currentColor" stroke-width="1.4" color="var(--muted)">
+          <line x1="180" y1="60"  x2="290" y2="105" marker-end="url(#arr)"/>
+          <line x1="180" y1="150" x2="230" y2="150" marker-end="url(#arr)"/>
+          <line x1="360" y1="150" x2="410" y2="127" marker-end="url(#arr)"/>
+          <line x1="290" y1="118" x2="410" y2="118" marker-end="url(#arr)"/>
+          <line x1="180" y1="240" x2="470" y2="185" marker-end="url(#arr)"/>
+        </g>
+        <g font-family="system-ui, sans-serif" font-size="14">
+          <rect x="20" y="35" width="160" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)"/>
+          <text x="100" y="56" text-anchor="middle" fill="var(--text)" font-weight="600">install.ps1</text>
+          <text x="100" y="74" text-anchor="middle" fill="var(--muted)" font-size="12">Windows</text>
+
+          <rect x="20" y="125" width="160" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)"/>
+          <text x="100" y="146" text-anchor="middle" fill="var(--text)" font-weight="600">install.sh</text>
+          <text x="100" y="164" text-anchor="middle" fill="var(--muted)" font-size="12">Linux · macOS</text>
+
+          <rect x="230" y="125" width="130" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)"/>
+          <text x="295" y="146" text-anchor="middle" fill="var(--text)" font-weight="600">wan2_installer.py</text>
+          <text x="295" y="164" text-anchor="middle" fill="var(--muted)" font-size="12">cross-platform</text>
+
+          <rect x="20" y="215" width="160" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)"/>
+          <text x="100" y="236" text-anchor="middle" fill="var(--text)" font-weight="600">wan2_cli.py</text>
+          <text x="100" y="254" text-anchor="middle" fill="var(--muted)" font-size="12">launcher · loopback</text>
+
+          <rect x="410" y="70" width="290" height="160" rx="10" fill="var(--surface)" stroke="var(--border)"/>
+          <text x="555" y="95" text-anchor="middle" fill="var(--text)" font-weight="700">Local ComfyUI tree</text>
+          <text x="555" y="125" text-anchor="middle" fill="var(--muted)" font-size="13">ComfyUI/ — upstream checkout</text>
+          <text x="555" y="150" text-anchor="middle" fill="var(--muted)" font-size="13">ComfyUI/.venv — isolated Python</text>
+          <text x="555" y="175" text-anchor="middle" fill="var(--muted)" font-size="13">ComfyUI/models/ — Wan artifacts</text>
+          <text x="555" y="200" text-anchor="middle" fill="var(--muted)" font-size="13">prompts &amp; outputs stay local</text>
+        </g>
+      </svg>
+    </div>
+
+    <h3>Installation flow</h3>
+    <div class="flow">
+      <div class="step"><strong>Validate</strong><span>Arguments, paths, port range, model manifest schema, and repository/revision formats are checked before anything runs.</span></div>
+      <div class="step"><strong>Lock preflight (Windows)</strong><span>Processes using <code>ComfyUI\.venv</code> are detected; the default policy reports them and stops instead of killing anything.</span></div>
+      <div class="step"><strong>Clone or update ComfyUI</strong><span>Shallow clone on first run; fast-forward pull afterward. Tracked local edits are preserved in a named Git stash before updating.</span></div>
+      <div class="step"><strong>Create or reuse the venv</strong><span>A fresh environment by default; the interpreter's <code>sys.prefix</code> is verified before any package changes.</span></div>
+      <div class="step"><strong>Install PyTorch + requirements</strong><span>Backend-matched torch index, ComfyUI requirements, optional Manager, and audio/ONNX support packages — with retry, resume, and a mandatory <code>pip check</code> gate.</span></div>
+      <div class="step"><strong>Download models</strong><span>Selected artifacts from the pinned manifest revision, resumable, into validated destinations.</span></div>
+      <div class="step"><strong>Verify and start</strong><span>Python/torch/CUDA state is printed; ComfyUI starts on loopback only if requested.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="security">
+  <div class="wrap">
+    <h2>Security and privacy model</h2>
+    <div class="grid">
+      <div class="card"><h3>Loopback by default</h3><p>The launcher binds 127.0.0.1 unless you pass an explicit flag. Binding all interfaces is a deliberate, visible choice — and it is still not authentication.</p></div>
+      <div class="card"><h3>Scoped process control</h3><p>Termination is opt-in and limited by normalized executable paths inside the exact venv, process identity, and a known supervisor ancestry check. Unrelated Python, editor, and terminal processes are never selected.</p></div>
+      <div class="card"><h3>Guarded deletion</h3><p>Virtual-environment removal rejects filesystem roots, directories not named <code>.venv</code>, unexpected parents, and reparse points.</p></div>
+      <div class="card"><h3>Secret handling</h3><p><code>HF_TOKEN</code> stays in the process environment. The Windows downloader feeds it to curl via stdin so it never reaches a command line, a log, or a shell history file.</p></div>
+      <div class="card"><h3>Pinned supply chain</h3><p>Model source and revision are versioned configuration. Overrides are validated (owner/repository form, no traversal), and generated local requirement snapshots are never installed implicitly.</p></div>
+      <div class="card"><h3>Repo hygiene gates</h3><p>Validation rejects tracked binary shortcuts, token-bearing URLs, temporary media hosts, personal paths, and machine-identifying values before they can ship.</p></div>
+    </div>
+    <h3>Trust boundaries to keep in mind</h3>
+    <ul>
+      <li>Git hosts, package indexes, and Hugging Face are external supply-chain boundaries; a successful TLS download is not a checksum-verified artifact.</li>
+      <li>ComfyUI and custom nodes execute code with your user's permissions — review third-party nodes before installing them.</li>
+      <li>The project does not maintain cryptographic hashes for model artifacts; for high-assurance deployments, record and verify digests independently.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="layout">
+  <div class="wrap">
+    <h2>Repository layout</h2>
+    <pre class="tree"><code>custom-wan/
+├── install.ps1                    # Windows installer (hardened, lock-aware)
+├── install.sh                     # Linux/macOS wrapper with validation + dry run
+├── wan2_installer.py              # Cross-platform installer implementation
+├── wan2_cli.py                    # Local ComfyUI launcher (loopback by default)
+├── wan2_cli_args.py               # Shared argument validators (port, model source)
+├── config/models.json             # Versioned model source, revision pin, artifact map
+├── scripts/Installer.Venv.psm1    # Scoped Windows lock detection and safe removal
+├── scripts/sanitize_workflows.py  # Workflow privacy gate (strips account metadata)
+├── scripts/                       # Optional maintenance and repair utilities
+├── tests/                         # Port-contract, lock-policy, and repo validation suites
+├── docs/                          # Architecture, installers, provenance, testing, releases
+├── examples/                      # Sanitized example ComfyUI workflows
+├── site/                          # This page (deployed by GitHub Actions)
+└── ComfyUI/                       # Local runtime tree; ignored by Git</code></pre>
+  </div>
+</section>
+
+<section id="utilities">
+  <div class="wrap">
+    <h2>Optional utilities</h2>
+    <p>
+      Everything in <code>scripts/</code> is opt-in maintenance tooling — none
+      of it runs during a normal installation.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Script</th><th>Purpose</th></tr>
+        <tr><td><code>fix_custom_nodes.ps1</code></td><td>Upgrade the Hugging Face stack and patch custom nodes still importing the removed <code>cached_download</code> API</td></tr>
+        <tr><td><code>remove_failed_custom_nodes.ps1</code></td><td>Remove a supplied list of failed custom-node directories (supports <code>-WhatIf</code>)</td></tr>
+        <tr><td><code>fix_speech_stack.ps1</code></td><td>Pin a known-good dependency set for speech/TTS custom nodes</td></tr>
+        <tr><td><code>download_qwen.py</code></td><td>Snapshot an auxiliary vision-language model into <code>ComfyUI/models/LLM</code></td></tr>
+        <tr><td><code>convert_lora_checkpoint.py</code></td><td>Extract LoRA tensors from a PyTorch checkpoint into safetensors</td></tr>
+        <tr><td><code>Export-FolderStructure.ps1</code></td><td>Export a tree-style inventory of model files for documentation</td></tr>
+        <tr><td><code>sanitize_workflows.py</code></td><td>Check or scrub exported workflow JSON of personal and account metadata</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="validation">
+  <div class="wrap">
+    <h2>Validation — local-first by design</h2>
+    <p>
+      GitHub Actions in this repository does <strong>one</strong> thing: deploy
+      this page. There is intentionally no hosted test pipeline — correctness,
+      security, and privacy gates run locally, where a real Windows executable
+      lock and a real filesystem can actually be exercised:
+    </p>
+    <pre><code>npm run check</code></pre>
+    <p>That single command runs, in order:</p>
+    <ul>
+      <li>the inclusive port contract (1–65535) across the PowerShell installer and both Python entry points;</li>
+      <li>a live Windows executable-lock integration test proving the <code>Fail</code> policy is non-destructive, the scoped <code>Stop</code> policy removes only its own process tree, and deletion guards hold — under PowerShell 7 <em>and</em> Windows PowerShell 5.1;</li>
+      <li>parse checks for every maintained PowerShell, Python, and workflow JSON file;</li>
+      <li>a privacy sweep of all tracked filenames and text for personal paths, machine names, emails, tokens, and workspace identifiers;</li>
+      <li><code>ruff</code> linting, Bash syntax checks, the network-free Unix installer dry run, and offline npm lockfile consistency.</li>
+    </ul>
+    <p class="muted">
+      Tests resolve any Python 3.10+ interpreter automatically
+      (<code>py -3.10</code> → <code>py -3</code> → <code>python3</code> →
+      <code>python</code>), so the suite runs unmodified on Windows, Linux, and
+      macOS. On non-Windows systems the native lock test is skipped and reported
+      as skipped — never silently passed.
+    </p>
+  </div>
+</section>
+
+<section id="troubleshooting">
+  <div class="wrap">
+    <h2>Troubleshooting</h2>
+    <h3>Access to <code>.venv\Scripts\python.exe</code> is denied</h3>
+    <p>
+      This is normally a Windows executable-image lock, not a permissions
+      problem. Rerun with the default <code>-LockedVenvAction Fail</code> to see
+      the scoped process list, close those processes, or explicitly allow
+      scoped termination with <code>-LockedVenvAction Stop</code>. If an earlier
+      deletion was interrupted partway, rebuild rather than passing
+      <code>-ReuseVenv</code>.
+    </p>
+    <h3>Large PyTorch download fails</h3>
+    <p>
+      Rerun with <code>-ReuseVenv</code> once the new venv and pip exist.
+      Network installs already use bounded command retries, pip connection
+      retries, resume attempts, and a longer socket timeout.
+    </p>
+    <h3>CUDA is unavailable</h3>
+    <p>
+      Confirm the NVIDIA driver supports the selected PyTorch CUDA build, then
+      inspect the environment directly:
+    </p>
+    <pre><code>.\ComfyUI\.venv\Scripts\python.exe -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available())"</code></pre>
+  </div>
+</section>
+
+<section id="contributing">
+  <div class="wrap">
+    <h2>Contributing and community</h2>
+    <p>
+      Small, single-purpose pull requests are easiest to review. Keep
+      loopback-only binding and non-destructive lock handling as defaults, run
+      <code>npm run check</code> before submitting, and call out
+      review-sensitive changes (new download hosts, process termination, token
+      handling, model sources) explicitly.
+    </p>
+    <ul>
+      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/blob/main/CONTRIBUTING.md">Contributing guide</a></li>
+      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/blob/main/SECURITY.md">Security policy</a> — report sensitive findings privately</li>
+      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/blob/main/SUPPORT.md">Support policy</a></li>
+      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/blob/main/CODE_OF_CONDUCT.md">Code of conduct</a></li>
+      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/tree/main/docs">Full operational documentation</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>
+      Distributed under the MIT License (project code and documentation only).
+      This is a community-maintained installer — it is not the upstream ComfyUI
+      or Wan project, and model weights carry their own upstream terms.
+    </p>
+    <p>
+      <a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free">GitHub</a> ·
+      <a href="https://comfyui.reallexi.io/">comfyui.reallexi.io</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,6 +1,7 @@
 # Wan 2.2 AI Video Generator for ComfyUI
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Project page](https://github.com/melayyoub/AI-VIdeo-Generator-for-free/actions/workflows/pages.yml/badge.svg)](https://melayyoub.github.io/AI-VIdeo-Generator-for-free/)
 
 Local-first installers and launchers for running **Wan 2.2 text-to-video and
 image-to-video workflows in ComfyUI** on Windows, Linux, or macOS. The project
@@ -15,6 +16,8 @@ to an application server operated by this project.
 **Project website:** [comfyui.reallexi.io](https://comfyui.reallexi.io/) provides
 the full installation guide, architecture and publication diagrams, security
 boundaries, model provenance notes, troubleshooting, and contributor workflow.
+A self-contained deep-detail reference page is also published from `site/` at
+[melayyoub.github.io/AI-VIdeo-Generator-for-free](https://melayyoub.github.io/AI-VIdeo-Generator-for-free/).
 
 ## Highlights
 
@@ -190,6 +193,8 @@ custom-wan/
 ├── tests/                      # Local installer integration tests
 ├── docs/                       # Operational documentation
 ├── examples/                   # Example ComfyUI workflows
+├── site/                       # Project page deployed by GitHub Pages
+├── .github/workflows/pages.yml # Page deployment (Actions runs no tests)
 └── ComfyUI/                    # Local checkout; ignored by root Git
 ```
 
@@ -202,6 +207,7 @@ during a normal installation.
 
 ## Local validation
 
+Validation is local by design; GitHub Actions only deploys the project page.
 Run the locked-venv integration test under PowerShell 7 and Windows PowerShell
 5.1:
 
