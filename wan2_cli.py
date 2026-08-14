@@ -35,7 +35,10 @@ def rocm_available() -> bool:
 PIP_NETWORK_OPTIONS = ["--retries", "10", "--timeout", "120"]
 
 BACKEND_PROBES = {
-    "directml": "import torch_directml",
+    "directml": (
+        "import sys, torch_directml; "
+        "sys.exit(0 if torch_directml.is_available() else 1)"
+    ),
     "cuda": "import sys, torch; sys.exit(0 if torch.version.cuda else 1)",
 }
 
@@ -58,6 +61,24 @@ def python_provides_backend(python_path: Path, backend: str) -> bool:
     return subprocess.call(probe) == 0
 
 
+def installed_versions(python_path: Path, packages: list[str]) -> list[str]:
+    code = (
+        "import importlib.metadata, sys\n"
+        "for name in sys.argv[1:]:\n"
+        "    print(name + '==' + importlib.metadata.version(name))\n"
+    )
+    result = subprocess.run(
+        [str(python_path), "-c", code, *packages],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise SystemExit(
+            "Unable to read installed package versions: " + result.stderr.strip()
+        )
+    return result.stdout.split()
+
+
 def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
     """Return a Python that provides `backend`, provisioning a venv on demand.
 
@@ -77,15 +98,12 @@ def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
     pip = [str(python_path), "-m", "pip", "install", *PIP_NETWORK_OPTIONS]
     run_checked([*pip, "--upgrade", "pip", "setuptools<82", "wheel"])
     if backend == "directml":
-        run_checked(
-            [
-                *pip,
-                "--upgrade",
-                "torch-directml",
-                "torchvision",
-                "torchaudio",
-                "onnxruntime-directml",
-            ]
+        # Install torch-directml on its own first so the resolver honors its
+        # exact torch/torchvision pins instead of backtracking to an older
+        # plugin build to satisfy unrelated newer packages.
+        run_checked([*pip, "--upgrade", "torch-directml", "onnxruntime-directml"])
+        pins = installed_versions(
+            python_path, ["torch", "torchvision", "torch-directml"]
         )
     else:
         cuda_build = os.getenv("CUSTOM_WAN_TORCH_CUDA", "").strip() or "cu128"
@@ -101,21 +119,38 @@ def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
             ]
         )
         run_checked([*pip, "--upgrade", "onnxruntime-gpu"])
+        pins = installed_versions(python_path, ["torch", "torchvision", "torchaudio"])
+
+    # Every later install is constrained to the pinned torch stack. Without
+    # this, an unpinned custom-node requirement (for example a package that
+    # needs a newer torch) silently replaces the backend's torch build and
+    # breaks it.
+    constraints_path = venv_dir / "pip-constraints.txt"
+    constraints_path.write_text("\n".join(pins) + "\n", encoding="utf-8")
+    constrained_pip = [*pip, "-c", str(constraints_path)]
+    if backend == "directml":
+        run_checked([*constrained_pip, "torchaudio"])
+        pins = installed_versions(
+            python_path, ["torch", "torchvision", "torchaudio", "torch-directml"]
+        )
+        constraints_path.write_text("\n".join(pins) + "\n", encoding="utf-8")
+
     requirements = comfyui_dir / "requirements.txt"
     if requirements.exists():
-        run_checked([*pip, "-r", str(requirements)])
+        run_checked([*constrained_pip, "-r", str(requirements)])
     for node_requirements in sorted(
         (comfyui_dir / "custom_nodes").glob("*/requirements.txt")
     ):
-        if subprocess.call([*pip, "-r", str(node_requirements)]) != 0:
+        if subprocess.call([*constrained_pip, "-r", str(node_requirements)]) != 0:
             print(
-                "[wan2_cli] WARNING: optional node requirements skipped: "
-                f"{node_requirements}"
+                "[wan2_cli] WARNING: node requirements skipped (incompatible "
+                f"with the pinned torch stack): {node_requirements}"
             )
     if not python_provides_backend(python_path, backend):
         raise SystemExit(
             f"Provisioning finished, but the {backend} backend still does not "
-            f"import in {python_path}."
+            f"work in {python_path}. Delete {venv_dir} and select the device "
+            "again to rebuild it."
         )
     return python_path
 
