@@ -280,6 +280,10 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
 <span class="comment"># Linux / macOS</span>
 ./ComfyUI/.venv/bin/python ./wan2_cli.py start --path . --port 8188</code></pre>
     <p>
+      Pick the GPU explicitly with <code>--device gpu|directml|cpu</code>, or
+      use the Windows npm shortcuts: <code>npm run wstart:cuda</code>,
+      <code>npm run wstart:amd</code>, <code>npm run wstart:cpu</code>
+      (<code>npm run wstart</code> auto-detects).
       Then open <code>http://127.0.0.1:8188</code> and verify the backend:
     </p>
     <pre><code>curl http://127.0.0.1:8188/system_stats</code></pre>
@@ -522,7 +526,7 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
           <rect x="410" y="70" width="290" height="160" rx="10" fill="var(--surface)" stroke="var(--border)"/>
           <text x="555" y="95" text-anchor="middle" fill="var(--text)" font-weight="700">Local ComfyUI tree</text>
           <text x="555" y="125" text-anchor="middle" fill="var(--muted)" font-size="13">ComfyUI/ — upstream checkout</text>
-          <text x="555" y="150" text-anchor="middle" fill="var(--muted)" font-size="13">ComfyUI/.venv — isolated Python</text>
+          <text x="555" y="150" text-anchor="middle" fill="var(--muted)" font-size="13">ComfyUI/.venv* — per-backend Python envs</text>
           <text x="555" y="175" text-anchor="middle" fill="var(--muted)" font-size="13">ComfyUI/models/ — Wan artifacts</text>
           <text x="555" y="200" text-anchor="middle" fill="var(--muted)" font-size="13">prompts &amp; outputs stay local</text>
         </g>
@@ -532,12 +536,13 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
     <h3>Installation flow</h3>
     <div class="flow">
       <div class="step"><strong>Validate</strong><span>Arguments, paths, port range, model manifest schema, and repository/revision formats are checked before anything runs.</span></div>
+      <div class="step"><strong>Select the compute backend (Windows)</strong><span>An explicit <code>-Cuda</code> always wins; otherwise display adapters are inspected — both NVIDIA and AMD prompts for a choice, an AMD-only machine selects DirectML automatically.</span></div>
       <div class="step"><strong>Lock preflight (Windows)</strong><span>Processes using <code>ComfyUI\.venv</code> are detected; the default policy reports them and stops instead of killing anything.</span></div>
       <div class="step"><strong>Clone or update ComfyUI</strong><span>Shallow clone on first run; fast-forward pull afterward. Tracked local edits are preserved in a named Git stash before updating.</span></div>
       <div class="step"><strong>Create or reuse the venv</strong><span>A fresh environment by default; the interpreter's <code>sys.prefix</code> is verified before any package changes.</span></div>
       <div class="step"><strong>Install PyTorch + requirements</strong><span>Backend-matched torch index, ComfyUI requirements, optional Manager, and audio/ONNX support packages — with retry, resume, and a mandatory <code>pip check</code> gate.</span></div>
       <div class="step"><strong>Download models</strong><span>Selected artifacts from the pinned manifest revision, resumable, into validated destinations.</span></div>
-      <div class="step"><strong>Verify and start</strong><span>Python/torch/CUDA state is printed; ComfyUI starts on loopback only if requested.</span></div>
+      <div class="step"><strong>Verify and start</strong><span>Python/torch state is printed with CUDA or DirectML availability; ComfyUI starts on loopback only if requested.</span></div>
     </div>
   </div>
 </section>
@@ -658,6 +663,20 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       inspect the environment directly:
     </p>
     <pre><code>.\ComfyUI\.venv\Scripts\python.exe -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available())"</code></pre>
+    <h3>The AMD GPU is not being used</h3>
+    <p>
+      With both NVIDIA and AMD cards installed, <code>auto</code> prefers CUDA.
+      Force the AMD path with <code>npm run wstart:amd</code> (or
+      <code>--device directml</code>); the first run provisions
+      <code>ComfyUI\.venv-directml</code>, which downloads several GB. Verify
+      the DirectML environment directly:
+    </p>
+    <pre><code>.\ComfyUI\.venv-directml\Scripts\python.exe -c "import torch_directml; print(torch_directml.is_available(), torch_directml.device_name(0))"</code></pre>
+    <p>
+      If a provisioning run was interrupted, delete
+      <code>ComfyUI\.venv-directml</code> and select the device again to
+      rebuild it.
+    </p>
   </div>
 </section>
 

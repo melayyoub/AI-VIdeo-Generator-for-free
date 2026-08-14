@@ -85,9 +85,9 @@ bash -n install.sh installme.sh
 
 ## Manual installation and smoke testing
 
-A change that affects cloning, packages, models, CUDA selection, or process
-startup may need a disposable end-to-end environment in addition to the local
-gate. Record the platform, Python version, backend, model selection, exact
+A change that affects cloning, packages, models, compute-backend selection
+(CUDA, DirectML, or CPU), per-backend venv provisioning, or process startup may
+need a disposable end-to-end environment in addition to the local gate. Record the platform, Python version, backend, model selection, exact
 command, upstream revisions where available, and whether model download,
 `pip check`, `/system_stats`, and an actual workflow completed.
 

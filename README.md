@@ -5,7 +5,8 @@
 
 **OpenVideo Studio** is a ready-to-use, local-first ComfyUI distribution for AI
 video on Windows, Linux, and macOS. One command produces a working studio: an
-isolated Python environment, the PyTorch CUDA or CPU backend you select, a
+isolated Python environment, the PyTorch backend you select (NVIDIA CUDA, AMD
+DirectML on Windows, or CPU), a
 curated custom-node stack (LTX-Video, VideoHelperSuite, KJNodes) at pinned
 commits, optional ComfyUI Manager, and official ComfyUI-packaged Wan 2.2
 text-to-video and image-to-video model files.
@@ -23,7 +24,9 @@ A self-contained deep-detail reference page is also published from `site/` at
 ## Highlights
 
 - Windows PowerShell and Bash installation paths
-- CUDA 12.8, CUDA 12.1, CUDA 11.8, and CPU PyTorch backends
+- CUDA 12.8, CUDA 12.1, CUDA 11.8, AMD DirectML (Windows), and CPU PyTorch
+  backends, with install-time GPU detection and per-backend environments
+  provisioned on demand at launch
 - Wan 2.2 5B, 14B text-to-video, and 14B image-to-video model selections
 - Curated required custom nodes (LTX-Video, VideoHelperSuite, KJNodes)
   installed from pinned commits in `config/nodes.json`
