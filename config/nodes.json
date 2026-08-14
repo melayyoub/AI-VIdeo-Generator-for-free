@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "nodes": [
+    {
+      "name": "ComfyUI-LTXVideo",
+      "repository": "https://github.com/Lightricks/ComfyUI-LTXVideo.git",
+      "revision": "ac4d99839020b983e956a8ab67ec38aec1b6e65a",
+      "purpose": "LTX-Video text-to-video and image-to-video nodes"
+    },
+    {
+      "name": "ComfyUI-VideoHelperSuite",
+      "repository": "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git",
+      "revision": "4ee72c065db22c9d96c2427954dc69e7b908444b",
+      "purpose": "Video load, combine, and export helpers used by most video workflows"
+    },
+    {
+      "name": "ComfyUI-KJNodes",
+      "repository": "https://github.com/kijai/ComfyUI-KJNodes.git",
+      "revision": "203eb357743402b437db8ae973a062a9b15387d2",
+      "purpose": "Utility nodes commonly required by Wan and LTX example workflows"
+    }
+  ]
+}

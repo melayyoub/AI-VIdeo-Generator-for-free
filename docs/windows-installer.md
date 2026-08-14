@@ -1,8 +1,9 @@
 # Windows installer operations
 
 `install.ps1` installs or updates ComfyUI, creates its Python virtual
-environment, installs the selected PyTorch build, and downloads the selected
-Wan model set.
+environment, installs the selected PyTorch build, installs the curated
+custom-node stack from `config/nodes.json` at pinned commits (omit with
+`-SkipNodes`), and downloads the selected Wan model set.
 
 ## Normal installation
 

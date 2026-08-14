@@ -10,6 +10,7 @@ param(
   [string] $Models = '5b',
 
   [switch] $WithManager,
+  [switch] $SkipNodes,
   [switch] $Start,
   [ValidateRange(1, 65535)]
   [int] $Port = 8188,
@@ -35,6 +36,15 @@ if (-not (Test-Path -LiteralPath $modelManifestPath -PathType Leaf)) {
 $modelManifest = Get-Content -LiteralPath $modelManifestPath -Raw | ConvertFrom-Json
 if ($modelManifest.schema_version -ne 1) {
   throw 'Unsupported model manifest schema version.'
+}
+
+$nodeManifestPath = Join-Path $PSScriptRoot 'config\nodes.json'
+if (-not (Test-Path -LiteralPath $nodeManifestPath -PathType Leaf)) {
+  throw "Node manifest is missing: $nodeManifestPath"
+}
+$nodeManifest = Get-Content -LiteralPath $nodeManifestPath -Raw | ConvertFrom-Json
+if ($nodeManifest.schema_version -ne 1) {
+  throw 'Unsupported node manifest schema version.'
 }
 if ([string]::IsNullOrWhiteSpace($ModelRepository)) {
   $ModelRepository = [string] $modelManifest.wan.repository
@@ -148,8 +158,8 @@ function Get-HuggingFaceFile {
   Write-Host "[models] Saved: $Destination" -ForegroundColor Green
 }
 
-Write-Host ("[install.ps1] Base: {0}  CUDA: {1}  MODELS: {2}  Manager: {3}  Start: {4}  Port: {5}  ListenAll: {6}  ReuseVenv: {7}  LockedVenvAction: {8}" `
-  -f $BasePath,$Cuda,$Models,$WithManager.IsPresent,$Start.IsPresent,$Port,$ListenAll.IsPresent,$ReuseVenv.IsPresent,$LockedVenvAction)
+Write-Host ("[install.ps1] Base: {0}  CUDA: {1}  MODELS: {2}  Manager: {3}  SkipNodes: {4}  Start: {5}  Port: {6}  ListenAll: {7}  ReuseVenv: {8}  LockedVenvAction: {9}" `
+  -f $BasePath,$Cuda,$Models,$WithManager.IsPresent,$SkipNodes.IsPresent,$Start.IsPresent,$Port,$ListenAll.IsPresent,$ReuseVenv.IsPresent,$LockedVenvAction)
 
 if (-not (Get-Command py -ErrorAction SilentlyContinue)) {
   throw "Python launcher 'py' was not found. Install 64-bit Python $PyVersion first."
@@ -374,6 +384,45 @@ if ($WithManager) {
   $managerRequirements = Join-Path $managerPath 'requirements.txt'
   if (Test-Path -LiteralPath $managerRequirements) {
     Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (@('-m', 'pip', 'install') + $pipNetworkOptions + @('-r', $managerRequirements))
+  }
+}
+
+# -----------------------------------------------------------------------------
+# Curated required custom nodes (config/nodes.json), each at a pinned commit.
+# -----------------------------------------------------------------------------
+if (-not $SkipNodes) {
+  $customNodesRoot = Join-Path $comfyPath 'custom_nodes'
+  Ensure-Directory $customNodesRoot
+
+  foreach ($node in $nodeManifest.nodes) {
+    $nodeName = [string] $node.name
+    $nodeRepository = [string] $node.repository
+    $nodeRevision = [string] $node.revision
+    if ($nodeName -notmatch '^[A-Za-z0-9._-]+$') {
+      throw "Unsafe node name in manifest: $nodeName"
+    }
+    if ($nodeRepository -notmatch '^https://github\.com/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.git$') {
+      throw "Unsupported node repository in manifest: $nodeRepository"
+    }
+    if ($nodeRevision -notmatch '^[0-9a-f]{7,40}$') {
+      throw "Node revision must be a pinned commit: $nodeRevision"
+    }
+
+    $nodePath = Join-Path $customNodesRoot $nodeName
+    if (Test-Path -LiteralPath (Join-Path $nodePath '.git')) {
+      Write-Host "[nodes] $nodeName present - fetching pinned revision." -ForegroundColor Cyan
+      & git -C $nodePath fetch origin *> $null
+    }
+    else {
+      Write-Host "[nodes] Installing $nodeName..." -ForegroundColor Cyan
+      Invoke-Native -FilePath 'git' -ArgumentList @('clone', $nodeRepository, $nodePath)
+    }
+    Invoke-Native -FilePath 'git' -ArgumentList @('-C', $nodePath, 'checkout', '--detach', $nodeRevision)
+
+    $nodeRequirements = Join-Path $nodePath 'requirements.txt'
+    if (Test-Path -LiteralPath $nodeRequirements -PathType Leaf) {
+      Invoke-NativeWithRetry -FilePath $venvPython -ArgumentList (@('-m', 'pip', 'install') + $pipNetworkOptions + @('-r', $nodeRequirements))
+    }
   }
 }
 

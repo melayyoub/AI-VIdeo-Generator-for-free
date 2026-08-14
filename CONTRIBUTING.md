@@ -1,9 +1,9 @@
 # Contributing
 
-Thank you for helping improve this community-maintained installer and launcher.
-This repository is not the upstream ComfyUI or Wan project. Changes here should
-stay focused on making the local setup safer, more repeatable, and easier to
-understand.
+Thank you for helping improve OpenVideo Studio, a community-maintained local
+ComfyUI distribution for AI video. This repository is not the upstream ComfyUI,
+Wan, or LTX-Video project. Changes here should stay focused on making the local
+setup safer, more repeatable, and easier to understand.
 
 ## Before opening a change
 

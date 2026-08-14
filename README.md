@@ -1,13 +1,14 @@
-# Wan 2.2 AI Video Generator for ComfyUI
+# OpenVideo Studio
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Project page](https://github.com/melayyoub/AI-VIdeo-Generator-for-free/actions/workflows/pages.yml/badge.svg)](https://melayyoub.github.io/AI-VIdeo-Generator-for-free/)
+[![Project page](https://github.com/melayyoub/openvideo-studio/actions/workflows/pages.yml/badge.svg)](https://melayyoub.github.io/openvideo-studio/)
 
-Local-first installers and launchers for running **Wan 2.2 text-to-video and
-image-to-video workflows in ComfyUI** on Windows, Linux, or macOS. The project
-creates an isolated Python environment, selects a PyTorch CUDA or CPU backend,
-optionally installs ComfyUI Manager, and downloads official ComfyUI-packaged Wan
-model files.
+**OpenVideo Studio** is a ready-to-use, local-first ComfyUI distribution for AI
+video on Windows, Linux, and macOS. One command produces a working studio: an
+isolated Python environment, the PyTorch CUDA or CPU backend you select, a
+curated custom-node stack (LTX-Video, VideoHelperSuite, KJNodes) at pinned
+commits, optional ComfyUI Manager, and official ComfyUI-packaged Wan 2.2
+text-to-video and image-to-video model files.
 
 This repository is designed for creators and developers who want a repeatable
 local AI video setup without sending prompts, source images, or generated media
@@ -17,13 +18,15 @@ to an application server operated by this project.
 the full installation guide, architecture and publication diagrams, security
 boundaries, model provenance notes, troubleshooting, and contributor workflow.
 A self-contained deep-detail reference page is also published from `site/` at
-[melayyoub.github.io/AI-VIdeo-Generator-for-free](https://melayyoub.github.io/AI-VIdeo-Generator-for-free/).
+[melayyoub.github.io/openvideo-studio](https://melayyoub.github.io/openvideo-studio/).
 
 ## Highlights
 
 - Windows PowerShell and Bash installation paths
 - CUDA 12.8, CUDA 12.1, CUDA 11.8, and CPU PyTorch backends
 - Wan 2.2 5B, 14B text-to-video, and 14B image-to-video model selections
+- Curated required custom nodes (LTX-Video, VideoHelperSuite, KJNodes)
+  installed from pinned commits in `config/nodes.json`
 - Optional ComfyUI Manager integration
 - Local-only binding by default in the launcher
 - Scoped Windows virtual-environment lock detection
@@ -144,6 +147,7 @@ binary `.lnk` can retain machine-specific paths and browser state:
 | `-Cuda` | `cu128`, `cu121`, `cu118`, `cpu` | `cu128` | PyTorch backend |
 | `-Models` | `5b`, `14b`, `i2v`, `all` | `5b` | Wan model set |
 | `-WithManager` | switch | off | Install/update ComfyUI Manager |
+| `-SkipNodes` | switch | off | Skip the curated custom-node stack |
 | `-Start` | switch | off | Start after successful installation |
 | `-Port` | `1`–`65535` | `8188` | ComfyUI port |
 | `-ListenAll` | switch | off | Bind to `0.0.0.0` |
@@ -156,9 +160,10 @@ binary `.lnk` can retain machine-specific paths and browser state:
 ### Bash
 
 The Bash installer accepts matching environment variables and `--name=value`
-arguments for CUDA, models, Manager, start, port, network binding, venv reuse,
-dry run, path, and optional reviewed requirements. Model source overrides use
-`CUSTOM_WAN_MODEL_REPOSITORY` and `CUSTOM_WAN_MODEL_REVISION`.
+arguments for CUDA, models, Manager, node-stack skipping (`SKIP_NODES`), start,
+port, network binding, venv reuse, dry run, path, and optional reviewed
+requirements. Model source overrides use `CUSTOM_WAN_MODEL_REPOSITORY` and
+`CUSTOM_WAN_MODEL_REVISION`.
 
 ## Model selections
 
@@ -169,6 +174,25 @@ dry run, path, and optional reviewed requirements. Model source overrides use
 
 Existing model files larger than the installer sanity threshold are retained.
 Interrupted Windows downloads use `.part` files and curl resume/retry controls.
+
+## Required custom nodes
+
+Both installers install the curated video node stack from
+[`config/nodes.json`](config/nodes.json) unless `-SkipNodes` /
+`--skip-nodes=true` is passed:
+
+| Node | Purpose |
+| --- | --- |
+| `ComfyUI-LTXVideo` | LTX-Video text-to-video and image-to-video nodes |
+| `ComfyUI-VideoHelperSuite` | Video load, combine, and export helpers |
+| `ComfyUI-KJNodes` | Utility nodes required by Wan and LTX workflows |
+
+Each node is cloned from its upstream GitHub repository and checked out at the
+pinned commit recorded in the manifest; its `requirements.txt` is installed
+into the project virtual environment. Update the pins through a reviewed pull
+request, the same way model revisions are updated. LTX model checkpoints are
+not bundled; fetch them from the upstream LTX-Video releases or through
+ComfyUI Manager and review their licenses first.
 
 ## Workflow examples
 
@@ -181,12 +205,13 @@ sanitization requirements.
 ## Repository layout
 
 ```text
-custom-wan/
+openvideo-studio/
 ├── install.ps1                 # Windows installer
 ├── install.sh                  # Linux/macOS wrapper
 ├── wan2_cli.py                 # Local ComfyUI launcher
 ├── wan2_installer.py           # Cross-platform installer implementation
 ├── config/models.json          # Versioned model source and artifact mapping
+├── config/nodes.json           # Curated custom-node stack at pinned commits
 ├── scripts/Installer.Venv.psm1 # Scoped Windows lock/removal controls
 ├── scripts/sanitize_workflows.py # Portable workflow privacy gate
 ├── scripts/                    # Optional maintenance and repair utilities

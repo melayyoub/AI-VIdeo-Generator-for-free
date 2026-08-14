@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wan 2.2 AI Video Generator for ComfyUI</title>
-<meta name="description" content="Local-first installers and launchers for Wan 2.2 text-to-video and image-to-video workflows in ComfyUI on Windows, Linux, and macOS.">
+<title>OpenVideo Studio</title>
+<meta name="description" content="OpenVideo Studio: a ready-to-use, local-first ComfyUI distribution for AI video — Wan 2.2, LTX-Video, and a curated node stack on Windows, Linux, and macOS.">
 <style>
 :root {
   --bg: #f7f8fb;
@@ -154,11 +154,12 @@ footer p { max-width: none; }
 
 <nav class="top">
   <div class="wrap">
-    <span class="brand">Wan 2.2 · ComfyUI</span>
+    <span class="brand">OpenVideo Studio</span>
     <a class="link" href="#quick-start">Quick start</a>
     <a class="link" href="#launcher">Launcher</a>
     <a class="link" href="#options">Options</a>
     <a class="link" href="#models">Models</a>
+    <a class="link" href="#node-stack">Nodes</a>
     <a class="link" href="#architecture">Architecture</a>
     <a class="link" href="#security">Security</a>
     <a class="link" href="#layout">Layout</a>
@@ -171,22 +172,25 @@ footer p { max-width: none; }
 
 <header class="hero">
   <div class="wrap">
-    <h1>Wan 2.2 AI Video Generator for ComfyUI</h1>
+    <h1>OpenVideo Studio</h1>
     <p class="tag">
-      Local-first installers and launchers for running Wan 2.2 text-to-video and
-      image-to-video workflows in ComfyUI — a repeatable setup that never sends
-      your prompts, source images, or generated media to a project server.
+      A ready-to-use, local-first ComfyUI distribution for AI video. One command
+      installs everything — Wan 2.2 models, LTX-Video nodes, and a curated
+      video toolchain — and nothing you create ever leaves your machine.
     </p>
     <div class="pills">
       <span class="pill">Windows</span>
       <span class="pill">Linux</span>
       <span class="pill">macOS</span>
+      <span class="pill">Wan 2.2</span>
+      <span class="pill">LTX-Video</span>
+      <span class="pill">Curated nodes</span>
       <span class="pill">CUDA 12.8 / 12.1 / 11.8</span>
       <span class="pill">CPU fallback</span>
       <span class="pill">MIT licensed</span>
     </div>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free">View on GitHub</a>
+      <a class="btn primary" href="https://github.com/melayyoub/openvideo-studio">View on GitHub</a>
       <a class="btn" href="https://comfyui.reallexi.io/">Project website</a>
     </div>
   </div>
@@ -196,12 +200,13 @@ footer p { max-width: none; }
   <div class="wrap">
     <h2>What it does</h2>
     <p>
-      The project bootstraps a complete, isolated Wan 2.2 environment around a
-      local ComfyUI checkout. One command clones or updates ComfyUI, builds a
-      dedicated Python virtual environment, installs the PyTorch build that
-      matches your GPU (or CPU), optionally adds ComfyUI&nbsp;Manager, and
-      downloads the official ComfyUI-packaged Wan 2.2 model files from a pinned,
-      reviewed source.
+      OpenVideo Studio bootstraps a complete, isolated AI video environment
+      around a local ComfyUI checkout. One command clones or updates ComfyUI,
+      builds a dedicated Python virtual environment, installs the PyTorch build
+      that matches your GPU (or CPU), installs the curated custom-node stack
+      (LTX-Video, VideoHelperSuite, KJNodes) at pinned commits, optionally adds
+      ComfyUI&nbsp;Manager, and downloads the official ComfyUI-packaged Wan 2.2
+      model files from a pinned, reviewed source.
     </p>
     <div class="grid">
       <div class="card"><h3>Local by default</h3><p>The launcher binds to 127.0.0.1. Nothing leaves your machine unless you explicitly bind to all interfaces.</p></div>
@@ -318,6 +323,7 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
         <tr><td><code>-Cuda</code></td><td><code>cu128</code>, <code>cu121</code>, <code>cu118</code>, <code>cpu</code></td><td><code>cu128</code></td><td>PyTorch backend index</td></tr>
         <tr><td><code>-Models</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, <code>all</code></td><td><code>5b</code></td><td>Wan model selection</td></tr>
         <tr><td><code>-WithManager</code></td><td>switch</td><td>off</td><td>Install/update ComfyUI Manager</td></tr>
+        <tr><td><code>-SkipNodes</code></td><td>switch</td><td>off</td><td>Skip the curated custom-node stack</td></tr>
         <tr><td><code>-Start</code></td><td>switch</td><td>off</td><td>Start ComfyUI after a successful install</td></tr>
         <tr><td><code>-Port</code></td><td>1–65535</td><td>8188</td><td>ComfyUI port</td></tr>
         <tr><td><code>-ListenAll</code></td><td>switch</td><td>off</td><td>Bind to 0.0.0.0</td></tr>
@@ -342,6 +348,7 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
         <tr><td><code>CUDA</code></td><td><code>--cuda</code></td><td><code>cu121</code></td><td><code>cu128</code>, <code>cu121</code>, <code>cu118</code>, or <code>cpu</code></td></tr>
         <tr><td><code>MODELS</code></td><td><code>--models</code></td><td><code>5b</code></td><td><code>5b</code>, <code>14b</code>, <code>i2v</code>, or <code>all</code></td></tr>
         <tr><td><code>WITH_MANAGER</code></td><td><code>--with-manager</code></td><td><code>true</code></td><td>Install ComfyUI Manager</td></tr>
+        <tr><td><code>SKIP_NODES</code></td><td><code>--skip-nodes</code></td><td><code>false</code></td><td>Skip the curated custom-node stack</td></tr>
         <tr><td><code>START</code></td><td><code>--start</code></td><td><code>true</code></td><td>Start ComfyUI when done</td></tr>
         <tr><td><code>PORT</code></td><td><code>--port</code></td><td><code>8188</code></td><td>Validated inclusive 1–65535</td></tr>
         <tr><td><code>LISTEN_ALL</code></td><td><code>--listen-all</code></td><td><code>false</code></td><td>Bind 0.0.0.0</td></tr>
@@ -409,6 +416,37 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       VAEs, ComfyUI, or generated media. Review the upstream model card and
       terms before use or redistribution; the project intentionally records a
       delivery source, not an endorsement.
+    </div>
+  </div>
+</section>
+
+<section id="node-stack">
+  <div class="wrap">
+    <h2>Curated node stack</h2>
+    <p>
+      "Ready to use" means the nodes your video workflows need are already
+      installed. Both installers consume the versioned manifest
+      <code>config/nodes.json</code>: each required custom node is cloned from
+      its upstream GitHub repository, checked out at a <em>pinned commit</em>,
+      and its <code>requirements.txt</code> is installed into the project
+      virtual environment. Skip the stack with <code>-SkipNodes</code>
+      (Windows) or <code>--skip-nodes=true</code> (Unix).
+    </p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Node</th><th>Upstream</th><th>Purpose</th></tr>
+        <tr><td><code>ComfyUI-LTXVideo</code></td><td>Lightricks</td><td>LTX-Video text-to-video and image-to-video nodes</td></tr>
+        <tr><td><code>ComfyUI-VideoHelperSuite</code></td><td>Kosinkadink</td><td>Video load, combine, and export helpers used by most video workflows</td></tr>
+        <tr><td><code>ComfyUI-KJNodes</code></td><td>kijai</td><td>Utility nodes commonly required by Wan and LTX example workflows</td></tr>
+      </table>
+    </div>
+    <div class="callout" style="margin-top:1rem">
+      <strong>Pinning policy.</strong> Node revisions are immutable commits,
+      updated only through reviewed pull requests — the same discipline applied
+      to model revisions. Custom nodes are third-party code executing with your
+      user's permissions; the pin tells you exactly which code that is. LTX
+      model checkpoints are not bundled — fetch them from the upstream
+      LTX-Video releases or via ComfyUI Manager and review their licenses.
     </div>
   </div>
 </section>
@@ -499,13 +537,14 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
 <section id="layout">
   <div class="wrap">
     <h2>Repository layout</h2>
-    <pre class="tree"><code>custom-wan/
+    <pre class="tree"><code>openvideo-studio/
 ├── install.ps1                    # Windows installer (hardened, lock-aware)
 ├── install.sh                     # Linux/macOS wrapper with validation + dry run
 ├── wan2_installer.py              # Cross-platform installer implementation
 ├── wan2_cli.py                    # Local ComfyUI launcher (loopback by default)
 ├── wan2_cli_args.py               # Shared argument validators (port, model source)
 ├── config/models.json             # Versioned model source, revision pin, artifact map
+├── config/nodes.json              # Curated custom-node stack at pinned commits
 ├── scripts/Installer.Venv.psm1    # Scoped Windows lock detection and safe removal
 ├── scripts/sanitize_workflows.py  # Workflow privacy gate (strips account metadata)
 ├── scripts/                       # Optional maintenance and repair utilities
@@ -605,11 +644,11 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       handling, model sources) explicitly.
     </p>
     <ul>
-      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/blob/main/CONTRIBUTING.md">Contributing guide</a></li>
-      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/blob/main/SECURITY.md">Security policy</a> — report sensitive findings privately</li>
-      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/blob/main/SUPPORT.md">Support policy</a></li>
-      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/blob/main/CODE_OF_CONDUCT.md">Code of conduct</a></li>
-      <li><a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free/tree/main/docs">Full operational documentation</a></li>
+      <li><a href="https://github.com/melayyoub/openvideo-studio/blob/main/CONTRIBUTING.md">Contributing guide</a></li>
+      <li><a href="https://github.com/melayyoub/openvideo-studio/blob/main/SECURITY.md">Security policy</a> — report sensitive findings privately</li>
+      <li><a href="https://github.com/melayyoub/openvideo-studio/blob/main/SUPPORT.md">Support policy</a></li>
+      <li><a href="https://github.com/melayyoub/openvideo-studio/blob/main/CODE_OF_CONDUCT.md">Code of conduct</a></li>
+      <li><a href="https://github.com/melayyoub/openvideo-studio/tree/main/docs">Full operational documentation</a></li>
     </ul>
   </div>
 </section>
@@ -622,7 +661,7 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       or Wan project, and model weights carry their own upstream terms.
     </p>
     <p>
-      <a href="https://github.com/melayyoub/AI-VIdeo-Generator-for-free">GitHub</a> ·
+      <a href="https://github.com/melayyoub/openvideo-studio">GitHub</a> ·
       <a href="https://comfyui.reallexi.io/">comfyui.reallexi.io</a>
     </p>
   </div>

@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -35,14 +36,23 @@ DEFAULT_PORT = 8188
 # Keep in sync with install.ps1, which clones the same repository.
 COMFYUI_GIT_URL = "https://github.com/Comfy-Org/ComfyUI.git"
 
-MODEL_MANIFEST_PATH = Path(__file__).resolve().parent / "config" / "models.json"
-MODEL_MANIFEST = json.loads(MODEL_MANIFEST_PATH.read_text(encoding="utf-8"))
+CONFIG_DIR = Path(__file__).resolve().parent / "config"
+MODEL_MANIFEST = json.loads((CONFIG_DIR / "models.json").read_text(encoding="utf-8"))
 if MODEL_MANIFEST.get("schema_version") != 1:
     raise RuntimeError("Unsupported model manifest schema version")
 WAN_CONFIG = MODEL_MANIFEST["wan"]
 WAN_REPO = WAN_CONFIG["repository"]
 WAN_REVISION = WAN_CONFIG["revision"]
 WAN_ARTIFACTS = WAN_CONFIG["artifacts"]
+
+NODE_MANIFEST = json.loads((CONFIG_DIR / "nodes.json").read_text(encoding="utf-8"))
+if NODE_MANIFEST.get("schema_version") != 1:
+    raise RuntimeError("Unsupported node manifest schema version")
+NODE_NAME_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
+NODE_REPOSITORY_PATTERN = re.compile(
+    r"^https://github\.com/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.git$"
+)
+NODE_REVISION_PATTERN = re.compile(r"^[0-9a-f]{7,40}$")
 
 
 # ------------------------------ helpers ---------------------------------------
@@ -258,6 +268,40 @@ def install_comfy_requirements(
                 f"Extra requirements file does not exist: {reviewed_requirements}"
             )
         pip(venv, ["-r", str(reviewed_requirements)], cwd=comfy, dry=dry)
+
+
+def install_required_nodes(venv: Path, base: Path, dry: bool = False) -> None:
+    """
+    Install the curated custom-node stack from config/nodes.json at pinned
+    commits. Each node's requirements.txt is installed into the project venv.
+    """
+    custom_nodes = comfy_root(base) / "custom_nodes"
+    if not dry:
+        custom_nodes.mkdir(parents=True, exist_ok=True)
+
+    for node in NODE_MANIFEST["nodes"]:
+        name = str(node["name"])
+        repository = str(node["repository"])
+        revision = str(node["revision"])
+        if not NODE_NAME_PATTERN.fullmatch(name):
+            raise ValueError(f"Unsafe node name in manifest: {name}")
+        if not NODE_REPOSITORY_PATTERN.fullmatch(repository):
+            raise ValueError(f"Unsupported node repository in manifest: {repository}")
+        if not NODE_REVISION_PATTERN.fullmatch(revision):
+            raise ValueError(f"Node revision must be a pinned commit: {revision}")
+
+        path = custom_nodes / name
+        if (path / ".git").exists():
+            log(f"[nodes] {name} present — fetching pinned revision.")
+            run(["git", "-C", str(path), "fetch", "origin"], dry=dry, check=False)
+        else:
+            log(f"[nodes] Installing {name}...")
+            run(["git", "clone", repository, str(path)], dry=dry)
+        run(["git", "-C", str(path), "checkout", "--detach", revision], dry=dry)
+
+        requirements = path / "requirements.txt"
+        if dry or requirements.is_file():
+            pip(venv, ["-r", str(requirements)], dry=dry)
 
 
 def install_manager(venv: Path, base: Path, dry: bool = False) -> None:
@@ -492,6 +536,11 @@ def main() -> None:
         "--with-manager", action="store_true", help="Install ComfyUI-Manager"
     )
     p_install.add_argument(
+        "--skip-nodes",
+        action="store_true",
+        help="Skip the curated custom-node stack from config/nodes.json",
+    )
+    p_install.add_argument(
         "--models",
         choices=["5b", "14b", "i2v", "all"],
         default=None,
@@ -609,6 +658,8 @@ def main() -> None:
         )
         if args.with_manager:
             install_manager(venv, base, dry=dry)
+        if not args.skip_nodes:
+            install_required_nodes(venv, base, dry=dry)
 
         python = py_exec(venv_bin=venv / ("Scripts" if is_windows() else "bin"))
         run([python, "-m", "pip", "check"], cwd=comfy_root(base), dry=dry)

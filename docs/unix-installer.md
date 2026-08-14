@@ -3,6 +3,10 @@
 `install.sh` validates its CUDA backend, model set, booleans, and port before it
 delegates to the cross-platform Python installer.
 
+The curated custom-node stack from `config/nodes.json` (LTX-Video,
+VideoHelperSuite, KJNodes at pinned commits) installs by default; pass
+`SKIP_NODES=true` or `--skip-nodes=true` to omit it.
+
 Run a normal installation with environment variables:
 
 ```bash

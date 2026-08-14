@@ -68,6 +68,24 @@ if ($modelManifest.schema_version -ne 1 -or @($modelManifest.wan.artifacts).Coun
 }
 Write-Output 'PASS: parsed the versioned model manifest'
 
+$nodeManifestPath = Join-Path $repositoryRoot 'config\nodes.json'
+$nodeManifest = Get-Content -Raw -LiteralPath $nodeManifestPath | ConvertFrom-Json
+if ($nodeManifest.schema_version -ne 1 -or @($nodeManifest.nodes).Count -eq 0) {
+  throw 'Node manifest schema or node list is invalid.'
+}
+foreach ($manifestNode in $nodeManifest.nodes) {
+  if ([string] $manifestNode.name -notmatch '^[A-Za-z0-9._-]+$') {
+    throw "Node manifest contains an unsafe name: $($manifestNode.name)"
+  }
+  if ([string] $manifestNode.repository -notmatch '^https://github\.com/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.git$') {
+    throw "Node manifest contains an unsupported repository: $($manifestNode.repository)"
+  }
+  if ([string] $manifestNode.revision -notmatch '^[0-9a-f]{7,40}$') {
+    throw "Node manifest revision must be a pinned commit: $($manifestNode.revision)"
+  }
+}
+Write-Output 'PASS: parsed the versioned node manifest with pinned commits'
+
 $workflowSanitizer = Join-Path $repositoryRoot 'scripts\sanitize_workflows.py'
 & $testPythonExecutable @testPythonArguments $workflowSanitizer
 Assert-NativeSuccess 'Workflow privacy metadata validation'

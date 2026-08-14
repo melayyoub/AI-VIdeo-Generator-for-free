@@ -1,8 +1,8 @@
 {
-  "name": "custom-wan",
+  "name": "openvideo-studio",
   "version": "1.0.0",
   "private": true,
-  "description": "Local ComfyUI and Wan 2.2 bootstrap installer and launcher.",
+  "description": "OpenVideo Studio: a ready-to-use local ComfyUI distribution for AI video (Wan 2.2, LTX-Video, curated nodes).",
   "homepage": "https://comfyui.reallexi.io/",
   "directories": {
     "example": "examples"
@@ -17,6 +17,7 @@
   "keywords": [
     "comfyui",
     "wan",
+    "ltx-video",
     "ai-video",
     "local-ai"
   ],

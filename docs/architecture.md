@@ -74,6 +74,9 @@ guidance and architecture decisions belong in `docs/`.
 
 - Git hosts, Python package indexes, the PyTorch package index, Hugging Face,
   and optional custom-node sources are external supply-chain boundaries.
+- The curated custom-node stack installs from immutable commits pinned in
+  `config/nodes.json`. Changing a pin, adding a node, or adding a new upstream
+  is a review-sensitive supply-chain change.
 - The current installer follows upstream branches or repository paths in
   several places. A successful TLS download is not the same as an immutable,
   checksum-verified artifact.
