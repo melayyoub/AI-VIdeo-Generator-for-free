@@ -7,6 +7,11 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repositoryRoot
 
+Import-Module (Join-Path $PSScriptRoot 'TestPython.psm1') -Force
+$testPython = Resolve-TestPython
+$testPythonExecutable = $testPython[0]
+$testPythonArguments = @($testPython | Select-Object -Skip 1)
+
 function Assert-NativeSuccess {
   param([Parameter(Mandatory = $true)] [string] $Description)
 
@@ -19,8 +24,10 @@ $powerShellFiles = @(
   Get-ChildItem -LiteralPath $repositoryRoot -File -Filter '*.ps1' |
     Where-Object Name -NotIn @('install-broken.ps1', 'install.old.ps1')
   Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'ComfyUI-Windows') -File -Filter '*.ps1'
+  Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'scripts') -File -Filter '*.ps1'
   Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'scripts') -File -Filter '*.psm1'
   Get-ChildItem -LiteralPath $PSScriptRoot -File -Filter '*.ps1'
+  Get-ChildItem -LiteralPath $PSScriptRoot -File -Filter '*.psm1'
 )
 
 foreach ($file in $powerShellFiles) {
@@ -45,15 +52,7 @@ $pythonFiles = @(
 )
 $pythonPaths = @($pythonFiles | ForEach-Object FullName)
 $compileCode = "import ast,pathlib,sys; [ast.parse(pathlib.Path(p).read_text(encoding='utf-8-sig'), filename=p) for p in sys.argv[1:]]"
-if (Get-Command py -ErrorAction SilentlyContinue) {
-  & py '-3.10' '-c' $compileCode @pythonPaths
-}
-elseif (Get-Command python3 -ErrorAction SilentlyContinue) {
-  & python3 '-c' $compileCode @pythonPaths
-}
-else {
-  throw 'Python 3 is required for source validation.'
-}
+& $testPythonExecutable @testPythonArguments '-c' $compileCode @pythonPaths
 Assert-NativeSuccess 'Python source compilation'
 Write-Output "PASS: compiled $($pythonFiles.Count) Python files without writing bytecode"
 
@@ -70,12 +69,7 @@ if ($modelManifest.schema_version -ne 1 -or @($modelManifest.wan.artifacts).Coun
 Write-Output 'PASS: parsed the versioned model manifest'
 
 $workflowSanitizer = Join-Path $repositoryRoot 'scripts\sanitize_workflows.py'
-if (Get-Command py -ErrorAction SilentlyContinue) {
-  & py '-3.10' $workflowSanitizer
-}
-else {
-  & python3 $workflowSanitizer
-}
+& $testPythonExecutable @testPythonArguments $workflowSanitizer
 Assert-NativeSuccess 'Workflow privacy metadata validation'
 
 $trackedFiles = @(& git ls-files)
@@ -170,7 +164,7 @@ if ($IsWindows) {
 else {
   $bash = (Get-Command bash -ErrorAction Stop).Source
 }
-& $bash -n install.sh installme.sh generateNewSShKey.sh
+& $bash -n install.sh installme.sh
 Assert-NativeSuccess 'Bash syntax validation'
 
 $unixDryRun = @(

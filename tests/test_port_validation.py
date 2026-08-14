@@ -132,11 +132,11 @@ class LauncherPortTests(unittest.TestCase):
         result = self.run_cli("wan2_cli.py", "start", environment=environment)
         self.assert_port_error(result)
 
-    def test_rtx_launcher_accepts_boundaries(self) -> None:
+    def test_installer_launcher_accepts_boundaries(self) -> None:
         for value in (str(MIN_PORT), str(MAX_PORT)):
             with self.subTest(value=value):
                 result = self.run_cli(
-                    "wan2_cli_RTX.py",
+                    "wan2_installer.py",
                     "start",
                     "--dry-run",
                     "--port",
@@ -144,11 +144,11 @@ class LauncherPortTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_rtx_launcher_rejects_out_of_range_ports(self) -> None:
+    def test_installer_launcher_rejects_out_of_range_ports(self) -> None:
         for value in ("0", "65536"):
             with self.subTest(value=value):
                 result = self.run_cli(
-                    "wan2_cli_RTX.py",
+                    "wan2_installer.py",
                     "start",
                     "--dry-run",
                     "--port",

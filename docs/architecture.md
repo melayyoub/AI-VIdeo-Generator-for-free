@@ -10,7 +10,7 @@ system, media store, telemetry service, or hosted inference API.
 flowchart LR
     U[User] --> W[Windows install.ps1]
     U --> B[Unix install.sh]
-    B --> P[wan2_cli_RTX.py]
+    B --> P[wan2_installer.py]
     W --> C[Local ComfyUI checkout]
     P --> C
     W --> V[ComfyUI/.venv]
@@ -59,7 +59,7 @@ process termination requires explicit selection. Deletion is constrained by
 the checks in `scripts/Installer.Venv.psm1`.
 
 The Unix shell wrapper validates and normalizes arguments before delegating to
-`wan2_cli_RTX.py`. Its dry-run mode prints command construction without cloning,
+`wan2_installer.py`. Its dry-run mode prints command construction without cloning,
 installing, or downloading.
 
 ## Filesystem ownership

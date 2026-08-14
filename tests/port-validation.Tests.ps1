@@ -39,15 +39,8 @@ foreach ($invalidPort in @(0, 65536)) {
 
 Write-Output 'PASS: install.ps1 enforces the inclusive port range 1..65535'
 
-$python = if (Get-Command py -ErrorAction SilentlyContinue) {
-  @('py', '-3.10')
-}
-elseif (Get-Command python3 -ErrorAction SilentlyContinue) {
-  @('python3')
-}
-else {
-  throw 'Python 3 is required for port validation tests.'
-}
+Import-Module (Join-Path $PSScriptRoot 'TestPython.psm1') -Force
+$python = Resolve-TestPython
 
 $pythonArguments = if ($python.Count -gt 1) {
   @($python[1..($python.Count - 1)])

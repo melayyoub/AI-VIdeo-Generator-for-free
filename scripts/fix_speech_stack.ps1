@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string] $ProjectPath = $PSScriptRoot
+    [string] $ProjectPath = (Split-Path -Parent $PSScriptRoot)
 )
 
 Set-StrictMode -Version Latest

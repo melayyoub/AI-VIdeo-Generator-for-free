@@ -11,7 +11,11 @@ from huggingface_hub import snapshot_download
 
 def parse_args() -> argparse.Namespace:
     default_destination = (
-        Path(__file__).resolve().parent / "ComfyUI" / "models" / "LLM" / "Qwen-VL"
+        Path(__file__).resolve().parent.parent
+        / "ComfyUI"
+        / "models"
+        / "LLM"
+        / "Qwen-VL"
     )
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

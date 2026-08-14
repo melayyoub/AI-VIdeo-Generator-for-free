@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-wan2_cli.py — ComfyUI + Wan 2.2 setup CLI (Subfolder Layout)
+wan2_installer.py — cross-platform ComfyUI + Wan 2.2 installer backend.
+
+Called by install.sh on Linux/macOS; usable directly on any platform.
 
 Layout (ALWAYS under <base>/ComfyUI):
   <base>/ComfyUI               # ComfyUI repo
@@ -25,11 +27,13 @@ from typing import Optional, List
 
 from wan2_cli_args import model_repository, model_revision, port_number
 
-APP_NAME = "wan2_cli"
+APP_NAME = "wan2_installer"
 DEFAULT_DIR = Path(os.getenv("CUSTOM_WAN_PROJECT_PATH", Path.cwd()))
 COMFY_DIR = "ComfyUI"  # enforced subfolder for repo
 VENV_DIR = ".venv"
 DEFAULT_PORT = 8188
+# Keep in sync with install.ps1, which clones the same repository.
+COMFYUI_GIT_URL = "https://github.com/Comfy-Org/ComfyUI.git"
 
 MODEL_MANIFEST_PATH = Path(__file__).resolve().parent / "config" / "models.json"
 MODEL_MANIFEST = json.loads(MODEL_MANIFEST_PATH.read_text(encoding="utf-8"))
@@ -80,8 +84,8 @@ def base_python_command(py_ver: Optional[str] = None) -> List[str]:
     return [str(Path(base_executable).resolve())]
 
 
-def ensure_tools() -> None:
-    for tool in ["git", "node", "npm", "ffmpeg"]:
+def ensure_tools(tools: List[str]) -> None:
+    for tool in tools:
         if shutil.which(tool) is None:
             log(f"WARNING: '{tool}' not found in PATH. Please install it.")
 
@@ -121,20 +125,13 @@ def clone_comfy(base: Path, dry: bool = False) -> None:
             is_empty = False
         if is_empty:
             log("Empty ComfyUI/ dir — cloning into it.")
-            run(
-                ["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", "."],
-                cwd=comfy,
-                dry=dry,
-            )
+            run(["git", "clone", COMFYUI_GIT_URL, "."], cwd=comfy, dry=dry)
             return
         raise RuntimeError(
             f"'{comfy}' exists and is not a git repo. Delete it or choose a different --path."
         )
     # folder not present: clone into subfolder
-    run(
-        ["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", str(comfy)],
-        dry=dry,
-    )
+    run(["git", "clone", COMFYUI_GIT_URL, str(comfy)], dry=dry)
 
 
 # ------------------------------ venv handling ---------------------------------
@@ -328,7 +325,7 @@ files = {files!r}
 tok = os.getenv('HF_TOKEN')
 for f in files:
     path = hf_hub_download(repo_id=repo, revision=revision, filename=f, local_dir=dest,
-                           local_dir_use_symlinks=False, token=tok)
+                           token=tok)
     print(path)
 """
     run([pybin, "-c", code], dry=dry)
@@ -385,6 +382,7 @@ def make_react(
     if target.exists():
         log(f"React app '{app_name}' already exists — skipping scaffold.")
         return target
+    ensure_tools(["node", "npm"])
     run(
         ["npm", "create", "vite@latest", app_name, "--", "--template", "react-ts"],
         cwd=base,
@@ -585,7 +583,7 @@ def main() -> None:
     if args.cmd in ("install", "models") and args.hf_token:
         os.environ["HF_TOKEN"] = args.hf_token
 
-    ensure_tools()
+    ensure_tools(["git", "ffmpeg"])
 
     base: Path = args.path.expanduser().resolve()
     ensure_base_dir(base, dry=dry)

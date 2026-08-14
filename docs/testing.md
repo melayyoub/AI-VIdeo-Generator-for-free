@@ -35,7 +35,8 @@ non-Windows systems, `tests/run.ps1` skips the native Windows lock test.
 ## Prerequisites
 
 - PowerShell 7 (`pwsh`)
-- Python 3; the Windows integration path expects the `py -3.10` launcher
+- Python 3.10 or newer; tests resolve the interpreter through `py -3.10`,
+  `py -3`, `python3`, or `python`, in that order
 - npm
 - `ruff`
 - Bash; on Windows, the validator first looks for Git Bash
@@ -75,7 +76,7 @@ Validate the Unix command plan without network or installation changes:
 Check shell syntax directly:
 
 ```bash
-bash -n install.sh installme.sh generateNewSShKey.sh
+bash -n install.sh installme.sh
 ```
 
 ## Manual installation and smoke testing

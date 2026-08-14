@@ -54,7 +54,7 @@ REUSE_FLAG=();    [[ "$REUSE_VENV" == "true" ]] && REUSE_FLAG+=(--reuse-venv)
 DRY_RUN_FLAG=();  [[ "$DRY_RUN" == "true" ]] && DRY_RUN_FLAG+=(--dry-run)
 EXTRA_REQUIREMENTS_FLAG=(); [[ -n "$EXTRA_REQUIREMENTS" ]] && EXTRA_REQUIREMENTS_FLAG+=(--extra-requirements "$EXTRA_REQUIREMENTS")
 
-"$PY" "$SCRIPT_DIR/wan2_cli_RTX.py" install \
+"$PY" "$SCRIPT_DIR/wan2_installer.py" install \
   --cuda "$CUDA" \
   --path "$BASE_PATH" \
   --models "$MODELS" \

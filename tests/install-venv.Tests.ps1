@@ -7,6 +7,7 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $modulePath = Join-Path $repositoryRoot 'scripts\Installer.Venv.psm1'
 Import-Module $modulePath -Force
+Import-Module (Join-Path $PSScriptRoot 'TestPython.psm1') -Force
 
 function Assert-True {
   param(
@@ -27,7 +28,8 @@ $process = $null
 try {
   New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
 
-  & py '-3.10' '-m' 'venv' $venvPath
+  $testPython = Resolve-TestPython
+  & $testPython[0] @($testPython | Select-Object -Skip 1) '-m' 'venv' $venvPath
   if ($LASTEXITCODE -ne 0) {
     throw "Unable to create the test virtual environment (exit $LASTEXITCODE)."
   }

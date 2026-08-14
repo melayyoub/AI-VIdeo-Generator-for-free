@@ -1,5 +1,7 @@
 # Wan 2.2 AI Video Generator for ComfyUI
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Local-first installers and launchers for running **Wan 2.2 text-to-video and
 image-to-video workflows in ComfyUI** on Windows, Linux, or macOS. The project
 creates an isolated Python environment, selects a PyTorch CUDA or CPU backend,
@@ -180,15 +182,23 @@ custom-wan/
 ├── install.ps1                 # Windows installer
 ├── install.sh                  # Linux/macOS wrapper
 ├── wan2_cli.py                 # Local ComfyUI launcher
-├── wan2_cli_RTX.py             # Cross-platform installer implementation
+├── wan2_installer.py           # Cross-platform installer implementation
 ├── config/models.json          # Versioned model source and artifact mapping
 ├── scripts/Installer.Venv.psm1 # Scoped Windows lock/removal controls
 ├── scripts/sanitize_workflows.py # Portable workflow privacy gate
+├── scripts/                    # Optional maintenance and repair utilities
 ├── tests/                      # Local installer integration tests
 ├── docs/                       # Operational documentation
 ├── examples/                   # Example ComfyUI workflows
 └── ComfyUI/                    # Local checkout; ignored by root Git
 ```
+
+Optional utilities in `scripts/` cover recovery and maintenance tasks:
+custom-node repair (`fix_custom_nodes.ps1`, `remove_failed_custom_nodes.ps1`),
+speech-stack pinning (`fix_speech_stack.ps1`), auxiliary model downloads
+(`download_qwen.py`), LoRA checkpoint conversion (`convert_lora_checkpoint.py`),
+and model inventory export (`Export-FolderStructure.ps1`). None of them run
+during a normal installation.
 
 ## Local validation
 
@@ -203,11 +213,11 @@ Additional local gates used for this repository include:
 
 ```powershell
 ruff check --exclude ComfyUI --exclude hf_cache .
-python -m py_compile wan2_cli.py wan2_cli_RTX.py
+python -m py_compile wan2_cli.py wan2_installer.py
 ```
 
 ```bash
-bash -n install.sh installme.sh generateNewSShKey.sh
+bash -n install.sh installme.sh
 ./install.sh --cuda=cu128 --models=5b --start=false --dry-run=true
 ```
 
