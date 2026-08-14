@@ -65,9 +65,10 @@ installing, or downloading.
 ## Filesystem ownership
 
 The project-authored installers and launchers live at the repository root.
-Runtime state is placed beneath `ComfyUI/`: upstream source, `.venv`, custom
-nodes, models, and outputs. That tree is excluded from the parent repository's
-version control. Example workflow JSON is stored in `examples/`; operational
+Runtime state is placed beneath `ComfyUI/`: upstream source, `.venv`, any
+launcher-provisioned per-backend venvs (`.venv-cuda`, `.venv-directml`),
+custom nodes, models, and outputs. That tree is excluded from the parent
+repository's version control. Example workflow JSON is stored in `examples/`; operational
 guidance and architecture decisions belong in `docs/`.
 
 ## Trust boundaries
@@ -80,10 +81,11 @@ guidance and architecture decisions belong in `docs/`.
 - The current installer follows upstream branches or repository paths in
   several places. A successful TLS download is not the same as an immutable,
   checksum-verified artifact.
-- The launcher self-provisions the DirectML backend: requesting
-  `--device directml` without `torch_directml` present installs
-  `torch-directml`, `torchvision`, `torchaudio`, and `onnxruntime-directml`
-  from PyPI at launch time. This is a package-index supply-chain event outside
+- The launcher self-provisions per-backend environments: requesting a device
+  the current environment does not provide creates a sibling venv
+  (`ComfyUI/.venv-directml` or `ComfyUI/.venv-cuda`) and installs the torch
+  stack, ComfyUI requirements, and custom-node requirements from the package
+  indexes at launch time. This is a package-index supply-chain event outside
   the installer flow.
 - `HF_TOKEN`, when present, is a user-provided credential used for model-host
   access. It must never be committed or pasted into an Issue.

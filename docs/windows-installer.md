@@ -34,10 +34,15 @@ When `-Cuda` is omitted, the installer inspects the display adapters:
 - otherwise: the CUDA default applies.
 
 An explicit `-Cuda` value always wins and skips detection. CUDA and DirectML
-cannot share one virtual environment; rerun the installer to switch backends.
-At launch time, `wan2_cli.py start --device directml` (or
-`npm run wstart:amd`) self-provisions the DirectML packages if they are
-missing, which replaces a CUDA torch build in that environment.
+cannot share one virtual environment, so the launcher keeps one per backend:
+`ComfyUI\.venv` serves the backend the installer built, and selecting a
+different device at launch (`wan2_cli.py start --device directml|gpu`,
+`npm run wstart:amd`, `npm run wstart:cuda`) provisions a sibling environment
+(`ComfyUI\.venv-directml` or `ComfyUI\.venv-cuda`) on first use — creating the
+venv and installing the matching PyTorch build, the ComfyUI requirements, and
+the custom-node requirements — then launches ComfyUI from it. Later
+selections reuse the sibling directly. On-demand CUDA environments default to
+`cu128`; override with `CUSTOM_WAN_TORCH_CUDA`.
 
 ## Locked virtual environments
 

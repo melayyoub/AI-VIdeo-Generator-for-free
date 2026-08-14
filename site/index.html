@@ -300,12 +300,14 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       loopback binding and automatic device selection. Device resolution order
       in <code>auto</code> mode: CUDA (or ROCm builds of torch) → DirectML (if
       <code>torch_directml</code> is importable) → CPU. ROCm installs
-      additionally get <code>--use-pytorch-cross-attention</code>. Requesting
-      <code>--device directml</code> in an environment without
-      <code>torch_directml</code> installs the DirectML packages on demand
-      before starting; note this replaces a CUDA torch build in that
-      environment, and switching back to CUDA requires re-running the
-      installer. On Windows, npm shortcuts select the device directly:
+      additionally get <code>--use-pytorch-cross-attention</code>. CUDA and
+      DirectML cannot share one virtual environment, so the launcher keeps one
+      per backend: selecting a device the current environment does not provide
+      provisions a sibling venv on first use
+      (<code>ComfyUI/.venv-directml</code> or <code>ComfyUI/.venv-cuda</code>,
+      with the matching torch build plus ComfyUI and custom-node requirements)
+      and launches from it — later selections reuse it instantly. On Windows,
+      npm shortcuts select the device directly:
       <code>npm run wstart:cuda</code>, <code>npm run wstart:amd</code>, and
       <code>npm run wstart:cpu</code> (<code>npm run wstart</code> keeps
       auto-detection).

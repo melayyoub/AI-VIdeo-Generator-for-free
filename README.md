@@ -88,11 +88,15 @@ explicitly:
 
 The DirectML backend installs `torch-directml` and `onnxruntime-directml`
 instead of the CUDA builds, and the launcher then starts ComfyUI with
-`--directml`. Starting with `--device directml` (or `npm run wstart:amd`) in an
-environment that lacks `torch-directml` installs the DirectML packages on
-demand before launching. CUDA and DirectML cannot share one virtual
-environment: the on-demand install replaces a CUDA torch build, and switching
-back to CUDA requires re-running the installer.
+`--directml`. CUDA and DirectML cannot share one virtual environment, so the
+launcher keeps one per backend: selecting a device the current environment
+does not provide (for example `npm run wstart:amd` on a CUDA install, or
+`npm run wstart:cuda` on a DirectML install) automatically creates a sibling
+environment (`ComfyUI\.venv-directml` or `ComfyUI\.venv-cuda`), installs the
+matching PyTorch build plus the ComfyUI and custom-node requirements into it,
+and launches from there. Later selections reuse the provisioned environment,
+so switching GPUs is instant after the first run. On-demand CUDA environments
+default to the `cu128` build; override with `CUSTOM_WAN_TORCH_CUDA`.
 
 ## Quick start on Linux or macOS
 

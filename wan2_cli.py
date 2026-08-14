@@ -32,6 +32,94 @@ def rocm_available() -> bool:
         return False
 
 
+PIP_NETWORK_OPTIONS = ["--retries", "10", "--timeout", "120"]
+
+BACKEND_PROBES = {
+    "directml": "import torch_directml",
+    "cuda": "import sys, torch; sys.exit(0 if torch.version.cuda else 1)",
+}
+
+
+def run_checked(command: list[str]) -> None:
+    printable = " ".join(command)
+    print(f"[wan2_cli] > {printable}")
+    if subprocess.call(command) != 0:
+        raise SystemExit(f"Command failed: {printable}")
+
+
+def venv_python_path(venv_dir: Path) -> Path:
+    if os.name == "nt":
+        return venv_dir / "Scripts" / "python.exe"
+    return venv_dir / "bin" / "python"
+
+
+def python_provides_backend(python_path: Path, backend: str) -> bool:
+    probe = [str(python_path), "-c", BACKEND_PROBES[backend]]
+    return subprocess.call(probe) == 0
+
+
+def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
+    """Return a Python that provides `backend`, provisioning a venv on demand.
+
+    CUDA and DirectML torch builds cannot share one environment, so each
+    backend gets a sibling venv next to the primary one. Selecting a device
+    the current environment does not provide creates and provisions that
+    sibling once; later selections reuse it.
+    """
+    venv_dir = comfyui_dir / f".venv-{backend}"
+    python_path = venv_python_path(venv_dir)
+    if python_path.exists() and python_provides_backend(python_path, backend):
+        return python_path
+
+    print(f"[wan2_cli] Provisioning the {backend} environment at {venv_dir}")
+    if not python_path.exists():
+        run_checked([sys.executable, "-m", "venv", str(venv_dir)])
+    pip = [str(python_path), "-m", "pip", "install", *PIP_NETWORK_OPTIONS]
+    run_checked([*pip, "--upgrade", "pip", "setuptools<82", "wheel"])
+    if backend == "directml":
+        run_checked(
+            [
+                *pip,
+                "--upgrade",
+                "torch-directml",
+                "torchvision",
+                "torchaudio",
+                "onnxruntime-directml",
+            ]
+        )
+    else:
+        cuda_build = os.getenv("CUSTOM_WAN_TORCH_CUDA", "").strip() or "cu128"
+        run_checked(
+            [
+                *pip,
+                "--upgrade",
+                "torch",
+                "torchvision",
+                "torchaudio",
+                "--index-url",
+                f"https://download.pytorch.org/whl/{cuda_build}",
+            ]
+        )
+        run_checked([*pip, "--upgrade", "onnxruntime-gpu"])
+    requirements = comfyui_dir / "requirements.txt"
+    if requirements.exists():
+        run_checked([*pip, "-r", str(requirements)])
+    for node_requirements in sorted(
+        (comfyui_dir / "custom_nodes").glob("*/requirements.txt")
+    ):
+        if subprocess.call([*pip, "-r", str(node_requirements)]) != 0:
+            print(
+                "[wan2_cli] WARNING: optional node requirements skipped: "
+                f"{node_requirements}"
+            )
+    if not python_provides_backend(python_path, backend):
+        raise SystemExit(
+            f"Provisioning finished, but the {backend} backend still does not "
+            f"import in {python_path}."
+        )
+    return python_path
+
+
 def resolve_checkout_path(configured: str, root: Path) -> Path:
     if not configured:
         return (root / "ComfyUI").resolve()
@@ -78,11 +166,6 @@ def main() -> None:
     os.environ.setdefault("HF_HUB_CACHE", str(hf_home / "hub"))
     os.environ.setdefault("TRANSFORMERS_CACHE", str(hf_home / "transformers"))
 
-    command = [sys.executable, str(main_py), "--port", str(args.port)]
-    if args.listen_all:
-        command.extend(["--listen", "0.0.0.0"])
-    elif args.host:
-        command.extend(["--listen", str(args.host)])
     directml_ready = False
     try:
         importlib.import_module("torch_directml")
@@ -92,49 +175,46 @@ def main() -> None:
         directml_ready = False
     gpu_ready = cuda_available()
     rocm_ready = rocm_available()
-    if args.device in {"gpu", "rocm"} and not gpu_ready:
-        raise SystemExit(
-            f"{args.device} was requested, but torch.cuda.is_available() is false."
-        )
-    if args.device == "directml" and not directml_ready:
-        # Self-provision the AMD backend on demand. torch-directml pins its own
-        # torch build, so this replaces a CUDA torch install in the same venv.
-        print(
-            "[wan2_cli] torch-directml is missing; installing the DirectML "
-            "backend into this environment..."
-        )
-        install_command = [
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "--upgrade",
-            "--retries",
-            "10",
-            "--timeout",
-            "120",
-            "torch-directml",
-            "torchvision",
-            "torchaudio",
-            "onnxruntime-directml",
-        ]
-        if subprocess.call(install_command) != 0:
-            raise SystemExit(
-                "directml was requested, but installing torch-directml failed. "
-                "Re-run install.ps1 with -Cuda directml to set up the AMD backend."
+
+    launch_python = Path(sys.executable)
+    device_arguments: list[str] = []
+    if args.device == "directml":
+        if not directml_ready:
+            launch_python = ensure_backend_venv("directml", comfyui_dir)
+        device_arguments = ["--directml"]
+    elif args.device == "gpu":
+        if not gpu_ready:
+            launch_python = ensure_backend_venv("cuda", comfyui_dir)
+            cuda_probe = (
+                "import sys, torch; sys.exit(0 if torch.cuda.is_available() else 1)"
             )
-        if subprocess.call([sys.executable, "-c", "import torch_directml"]) != 0:
+            if subprocess.call([str(launch_python), "-c", cuda_probe]) != 0:
+                raise SystemExit(
+                    f"gpu was requested, but CUDA is unavailable in {launch_python}. "
+                    "Check the NVIDIA driver, or set CUSTOM_WAN_TORCH_CUDA to a "
+                    "matching build and delete that environment to provision it "
+                    "again."
+                )
+    elif args.device == "rocm":
+        if not gpu_ready:
             raise SystemExit(
-                "directml was requested, but torch-directml did not import after "
-                "installation. Re-run install.ps1 with -Cuda directml."
+                "rocm was requested, but torch.cuda.is_available() is false."
             )
-        directml_ready = True
-    if args.device in {"gpu", "rocm"} or (args.device == "auto" and gpu_ready):
+    elif args.device == "cpu":
+        device_arguments = ["--cpu"]
+    elif gpu_ready:  # auto
         pass
-    elif args.device == "directml" or (args.device == "auto" and directml_ready):
-        command.append("--directml")
-    elif args.device == "cpu" or args.device == "auto":
-        command.append("--cpu")
+    elif directml_ready:
+        device_arguments = ["--directml"]
+    else:
+        device_arguments = ["--cpu"]
+
+    command = [str(launch_python), str(main_py), "--port", str(args.port)]
+    if args.listen_all:
+        command.extend(["--listen", "0.0.0.0"])
+    elif args.host:
+        command.extend(["--listen", str(args.host)])
+    command.extend(device_arguments)
     extra_args = os.getenv("CUSTOM_WAN_COMFYUI_ARGS", "").strip()
     if extra_args:
         command.extend(shlex.split(extra_args))
