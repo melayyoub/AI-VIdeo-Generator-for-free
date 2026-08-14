@@ -168,6 +168,18 @@ npm run wstart:amd    # force the AMD GPU (DirectML)
 npm run wstart:cpu    # force CPU
 ```
 
+### Memory errors on Windows
+
+`OSError 1455` ("the paging file is too small") and
+`hostbuf_file_reader_read failed` both mean Windows ran out of physical or
+commit memory while staging model weights — large text encoders are staged
+through system RAM, and pinned transfer buffers must fit in physical RAM.
+Free memory first (WSL/Docker and editor windows are common consumers), pick
+a smaller text-encoder variant (fp8/fp4 instead of fp16) when the workflow
+allows it, and as a fallback launch with
+`CUSTOM_WAN_COMFYUI_ARGS="--disable-pinned-memory"` so weight transfers can
+spill to the page file instead of failing.
+
 All launcher locations and network settings can be supplied dynamically with
 `--path`, `--host`, `--port`, `CUSTOM_WAN_COMFYUI_CHECKOUT`,
 `CUSTOM_WAN_COMFYUI_HOST`, and `CUSTOM_WAN_COMFYUI_PORT`.

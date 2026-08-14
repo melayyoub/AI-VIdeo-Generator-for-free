@@ -663,6 +663,15 @@ CUDA=cu128 MODELS=5b WITH_MANAGER=true START=false ./install.sh</code></pre>
       inspect the environment directly:
     </p>
     <pre><code>.\ComfyUI\.venv\Scripts\python.exe -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available())"</code></pre>
+    <h3>Memory errors: os error 1455 or hostbuf_file_reader_read</h3>
+    <p>
+      Both mean Windows ran out of physical or commit memory while staging
+      model weights. Free RAM first (WSL/Docker and editor windows are common
+      consumers), prefer fp8/fp4 text-encoder variants over fp16, and as a
+      fallback launch with
+      <code>CUSTOM_WAN_COMFYUI_ARGS="--disable-pinned-memory"</code> so weight
+      transfers can spill to the page file instead of failing.
+    </p>
     <h3>The AMD GPU is not being used</h3>
     <p>
       With both NVIDIA and AMD cards installed, <code>auto</code> prefers CUDA.
