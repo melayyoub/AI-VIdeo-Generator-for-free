@@ -155,7 +155,10 @@ an authenticated reverse proxy, and TLS for any intentionally remote setup.
 
 The compute device defaults to `auto` (CUDA when available, then DirectML,
 then CPU) and can be forced with `--device gpu|directml|rocm|cpu` or the
-`CUSTOM_WAN_COMFYUI_DEVICE` environment variable. npm shortcuts are available
+`CUSTOM_WAN_COMFYUI_DEVICE` environment variable. On DirectML the launcher
+lists every adapter and selects the discrete AMD GPU rather than DirectML's
+default (often the integrated GPU); set `CUSTOM_WAN_DIRECTML_DEVICE` to an
+adapter index to override the selection. npm shortcuts are available
 on Windows:
 
 ```powershell

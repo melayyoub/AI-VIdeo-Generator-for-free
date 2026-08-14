@@ -79,6 +79,55 @@ def installed_versions(python_path: Path, packages: list[str]) -> list[str]:
     return result.stdout.split()
 
 
+INTEGRATED_ADAPTER_MARKERS = ("(tm) graphics", "uhd graphics", "iris", "microsoft basic render")
+
+
+def pick_directml_device(python_path: Path) -> int:
+    """Pick the DirectML adapter index, preferring a discrete AMD GPU.
+
+    DirectML's default adapter can be an integrated GPU, and ComfyUI reports
+    a blank name for the implicit default. CUSTOM_WAN_DIRECTML_DEVICE
+    overrides the selection.
+    """
+    override = os.getenv("CUSTOM_WAN_DIRECTML_DEVICE", "").strip()
+    if override:
+        return int(override)
+    code = (
+        "import torch_directml\n"
+        "for i in range(torch_directml.device_count()):\n"
+        "    print(torch_directml.device_name(i))\n"
+    )
+    result = subprocess.run(
+        [str(python_path), "-c", code], capture_output=True, text=True
+    )
+    names = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if result.returncode != 0 or not names:
+        return 0
+    for index, name in enumerate(names):
+        print(f"[wan2_cli] DirectML adapter {index}: {name}")
+
+    def integrated(name: str) -> bool:
+        return any(marker in name.lower() for marker in INTEGRATED_ADAPTER_MARKERS)
+
+    selected = 0
+    discrete_amd = [
+        i
+        for i, name in enumerate(names)
+        if ("amd" in name.lower() or "radeon" in name.lower())
+        and not integrated(name)
+    ]
+    discrete_any = [i for i, name in enumerate(names) if not integrated(name)]
+    if discrete_amd:
+        selected = discrete_amd[0]
+    elif discrete_any:
+        selected = discrete_any[0]
+    print(
+        f"[wan2_cli] Using DirectML adapter {selected} ({names[selected]}); "
+        "set CUSTOM_WAN_DIRECTML_DEVICE to override."
+    )
+    return selected
+
+
 def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
     """Return a Python that provides `backend`, provisioning a venv on demand.
 
@@ -219,7 +268,7 @@ def main() -> None:
     if args.device == "directml":
         if not directml_ready:
             launch_python = ensure_backend_venv("directml", comfyui_dir)
-        device_arguments = ["--directml"]
+        device_arguments = ["--directml", str(pick_directml_device(launch_python))]
     elif args.device == "gpu":
         if not gpu_ready:
             launch_python = ensure_backend_venv("cuda", comfyui_dir)
@@ -243,7 +292,7 @@ def main() -> None:
     elif gpu_ready:  # auto
         pass
     elif directml_ready:
-        device_arguments = ["--directml"]
+        device_arguments = ["--directml", str(pick_directml_device(launch_python))]
     else:
         device_arguments = ["--cpu"]
 
