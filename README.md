@@ -230,6 +230,23 @@ still to move every display onto one card and leave the other for compute.
 `OVS_COMFYUI_ARGS` is appended to the arguments the launcher already chooses,
 so it composes with them rather than replacing them.
 
+### ComfyUI-Manager
+
+The launcher passes `--enable-manager`, and installs ComfyUI's
+`manager_requirements.txt` into every environment it provisions — the manager
+ships as a pip package, and without it ComfyUI logs a warning and turns the
+feature back off. Passing `--enable-manager` or `--enable-manager-legacy-ui`
+through `OVS_COMFYUI_ARGS` suppresses the default rather than duplicating it.
+
+Manager only recognises a custom node that is a git clone. A directory copied
+into `custom_nodes` by hand cannot be updated from the UI, and installing over
+it fails with `Install path already exists`. Worse, `git pull` inside such a
+directory walks up to the ComfyUI checkout and updates *that* instead, which
+leaves the environments pinned to requirements the checkout no longer uses.
+Re-clone the node from its upstream to fix both. ComfyUI imports every
+directory under `custom_nodes` whatever its name, so move the old copy out of
+that folder rather than renaming it in place.
+
 ### Memory and model-loading errors on Windows
 
 `OSError 1455` ("the paging file is too small") and

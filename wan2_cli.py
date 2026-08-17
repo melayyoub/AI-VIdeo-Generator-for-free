@@ -172,6 +172,10 @@ ATTENTION_ARGUMENTS = frozenset(
     }
 )
 
+# Either of these in COMFYUI_ARGS already turns the manager on, and repeating
+# the flag would be redundant.
+MANAGER_ARGUMENTS = frozenset({"--enable-manager", "--enable-manager-legacy-ui"})
+
 
 def torch_stack_constraints(python_path: Path, venv_dir: Path) -> Path | None:
     """Constraints file pinning an environment's torch stack, written if absent.
@@ -220,11 +224,23 @@ def ensure_comfyui_requirements(python_path: Path, comfyui_dir: Path) -> None:
     pins. Stamping the file's digest into the environment makes the check cheap
     enough to run on every launch.
     """
-    requirements = comfyui_dir / "requirements.txt"
     venv_dir = python_path.parent.parent
-    if not requirements.exists() or venv_site_packages(venv_dir) is None:
+    requirement_files = [
+        path
+        for path in (
+            comfyui_dir / "requirements.txt",
+            # ComfyUI keeps the manager pinned separately, and skipping it
+            # leaves --enable-manager silently switched off.
+            comfyui_dir / "manager_requirements.txt",
+        )
+        if path.exists()
+    ]
+    if not requirement_files or venv_site_packages(venv_dir) is None:
         return
-    digest = hashlib.sha256(requirements.read_bytes()).hexdigest()
+    digest_source = hashlib.sha256()
+    for path in requirement_files:
+        digest_source.update(path.read_bytes())
+    digest = digest_source.hexdigest()
     stamp = venv_dir / REQUIREMENTS_STAMP
     if stamp.exists() and stamp.read_text(encoding="utf-8").strip() == digest:
         return
@@ -234,7 +250,9 @@ def ensure_comfyui_requirements(python_path: Path, comfyui_dir: Path) -> None:
     constraints = torch_stack_constraints(python_path, venv_dir)
     if constraints is not None:
         pip.extend(["-c", str(constraints)])
-    run_checked([*pip, "-r", str(requirements)])
+    for path in requirement_files:
+        pip.extend(["-r", str(path)])
+    run_checked(pip)
     stamp.write_text(digest + "\n", encoding="utf-8")
 
 
@@ -509,11 +527,14 @@ def backend_arguments(extra_args: list[str], rocm: bool) -> list[str]:
 
     ROCm's attention default is added alongside COMFYUI_ARGS rather than
     instead of it; setting any extra argument used to drop it silently. An
-    attention flag in COMFYUI_ARGS is an explicit choice and still wins.
+    attention flag in COMFYUI_ARGS is an explicit choice and still wins, as is
+    a manager flag.
     """
     arguments = []
     if rocm and not ATTENTION_ARGUMENTS.intersection(extra_args):
         arguments.append("--use-pytorch-cross-attention")
+    if not MANAGER_ARGUMENTS.intersection(extra_args):
+        arguments.append("--enable-manager")
     arguments.extend(extra_args)
     return arguments
 

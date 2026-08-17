@@ -105,20 +105,39 @@ class BackendArgumentTests(unittest.TestCase):
     def test_rocm_attention_default_survives_other_extra_arguments(self) -> None:
         self.assertEqual(
             backend_arguments(["--reserve-vram", "6"], rocm=True),
-            ["--use-pytorch-cross-attention", "--reserve-vram", "6"],
+            [
+                "--use-pytorch-cross-attention",
+                "--enable-manager",
+                "--reserve-vram",
+                "6",
+            ],
         )
 
     def test_an_explicit_attention_choice_replaces_the_rocm_default(self) -> None:
         self.assertEqual(
             backend_arguments(["--use-split-cross-attention"], rocm=True),
-            ["--use-split-cross-attention"],
+            ["--enable-manager", "--use-split-cross-attention"],
         )
 
     def test_no_attention_default_is_added_off_rocm(self) -> None:
-        self.assertEqual(backend_arguments([], rocm=False), [])
+        self.assertEqual(backend_arguments([], rocm=False), ["--enable-manager"])
         self.assertEqual(
             backend_arguments(["--reserve-vram", "6"], rocm=False),
-            ["--reserve-vram", "6"],
+            ["--enable-manager", "--reserve-vram", "6"],
+        )
+
+    def test_the_manager_is_enabled_on_every_backend(self) -> None:
+        for rocm in (True, False):
+            self.assertIn("--enable-manager", backend_arguments([], rocm=rocm))
+
+    def test_an_explicit_manager_flag_is_not_duplicated(self) -> None:
+        self.assertEqual(
+            backend_arguments(["--enable-manager-legacy-ui"], rocm=False),
+            ["--enable-manager-legacy-ui"],
+        )
+        self.assertEqual(
+            backend_arguments(["--enable-manager"], rocm=False),
+            ["--enable-manager"],
         )
 
 
