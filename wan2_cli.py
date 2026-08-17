@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib
 import os
+import re
 import shlex
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -43,12 +46,29 @@ def rocm_available() -> bool:
 
 PIP_NETWORK_OPTIONS = ["--retries", "10", "--timeout", "120"]
 
+# ComfyUI's mutually exclusive attention backends. Any of these in COMFYUI_ARGS
+# means the user picked one, so no default should be added on top.
+ATTENTION_ARGUMENTS = frozenset(
+    {
+        "--use-pytorch-cross-attention",
+        "--use-split-cross-attention",
+        "--use-quad-cross-attention",
+        "--use-sage-attention",
+        "--use-flash-attention",
+        "--use-ck-attention",
+    }
+)
+
 BACKEND_PROBES = {
     "directml": (
         "import sys, torch_directml; "
         "sys.exit(0 if torch_directml.is_available() else 1)"
     ),
     "cuda": "import sys, torch; sys.exit(0 if torch.version.cuda else 1)",
+    # Build presence only. Whether the GPU is actually reachable is checked
+    # separately, so a driver problem reports itself instead of triggering a
+    # multi-gigabyte reprovision on every launch.
+    "rocm": "import sys, torch; sys.exit(0 if torch.version.hip else 1)",
 }
 
 
@@ -137,6 +157,258 @@ def pick_directml_device(python_path: Path) -> int:
     return selected
 
 
+REQUIREMENTS_STAMP = "ovs-requirements.sha256"
+
+# ComfyUI takes the last attention flag it is given, so the ROCm default is
+# suppressed when COMFYUI_ARGS already picks one.
+ATTENTION_ARGUMENTS = frozenset(
+    {
+        "--use-ck-attention",
+        "--use-flash-attention",
+        "--use-pytorch-cross-attention",
+        "--use-quad-cross-attention",
+        "--use-sage-attention",
+        "--use-split-cross-attention",
+    }
+)
+
+
+def torch_stack_constraints(python_path: Path, venv_dir: Path) -> Path | None:
+    """Constraints file pinning an environment's torch stack, written if absent.
+
+    Environments the installer built have no constraints file, so one is
+    derived from what is installed. Without it an unpinned requirement can
+    replace the torch build the environment exists to provide.
+    """
+    constraints_path = venv_dir / "pip-constraints.txt"
+    if constraints_path.exists():
+        return constraints_path
+    code = (
+        "import importlib.metadata as metadata, sys\n"
+        "for name in sys.argv[1:]:\n"
+        "    try:\n"
+        "        print(name + '==' + metadata.version(name))\n"
+        "    except metadata.PackageNotFoundError:\n"
+        "        pass\n"
+    )
+    result = subprocess.run(
+        [
+            str(python_path),
+            "-c",
+            code,
+            "torch",
+            "torchvision",
+            "torchaudio",
+            "torch-directml",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    pins = result.stdout.split()
+    if not pins:
+        return None
+    constraints_path.write_text("\n".join(pins) + "\n", encoding="utf-8")
+    return constraints_path
+
+
+def ensure_comfyui_requirements(python_path: Path, comfyui_dir: Path) -> None:
+    """Reinstall ComfyUI's requirements when the checkout's have changed.
+
+    Updating the checkout moves `requirements.txt`, but nothing re-runs pip for
+    an environment that already exists: the backend probe only checks torch, so
+    the drift stays invisible until ComfyUI fails at import against the older
+    pins. Stamping the file's digest into the environment makes the check cheap
+    enough to run on every launch.
+    """
+    requirements = comfyui_dir / "requirements.txt"
+    venv_dir = python_path.parent.parent
+    if not requirements.exists() or venv_site_packages(venv_dir) is None:
+        return
+    digest = hashlib.sha256(requirements.read_bytes()).hexdigest()
+    stamp = venv_dir / REQUIREMENTS_STAMP
+    if stamp.exists() and stamp.read_text(encoding="utf-8").strip() == digest:
+        return
+
+    print(f"[wan2_cli] ComfyUI requirements changed; updating {venv_dir}")
+    pip = [str(python_path), "-m", "pip", "install", *PIP_NETWORK_OPTIONS]
+    constraints = torch_stack_constraints(python_path, venv_dir)
+    if constraints is not None:
+        pip.extend(["-c", str(constraints)])
+    run_checked([*pip, "-r", str(requirements)])
+    stamp.write_text(digest + "\n", encoding="utf-8")
+
+
+# comfy-kitchen 0.2.28 and newer declare their custom ops with PEP 585
+# annotations (`list[int]`) that torch's schema inference only accepts from 2.5
+# on, and torch-directml 0.2.5 pins torch 2.4.1, so those builds cannot import
+# there at all. 0.2.27 is the newest build that can, and the shim below fills
+# in what ComfyUI expects from the newer ones.
+DIRECTML_KITCHEN_PIN = "comfy-kitchen==0.2.27"
+KITCHEN_COMPAT_SOURCE = (
+    Path(__file__).resolve().parent / "compat" / "comfy_kitchen_torch24.py"
+)
+KITCHEN_COMPAT_MODULE = "ovs_comfy_kitchen_torch24"
+
+
+def venv_site_packages(venv_dir: Path) -> Path | None:
+    if not (venv_dir / "pyvenv.cfg").exists():
+        return None
+    for pattern in ("[Ll]ib/site-packages", "lib/python*/site-packages"):
+        for path in sorted(venv_dir.glob(pattern)):
+            if path.is_dir():
+                return path
+    return None
+
+
+def ensure_directml_kitchen_compat(python_path: Path) -> None:
+    """Hold comfy-kitchen at the last DirectML-compatible build and shim it.
+
+    This runs on every DirectML launch rather than only during provisioning:
+    installing a custom node's requirements can pull the newer comfy-kitchen
+    back in, and ComfyUI then fails to start at all.
+    """
+    venv_dir = python_path.parent.parent
+    site_packages = venv_site_packages(venv_dir)
+    if site_packages is None:
+        return
+    if not KITCHEN_COMPAT_SOURCE.exists():
+        raise SystemExit(
+            f"The comfy-kitchen compatibility shim is missing: {KITCHEN_COMPAT_SOURCE}"
+        )
+
+    pinned = DIRECTML_KITCHEN_PIN.split("==")[1]
+    installed = [
+        path.name.removesuffix(".dist-info").split("-")[-1]
+        for path in site_packages.glob("comfy_kitchen-*.dist-info")
+    ]
+    if installed != [pinned]:
+        print(f"[wan2_cli] Holding comfy-kitchen at {pinned} for torch-directml")
+        pip = [str(python_path), "-m", "pip", "install", *PIP_NETWORK_OPTIONS]
+        constraints = venv_dir / "pip-constraints.txt"
+        if constraints.exists():
+            pip.extend(["-c", str(constraints)])
+        run_checked([*pip, "--no-deps", DIRECTML_KITCHEN_PIN])
+
+    module_path = site_packages / f"{KITCHEN_COMPAT_MODULE}.py"
+    if (
+        not module_path.exists()
+        or module_path.read_bytes() != KITCHEN_COMPAT_SOURCE.read_bytes()
+    ):
+        shutil.copyfile(KITCHEN_COMPAT_SOURCE, module_path)
+    # A .pth line starting with "import" is executed by site, which installs the
+    # shim's import hook before ComfyUI ever imports comfy_kitchen.
+    pth_path = site_packages / f"{KITCHEN_COMPAT_MODULE}.pth"
+    pth_line = f"import {KITCHEN_COMPAT_MODULE}\n"
+    if not pth_path.exists() or pth_path.read_text(encoding="utf-8") != pth_line:
+        pth_path.write_text(pth_line, encoding="utf-8")
+
+
+# pytorch.org ships ROCm builds for Linux only; on Windows they come from AMD's
+# per-architecture wheel indexes, which are published for CPython 3.11-3.13.
+ROCM_WINDOWS_INDEX = "https://rocm.nightlies.amd.com/v2/{gfx}/"
+ROCM_WINDOWS_PYTHON_RANGE = ((3, 11), (3, 13))
+ROCM_RADEON_SERIES_GFX = (
+    (9000, "gfx120X-all"),
+    (7000, "gfx110X-dgpu"),
+    (6000, "gfx103X-dgpu"),
+    (5000, "gfx101X-dgpu"),
+)
+
+
+def windows_adapter_names() -> list[str]:
+    result = subprocess.run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "Get-CimInstance Win32_VideoController | ForEach-Object Name",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return []
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def gfx_for_adapter(name: str) -> str | None:
+    """Map an adapter name to AMD's ROCm wheel index, or None if unsupported."""
+    match = re.search(r"\bradeon\s+(?:rx|pro\s+w)\s*(\d{4})\b", name.lower())
+    if not match:
+        return None
+    model = int(match.group(1))
+    for floor, gfx in ROCM_RADEON_SERIES_GFX:
+        if model >= floor:
+            return gfx
+    return None
+
+
+def detect_rocm_gfx() -> str:
+    for name in windows_adapter_names():
+        gfx = gfx_for_adapter(name)
+        if gfx:
+            print(f"[wan2_cli] {name} uses the {gfx} ROCm wheel index")
+            return gfx
+    raise SystemExit(
+        "No ROCm-capable Radeon GPU was recognised. Set OVS_ROCM_GFX to the "
+        "architecture your card uses (for example gfx110X-dgpu for RX 7000, "
+        "gfx120X-all for RX 9000); the published names are listed at "
+        "https://rocm.nightlies.amd.com/v2/"
+    )
+
+
+def rocm_index_url() -> str:
+    override = env_setting("ROCM_INDEX").strip()
+    if override:
+        return override
+    if os.name != "nt":
+        rocm_build = env_setting("TORCH_ROCM").strip() or "rocm6.4"
+        return f"https://download.pytorch.org/whl/{rocm_build}"
+    gfx = env_setting("ROCM_GFX").strip() or detect_rocm_gfx()
+    return ROCM_WINDOWS_INDEX.format(gfx=gfx)
+
+
+def windows_interpreters() -> dict[tuple[int, int], str]:
+    """Map CPython version to interpreter path, as reported by the py launcher."""
+    try:
+        result = subprocess.run(["py", "-0p"], capture_output=True, text=True)
+    except OSError:
+        return {}
+    if result.returncode != 0:
+        return {}
+    found: dict[tuple[int, int], str] = {}
+    for line in result.stdout.splitlines():
+        match = re.match(r"\s*-V:(\d+)\.(\d+)\S*\s+(\S.*?)\s*$", line)
+        if match:
+            version = (int(match.group(1)), int(match.group(2)))
+            found.setdefault(version, match.group(3))
+    return found
+
+
+def base_interpreter(backend: str) -> str:
+    """Return the interpreter a backend's venv should be built from."""
+    if backend != "rocm" or os.name != "nt":
+        return sys.executable
+    override = env_setting("ROCM_PYTHON").strip()
+    if override:
+        return override
+    low, high = ROCM_WINDOWS_PYTHON_RANGE
+    if low <= sys.version_info[:2] <= high:
+        return sys.executable
+    for version, path in sorted(windows_interpreters().items(), reverse=True):
+        if low <= version <= high:
+            print(
+                f"[wan2_cli] Building the ROCm environment with Python "
+                f"{version[0]}.{version[1]} ({path})"
+            )
+            return path
+    raise SystemExit(
+        "The ROCm backend needs CPython 3.11-3.13 on Windows; AMD publishes no "
+        f"ROCm wheels for {sys.version_info[0]}.{sys.version_info[1]}. Install a "
+        "supported version, or point OVS_ROCM_PYTHON at one."
+    )
+
+
 def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
     """Return a Python that provides `backend`, provisioning a venv on demand.
 
@@ -152,7 +424,7 @@ def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
 
     print(f"[wan2_cli] Provisioning the {backend} environment at {venv_dir}")
     if not python_path.exists():
-        run_checked([sys.executable, "-m", "venv", str(venv_dir)])
+        run_checked([base_interpreter(backend), "-m", "venv", str(venv_dir)])
     pip = [str(python_path), "-m", "pip", "install", *PIP_NETWORK_OPTIONS]
     run_checked([*pip, "--upgrade", "pip", "setuptools<82", "wheel"])
     if backend == "directml":
@@ -163,6 +435,22 @@ def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
         pins = installed_versions(
             python_path, ["torch", "torchvision", "torch-directml"]
         )
+    elif backend == "rocm":
+        # The ROCm index resolves torch's own dependencies, so it is used
+        # alone. Adding PyPI as an extra index makes pip prefer the plain
+        # PyPI torch instead, because its version outranks the ROCm build's.
+        run_checked(
+            [
+                *pip,
+                "--upgrade",
+                "torch",
+                "torchvision",
+                "torchaudio",
+                "--index-url",
+                rocm_index_url(),
+            ]
+        )
+        pins = installed_versions(python_path, ["torch", "torchvision", "torchaudio"])
     else:
         cuda_build = env_setting("TORCH_CUDA").strip() or "cu128"
         run_checked(
@@ -196,9 +484,7 @@ def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
         )
         constraints_path.write_text("\n".join(pins) + "\n", encoding="utf-8")
 
-    requirements = comfyui_dir / "requirements.txt"
-    if requirements.exists():
-        run_checked([*constrained_pip, "-r", str(requirements)])
+    ensure_comfyui_requirements(python_path, comfyui_dir)
     for node_requirements in sorted(
         (comfyui_dir / "custom_nodes").glob("*/requirements.txt")
     ):
@@ -207,6 +493,8 @@ def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
                 "[wan2_cli] WARNING: node requirements skipped (incompatible "
                 f"with the pinned torch stack): {node_requirements}"
             )
+    if backend == "directml":
+        ensure_directml_kitchen_compat(python_path)
     if not python_provides_backend(python_path, backend):
         raise SystemExit(
             f"Provisioning finished, but the {backend} backend still does not "
@@ -214,6 +502,20 @@ def ensure_backend_venv(backend: str, comfyui_dir: Path) -> Path:
             "again to rebuild it."
         )
     return python_path
+
+
+def backend_arguments(extra_args: list[str], rocm: bool) -> list[str]:
+    """Merge COMFYUI_ARGS with the arguments a backend contributes.
+
+    ROCm's attention default is added alongside COMFYUI_ARGS rather than
+    instead of it; setting any extra argument used to drop it silently. An
+    attention flag in COMFYUI_ARGS is an explicit choice and still wins.
+    """
+    arguments = []
+    if rocm and not ATTENTION_ARGUMENTS.intersection(extra_args):
+        arguments.append("--use-pytorch-cross-attention")
+    arguments.extend(extra_args)
+    return arguments
 
 
 def resolve_checkout_path(configured: str, root: Path) -> Path:
@@ -273,9 +575,11 @@ def main() -> None:
 
     launch_python = Path(sys.executable)
     device_arguments: list[str] = []
+    using_directml = False
     if args.device == "directml":
         if not directml_ready:
             launch_python = ensure_backend_venv("directml", comfyui_dir)
+        using_directml = True
         device_arguments = ["--directml", str(pick_directml_device(launch_python))]
     elif args.device == "gpu":
         if not gpu_ready:
@@ -291,18 +595,44 @@ def main() -> None:
                     "again."
                 )
     elif args.device == "rocm":
-        if not gpu_ready:
-            raise SystemExit(
-                "rocm was requested, but torch.cuda.is_available() is false."
+        if not rocm_ready:
+            launch_python = ensure_backend_venv("rocm", comfyui_dir)
+            rocm_probe = (
+                "import sys, torch; sys.exit(0 if torch.cuda.is_available() else 1)"
             )
+            if subprocess.call([str(launch_python), "-c", rocm_probe]) != 0:
+                raise SystemExit(
+                    f"rocm was requested, but no GPU is visible to {launch_python}. "
+                    "Check the AMD driver, or set OVS_ROCM_GFX to the architecture "
+                    "your card uses and delete that environment to provision it "
+                    "again."
+                )
+            rocm_ready = True
     elif args.device == "cpu":
         device_arguments = ["--cpu"]
     elif gpu_ready:  # auto
         pass
     elif directml_ready:
+        using_directml = True
         device_arguments = ["--directml", str(pick_directml_device(launch_python))]
     else:
         device_arguments = ["--cpu"]
+
+    # After the device is settled, so the environment about to run ComfyUI is
+    # the one brought up to date. The DirectML pin has to be reapplied last:
+    # ComfyUI's requirements would otherwise leave a comfy-kitchen that cannot
+    # import on torch 2.4.1.
+    ensure_comfyui_requirements(launch_python, comfyui_dir)
+    if using_directml:
+        ensure_directml_kitchen_compat(launch_python)
+
+    if rocm_ready:
+        # ROCm gates its fused attention kernels off on RDNA3 behind this flag,
+        # leaving SDPA on the math backend. Measured on a 7900 XT, the fused
+        # path is ~10x faster and needs ~30x less peak memory for an identical
+        # result, and the math fallback runs a 20 GB card out of memory on
+        # video workloads. An explicit setting in the environment still wins.
+        os.environ.setdefault("TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL", "1")
 
     command = [str(launch_python), str(main_py), "--port", str(args.port)]
     if args.listen_all:
@@ -310,11 +640,9 @@ def main() -> None:
     elif args.host:
         command.extend(["--listen", str(args.host)])
     command.extend(device_arguments)
-    extra_args = env_setting("COMFYUI_ARGS").strip()
-    if extra_args:
-        command.extend(shlex.split(extra_args))
-    elif rocm_ready:
-        command.append("--use-pytorch-cross-attention")
+    command.extend(
+        backend_arguments(shlex.split(env_setting("COMFYUI_ARGS").strip()), rocm_ready)
+    )
     raise SystemExit(subprocess.call(command, cwd=str(comfyui_dir)))
 
 

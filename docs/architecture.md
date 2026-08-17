@@ -66,7 +66,8 @@ installing, or downloading.
 
 The project-authored installers and launchers live at the repository root.
 Runtime state is placed beneath `ComfyUI/`: upstream source, `.venv`, any
-launcher-provisioned per-backend venvs (`.venv-cuda`, `.venv-directml`),
+launcher-provisioned per-backend venvs (`.venv-cuda`, `.venv-rocm`,
+`.venv-directml`),
 custom nodes, models, and outputs. That tree is excluded from the parent
 repository's version control. Example workflow JSON is stored in `examples/`; operational
 guidance and architecture decisions belong in `docs/`.
@@ -83,10 +84,14 @@ guidance and architecture decisions belong in `docs/`.
   checksum-verified artifact.
 - The launcher self-provisions per-backend environments: requesting a device
   the current environment does not provide creates a sibling venv
-  (`ComfyUI/.venv-directml` or `ComfyUI/.venv-cuda`) and installs the torch
-  stack, ComfyUI requirements, and custom-node requirements from the package
-  indexes at launch time. This is a package-index supply-chain event outside
-  the installer flow.
+  (`ComfyUI/.venv-directml`, `ComfyUI/.venv-rocm`, or `ComfyUI/.venv-cuda`)
+  and installs the torch stack, ComfyUI requirements, and custom-node
+  requirements from the package indexes at launch time. This is a
+  package-index supply-chain event outside the installer flow.
+- The ROCm backend adds `rocm.nightlies.amd.com` as an index. It serves AMD's
+  per-architecture nightly builds, not release artifacts, so it is a weaker
+  supply-chain guarantee than the pinned PyTorch index the other backends use.
+  `OVS_ROCM_INDEX` redirects it.
 - `HF_TOKEN`, when present, is a user-provided credential used for model-host
   access. It must never be committed or pasted into an Issue.
 - Loopback binding limits ordinary remote access; it is not authentication.

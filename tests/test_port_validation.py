@@ -13,7 +13,15 @@ from pathlib import Path
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from wan2_cli import resolve_checkout_path  # noqa: E402
+import wan2_cli  # noqa: E402
+from wan2_cli import (  # noqa: E402
+    REQUIREMENTS_STAMP,
+    backend_arguments,
+    ensure_comfyui_requirements,
+    gfx_for_adapter,
+    resolve_checkout_path,
+    venv_site_packages,
+)
 from wan2_cli_args import (  # noqa: E402
     MAX_PORT,
     MIN_PORT,
@@ -55,6 +63,117 @@ class CheckoutPathTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             checkout = Path(temporary_directory).resolve()
             self.assertEqual(resolve_checkout_path(str(checkout), Path.cwd()), checkout)
+
+
+class RocmArchitectureTests(unittest.TestCase):
+    def test_maps_supported_radeon_cards_to_their_wheel_index(self) -> None:
+        for name, gfx in (
+            ("AMD Radeon RX 7900 XT", "gfx110X-dgpu"),
+            ("AMD Radeon RX 9070 XT", "gfx120X-all"),
+            ("AMD Radeon RX 6800", "gfx103X-dgpu"),
+            ("AMD Radeon RX 5700 XT", "gfx101X-dgpu"),
+            ("AMD Radeon Pro W7900", "gfx110X-dgpu"),
+        ):
+            with self.subTest(adapter=name):
+                self.assertEqual(gfx_for_adapter(name), gfx)
+
+    def test_rejects_adapters_without_a_rocm_build(self) -> None:
+        for name in ("NVIDIA GeForce RTX 5090", "AMD Radeon RX 580", "Intel Iris Xe"):
+            with self.subTest(adapter=name):
+                self.assertIsNone(gfx_for_adapter(name))
+
+
+class SitePackagesDiscoveryTests(unittest.TestCase):
+    def test_finds_site_packages_in_both_venv_layouts(self) -> None:
+        for layout in ("Lib/site-packages", "lib/python3.12/site-packages"):
+            with self.subTest(layout=layout):
+                with tempfile.TemporaryDirectory() as temporary_directory:
+                    venv = Path(temporary_directory)
+                    (venv / "pyvenv.cfg").write_text("", encoding="utf-8")
+                    expected = venv / layout
+                    expected.mkdir(parents=True)
+                    self.assertEqual(venv_site_packages(venv), expected)
+
+    def test_ignores_directories_that_are_not_virtual_environments(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            plain = Path(temporary_directory)
+            (plain / "Lib" / "site-packages").mkdir(parents=True)
+            self.assertIsNone(venv_site_packages(plain))
+
+
+class BackendArgumentTests(unittest.TestCase):
+    def test_rocm_attention_default_survives_other_extra_arguments(self) -> None:
+        self.assertEqual(
+            backend_arguments(["--reserve-vram", "6"], rocm=True),
+            ["--use-pytorch-cross-attention", "--reserve-vram", "6"],
+        )
+
+    def test_an_explicit_attention_choice_replaces_the_rocm_default(self) -> None:
+        self.assertEqual(
+            backend_arguments(["--use-split-cross-attention"], rocm=True),
+            ["--use-split-cross-attention"],
+        )
+
+    def test_no_attention_default_is_added_off_rocm(self) -> None:
+        self.assertEqual(backend_arguments([], rocm=False), [])
+        self.assertEqual(
+            backend_arguments(["--reserve-vram", "6"], rocm=False),
+            ["--reserve-vram", "6"],
+        )
+
+
+class RequirementsDriftTests(unittest.TestCase):
+    """A stale environment is the failure that broke startup twice."""
+
+    def build_layout(self, base: Path, requirements: str) -> tuple[Path, Path]:
+        comfyui = base / "ComfyUI"
+        (comfyui / "custom_nodes").mkdir(parents=True)
+        (comfyui / "requirements.txt").write_text(requirements, encoding="utf-8")
+        venv = comfyui / ".venv"
+        (venv / "Lib" / "site-packages").mkdir(parents=True)
+        (venv / "pyvenv.cfg").write_text("", encoding="utf-8")
+        (venv / "pip-constraints.txt").write_text("torch==2.11.0\n", encoding="utf-8")
+        return comfyui, venv / "Scripts" / "python.exe"
+
+    def install_calls(self, comfyui: Path, python_path: Path) -> list[list[str]]:
+        calls: list[list[str]] = []
+        original = wan2_cli.run_checked
+        wan2_cli.run_checked = calls.append
+        try:
+            ensure_comfyui_requirements(python_path, comfyui)
+        finally:
+            wan2_cli.run_checked = original
+        return calls
+
+    def test_reinstalls_and_stamps_when_requirements_are_unseen(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            comfyui, python_path = self.build_layout(
+                Path(temporary_directory), "comfy-kitchen==0.2.31\n"
+            )
+            calls = self.install_calls(comfyui, python_path)
+            self.assertEqual(len(calls), 1, calls)
+            self.assertIn("-r", calls[0])
+            self.assertIn("-c", calls[0])
+            self.assertTrue((python_path.parent.parent / REQUIREMENTS_STAMP).exists())
+
+    def test_skips_reinstall_when_the_stamp_still_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            comfyui, python_path = self.build_layout(
+                Path(temporary_directory), "comfy-kitchen==0.2.31\n"
+            )
+            self.install_calls(comfyui, python_path)
+            self.assertEqual(self.install_calls(comfyui, python_path), [])
+
+    def test_reinstalls_after_the_checkout_changes_its_pins(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            comfyui, python_path = self.build_layout(
+                Path(temporary_directory), "comfy-kitchen==0.2.31\n"
+            )
+            self.install_calls(comfyui, python_path)
+            (comfyui / "requirements.txt").write_text(
+                "comfy-kitchen==0.2.32\n", encoding="utf-8"
+            )
+            self.assertEqual(len(self.install_calls(comfyui, python_path)), 1)
 
 
 class ModelSourceValidationTests(unittest.TestCase):

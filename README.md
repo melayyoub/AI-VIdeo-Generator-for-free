@@ -162,11 +162,73 @@ adapter index to override the selection. npm shortcuts are available
 on Windows:
 
 ```powershell
-npm run wstart        # auto-detect
-npm run wstart:cuda   # force the NVIDIA GPU
-npm run wstart:amd    # force the AMD GPU (DirectML)
-npm run wstart:cpu    # force CPU
+npm run wstart          # auto-detect
+npm run wstart:cuda     # force the NVIDIA GPU
+npm run wstart:amd      # force the AMD GPU (ROCm)
+npm run wstart:directml # force the AMD GPU (DirectML, legacy)
+npm run wstart:cpu      # force CPU
 ```
+
+### AMD GPUs: ROCm or DirectML
+
+`--device rocm` is the supported path for a modern Radeon and the one
+`npm run wstart:amd` uses. On Windows the launcher reads the installed
+adapters, maps the discrete Radeon to AMD's per-architecture wheel index
+(RX 9000 → `gfx120X-all`, RX 7000 → `gfx110X-dgpu`, RX 6000 →
+`gfx103X-dgpu`, RX 5000 → `gfx101X-dgpu`), and provisions
+`ComfyUI\.venv-rocm` from it. Those wheels are published for CPython
+3.11-3.13 only, so the launcher builds that environment from a suitable
+interpreter even when it is itself running on a different one. Override any
+part of this with `OVS_ROCM_GFX`, `OVS_ROCM_PYTHON`, or `OVS_ROCM_INDEX`; on
+Linux the ROCm builds come from pytorch.org instead (`OVS_TORCH_ROCM`,
+default `rocm6.4`).
+
+On ROCm the launcher also sets `TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1`
+unless the environment already defines it. ROCm marks its fused attention
+kernels experimental on RDNA3 and gates them off by default, which drops SDPA
+to the math backend; measured on a 7900 XT the fused path is about 10x faster
+and uses about 30x less peak memory for an identical result, and the fallback
+exhausts a 20 GB card on video workloads. Set the variable to `0` to opt out.
+
+`--device directml` still works but is a fallback for cards ROCm does not
+cover. `torch-directml` pins torch 2.4.1, which current ComfyUI has outgrown:
+comfy-kitchen 0.2.28 and newer cannot import on it. The launcher therefore
+holds that environment at comfy-kitchen 0.2.27 and installs
+`compat/comfy_kitchen_torch24.py` into it to supply the newer API — including
+a pure-torch `na3d` for the LTX 2.x VAE decoder. ComfyUI will log an advisory
+that 0.2.27 is below its recommended 0.2.31; on DirectML that is expected, and
+running the upgrade it suggests will stop ComfyUI from starting until the next
+launch repairs it.
+
+### The desktop freezes while a job runs
+
+ComfyUI will use every byte of VRAM it is allowed to. If the GPU running the
+job is also driving a monitor, that starves the Windows compositor and the
+screen stops updating until the job ends. Multi-GPU machines are not
+automatically safe here: Windows will composite across both adapters, so a
+second card does not by itself keep a display off the compute GPU.
+
+Reserve headroom for the desktop, in GB:
+
+```powershell
+$env:OVS_COMFYUI_ARGS = "--reserve-vram 6"
+npm run wstart
+```
+
+Size it from what the desktop already holds on that card — the compositor
+(`dwm`) alone commonly wants 3-4 GB at high resolution, before browsers and
+editors. `Get-Counter '\GPU Process Memory(*)\Dedicated Usage'` shows the
+per-process split.
+
+If the whole machine stalls rather than just the display, look at the
+`Enabled pinned memory` figure in the startup log. Pinned memory cannot be
+paged out, so on a 32 GB system a 13 GB pin leaves little for everything else.
+`--disable-pinned-memory` trades some transfer speed for stability, and
+`--fast-disk` prefers an NVMe over unpinned RAM. The most reliable fix is
+still to move every display onto one card and leave the other for compute.
+
+`OVS_COMFYUI_ARGS` is appended to the arguments the launcher already chooses,
+so it composes with them rather than replacing them.
 
 ### Memory and model-loading errors on Windows
 
