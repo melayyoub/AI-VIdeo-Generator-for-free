@@ -1,0 +1,14 @@
+[project]
+name = "reallexi_handoff"
+description = "Frame-quality gating for chained image-to-video pipelines: scored handoff-frame selection, drift rejection, and palette locking."
+version = "1.0.0"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = ["numpy"]
+
+[project.urls]
+Repository = "https://github.com/Reallexi/reallexi_handoff"
+
+[tool.comfy]
+PublisherId = "reallexi"
+DisplayName = "Reallexi Handoff"
