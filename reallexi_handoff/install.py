@@ -13,6 +13,11 @@ The repo copy is the source of truth. This script only pushes it out.
 folder rather than copying, so edits here are live after a ComfyUI restart with
 no re-deploy step. On Windows it creates a directory junction, which does not
 need Administrator (unlike a real symlink).
+
+Auto-detection walks up from this repo looking for a sibling ComfyUI/, then
+falls back to $REALLEXI_COMFYUI_ROOT (or %REALLEXI_COMFYUI_ROOT% on Windows)
+if set, then a couple of common install locations. Nothing here is specific
+to any one machine or account.
 """
 
 from __future__ import annotations
@@ -32,9 +37,12 @@ REQUIRED = ("HandoffFrameSelect", "HandoffQualityGate", "HandoffColorMatch")
 # Only these ship. Tests, caches and repo metadata stay behind.
 DEPLOY = ("__init__.py", "nodes.py", "scoring.py", "pyproject.toml", "README.md")
 
-CANDIDATES = (
-    Path(r"C:\Users\samsa\python-projects\custom-wan\ComfyUI"),
-    Path.home() / "python-projects" / "custom-wan" / "ComfyUI",
+def _env_candidates() -> tuple[Path, ...]:
+    root = os.environ.get("REALLEXI_COMFYUI_ROOT", "").strip()
+    return (Path(root),) if root else ()
+
+
+CANDIDATES = _env_candidates() + (
     Path.home() / "ComfyUI",
     Path("/opt/ComfyUI"),
 )

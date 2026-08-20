@@ -834,36 +834,73 @@ Everything else — every LTX node, `ComfySwitchNode`, `ComfyMathExpression`,
 `OllamaImageDescriber`, `GetImagesFromBatchIndexed`, `CacheCleaner` — is already proven
 by your own files.
 
-### Fix 1 — install the pack
+### Fix 1 — deploy the pack
+
+`reallexi_handoff/` is a self-contained package that lives in **your repo** as the
+source of truth. `install.py` only pushes it into ComfyUI:
 
 ```bash
-python install_handoff.py
-python install_handoff.py --comfy "C:\\Users\\samsa\\python-projects\\custom-wan\\ComfyUI"
+python reallexi_handoff/install.py               # auto-detects a sibling ComfyUI/
+python reallexi_handoff/install.py --comfy /path/to/ComfyUI   # explicit override
+python reallexi_handoff/install.py --link        # junction instead of copy
+python reallexi_handoff/install.py --uninstall
 ```
 
-The installer copies `__init__.py` into `<ComfyUI>/custom_nodes/reallexi_handoff/`, then
-imports it the same way ComfyUI does and prints what registered:
+Auto-detection walks up from the repo looking for a sibling `ComfyUI/`, so it needs no
+path on a normal checkout. `REALLEXI_COMFYUI_ROOT` is also checked if set, ahead of
+`--comfy`'s common-location fallbacks — useful in CI or an unusual layout.
+
+It copies only the runtime files — `tests/`, `.gitignore` and caches stay in the repo —
+then imports the deployed copy the way ComfyUI's loader does and prints what registered:
 
 ```
-  import OK — registered 3 nodes:
+repo    : ...\custom-wan\reallexi_handoff
+ComfyUI : ...\custom-wan\ComfyUI
+target  : ...\ComfyUI\custom_nodes\reallexi_handoff
+mode    : copied 5 files
+
+  import OK — v1.0.0, 3 nodes registered:
     HandoffFrameSelect     → Handoff Frame Select
     HandoffQualityGate     → Handoff Quality Gate
     HandoffColorMatch      → Handoff Color Match
 ```
 
-An import error surfaces here as a traceback instead of being buried in the server log.
-Restart ComfyUI and hard-refresh the browser (Ctrl+Shift+R); the nodes appear under
-**Reallexi/handoff** in node search.
+**`--link` is the one to use while iterating.** It points `custom_nodes` at the repo
+folder rather than copying, so edits go live on the next ComfyUI restart with no
+re-deploy. On Windows it creates a directory junction, which does not need
+Administrator. `--uninstall` removes the link and leaves the repo untouched.
 
-Doing it by hand is equally fine — the pack is a single file:
+With no `--comfy`, it walks up from the repo looking for a sibling `ComfyUI/`, so from
+`custom-wan/` it finds `custom-wan/ComfyUI` on its own.
+
+Restart ComfyUI and hard-refresh the browser (Ctrl+Shift+R) — the frontend caches its
+node list, and skipping the refresh is the usual reason a correctly-installed node still
+shows red.
+
+A missing-node list that repeats each type four times is normal: four shot instances
+share one subgraph definition, so ComfyUI counts four references to each.
+
+### Package layout
 
 ```
-<ComfyUI>/custom_nodes/reallexi_handoff/__init__.py
+reallexi_handoff/
+├── __init__.py        node registration, __version__
+├── nodes.py           ComfyUI node classes — owns the torch boundary
+├── scoring.py         pure numpy metrics, no ComfyUI import
+├── install.py         deploy into custom_nodes
+├── pyproject.toml     Comfy Registry metadata
+├── requirements.txt   numpy
+├── README.md
+└── tests/
+    └── test_scoring.py
 ```
 
-The folder name must match and the file must be named `__init__.py`. A missing-node list
-that repeats each type four times is normal: four shot instances share one subgraph
-definition, so ComfyUI counts four references to each.
+The split is deliberate: `scoring.py` imports nothing but numpy, so the maths runs
+under CI or on any machine without ComfyUI, a GPU or torch:
+
+```bash
+python -m reallexi_handoff.tests.test_scoring     # 27 assertions
+```
 
 ### Fix 2 — `StringConcatenate`
 

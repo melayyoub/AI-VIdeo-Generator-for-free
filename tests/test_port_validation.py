@@ -140,6 +140,28 @@ class BackendArgumentTests(unittest.TestCase):
             ["--enable-manager"],
         )
 
+    def test_cuda_malloc_is_disabled_on_blackwell(self) -> None:
+        self.assertEqual(
+            backend_arguments([], rocm=False, blackwell=True),
+            ["--disable-cuda-malloc", "--enable-manager"],
+        )
+
+    def test_cuda_malloc_default_is_not_added_off_blackwell(self) -> None:
+        self.assertEqual(
+            backend_arguments([], rocm=False, blackwell=False),
+            ["--enable-manager"],
+        )
+
+    def test_an_explicit_cuda_malloc_choice_replaces_the_blackwell_default(self) -> None:
+        self.assertEqual(
+            backend_arguments(["--cuda-malloc"], rocm=False, blackwell=True),
+            ["--enable-manager", "--cuda-malloc"],
+        )
+        self.assertEqual(
+            backend_arguments(["--disable-cuda-malloc"], rocm=False, blackwell=True),
+            ["--enable-manager", "--disable-cuda-malloc"],
+        )
+
 
 class RequirementsDriftTests(unittest.TestCase):
     """A stale environment is the failure that broke startup twice."""

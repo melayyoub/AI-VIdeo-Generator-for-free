@@ -3,7 +3,7 @@
 install_handoff.py — put reallexi_handoff where ComfyUI will find it.
 
     python install_handoff.py
-    python install_handoff.py --comfy "C:\\Users\\samsa\\python-projects\\custom-wan\\ComfyUI"
+    python install_handoff.py --comfy /path/to/ComfyUI
 
 Copies the pack into <ComfyUI>/custom_nodes/reallexi_handoff/, then imports it
 exactly the way ComfyUI does and prints the node names it registered. If the
@@ -16,9 +16,12 @@ import sys
 import traceback
 from pathlib import Path
 
+import os
+
+_REALLEXI_COMFYUI_ROOT = os.environ.get("REALLEXI_COMFYUI_ROOT", "").strip()
+
 CANDIDATES = [
-    Path(r"C:\Users\samsa\python-projects\custom-wan\ComfyUI"),
-    Path.home() / "python-projects" / "custom-wan" / "ComfyUI",
+    *([Path(_REALLEXI_COMFYUI_ROOT)] if _REALLEXI_COMFYUI_ROOT else []),
     Path.home() / "ComfyUI",
     Path("/opt/ComfyUI"),
     Path.cwd() / "ComfyUI",
